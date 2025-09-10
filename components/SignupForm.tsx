@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, FormEvent, useEffect } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function SignupForm() {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -74,13 +76,13 @@ export default function SignupForm() {
       });
 
       if (response.ok) {
-        setSubmitMessage('Inscription réussie ! Nous vous contacterons bientôt.');
+        setSubmitMessage(t.signup.form.success);
         setFormData({ fullName: '', email: '', phone: '', status: '' });
       } else {
-        setSubmitMessage("Erreur lors de l'inscription. Veuillez réessayer.");
+        setSubmitMessage(t.signup.form.error);
       }
     } catch (error) {
-      setSubmitMessage("Erreur lors de l'inscription. Veuillez réessayer.");
+      setSubmitMessage(t.signup.form.error);
     }
 
     setIsSubmitting(false);
@@ -94,8 +96,8 @@ export default function SignupForm() {
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
             <div>
-              <p className="font-semibold text-sm">Nouvelle inscription !</p>
-              <p className="text-xs opacity-90">{currentSignup} vient de s'inscrire</p>
+              <p className="font-semibold text-sm">{t.signup.notification.title}</p>
+              <p className="text-xs opacity-90">{currentSignup} {t.signup.notification.message}</p>
             </div>
             <i className="ri-check-circle-fill text-green-300 text-lg"></i>
           </div>
@@ -108,14 +110,14 @@ export default function SignupForm() {
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
       
-      <div className="container mx-auto max-w-2xl relative z-10">
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 border border-white/20">
+      <div className="container mx-auto max-w-2xl relative z-10 px-4">
+        <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 border border-white/20">
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Commencez votre transformation financière
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
+              {t.signup.title}
             </h2>
-            <p className="text-lg text-white/80">
-              Comme des milliers d'autres, changez dès aujourd'hui votre manière de voir et gérer l'argent
+            <p className="text-base sm:text-lg text-white/80">
+              {t.signup.subtitle}
             </p>
             
             {/* Compteur social */}
@@ -125,14 +127,14 @@ export default function SignupForm() {
                 <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-2 border-white"></div>
                 <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full border-2 border-white"></div>
               </div>
-              <span className="text-white/90 text-sm font-medium">20 personnes inscrites cette semaine</span>
+              <span className="text-white/90 text-xs sm:text-sm font-medium">20 {t.signup.socialProof}</span>
             </div>
           </div>
 
           <form id="cash360-signup" onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="fullName" className="block text-sm font-semibold text-white/90 mb-2">
-                Nom complet *
+                {t.signup.form.fullName} *
               </label>
               <input
                 type="text"
@@ -142,13 +144,13 @@ export default function SignupForm() {
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 required
                 className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-xl focus:border-yellow-400 focus:bg-white/20 focus:outline-none transition-all text-sm text-white placeholder-white/50 backdrop-blur-sm"
-                placeholder="Votre nom complet"
+                placeholder={t.signup.form.fullNamePlaceholder}
               />
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-white/90 mb-2">
-                Adresse email *
+                {t.signup.form.email} *
               </label>
               <input
                 type="email"
@@ -158,13 +160,13 @@ export default function SignupForm() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-xl focus:border-yellow-400 focus:bg-white/20 focus:outline-none transition-all text-sm text-white placeholder-white/50 backdrop-blur-sm"
-                placeholder="votre@email.com"
+                placeholder={t.signup.form.emailPlaceholder}
               />
             </div>
 
             <div>
               <label htmlFor="phone" className="block text-sm font-semibold text-white/90 mb-2">
-                Numéro de téléphone *
+                {t.signup.form.phone} *
               </label>
               <input
                 type="tel"
@@ -174,13 +176,13 @@ export default function SignupForm() {
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
                 className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-xl focus:border-yellow-400 focus:bg-white/20 focus:outline-none transition-all text-sm text-white placeholder-white/50 backdrop-blur-sm"
-                placeholder="+33 6 12 34 56 78"
+                placeholder={t.signup.form.phonePlaceholder}
               />
             </div>
 
             <div>
               <label htmlFor="status" className="block text-sm font-semibold text-white/90 mb-2">
-                Votre statut *
+                {t.signup.form.status} *
               </label>
               <div className="relative">
                 <select
@@ -191,11 +193,11 @@ export default function SignupForm() {
                   required
                   className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-xl focus:border-yellow-400 focus:bg-white/20 focus:outline-none transition-all text-sm text-white appearance-none backdrop-blur-sm pr-8"
                 >
-                  <option value="" className="bg-slate-800 text-white">Sélectionnez votre statut</option>
-                  <option value="particulier" className="bg-slate-800 text-white">Particulier</option>
-                  <option value="entrepreneur" className="bg-slate-800 text-white">Entrepreneur</option>
-                  <option value="pasteur" className="bg-slate-800 text-white">Pasteur</option>
-                  <option value="eglise" className="bg-slate-800 text-white">Église</option>
+                  <option value="" className="bg-slate-800 text-white">{t.signup.form.statusPlaceholder}</option>
+                  <option value="particulier" className="bg-slate-800 text-white">{t.signup.form.statusOptions.particulier}</option>
+                  <option value="entrepreneur" className="bg-slate-800 text-white">{t.signup.form.statusOptions.entrepreneur}</option>
+                  <option value="pasteur" className="bg-slate-800 text-white">{t.signup.form.statusOptions.pasteur}</option>
+                  <option value="eglise" className="bg-slate-800 text-white">{t.signup.form.statusOptions.eglise}</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <i className="ri-arrow-down-s-line text-white/50"></i>
@@ -208,7 +210,7 @@ export default function SignupForm() {
               disabled={isSubmitting}
               className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold py-4 px-8 rounded-xl hover:from-yellow-300 hover:to-yellow-400 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-2xl shadow-yellow-500/25"
             >
-              {isSubmitting ? 'Inscription en cours...' : "S'inscrire maintenant"}
+              {isSubmitting ? t.signup.form.submitting : t.signup.form.submit}
             </button>
           </form>
 
@@ -226,8 +228,7 @@ export default function SignupForm() {
 
           <div className="mt-8 text-center text-sm text-white/60">
             <p>
-              En vous inscrivant, vous acceptez de recevoir nos communications sur la formation
-              Cash360.
+              {t.signup.form.disclaimer}
             </p>
           </div>
         </div>
