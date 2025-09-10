@@ -3,10 +3,5 @@
     "app/api/signup/route.ts": {
       "maxDuration": 10
     }
-  },
-  "env": {
-    "RESEND_API_KEY": "@resend_api_key",
-    "DESTINATION_EMAIL": "@destination_email",
-    "FROM_EMAIL": "@from_email"
   }
 }
