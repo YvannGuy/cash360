@@ -32,7 +32,7 @@ export default function Hero() {
                 
                 <div className="relative rounded-2xl overflow-hidden">
                   <iframe 
-                    src="https://player.vimeo.com/video/1117610452?badge=0&autopause=0&player_id=0&app_id=58479&title=0&byline=0&portrait=0&controls=1&loop=1&suggested=0&end_screen=0"
+                    src="https://player.vimeo.com/video/1117619242?badge=0&autopause=0&player_id=0&app_id=58479&title=0&byline=0&portrait=0&controls=1&loop=1&suggested=0&end_screen=0"
                     width="100%" 
                     height="500" 
                     frameBorder="0" 
@@ -157,7 +157,7 @@ export default function Hero() {
             
             <div className="relative rounded-2xl overflow-hidden">
               <iframe 
-                src="https://player.vimeo.com/video/1117610452?badge=0&autopause=0&player_id=0&app_id=58479&title=0&byline=0&portrait=0&controls=1&autoplay=1&loop=1&suggested=0&end_screen=0"
+                src="https://player.vimeo.com/video/1117619242?badge=0&autopause=0&player_id=0&app_id=58479&title=0&byline=0&portrait=0&controls=1&autoplay=1&loop=1&suggested=0&end_screen=0"
                 width="100%" 
                 height="500" 
                 frameBorder="0" 
