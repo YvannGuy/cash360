@@ -336,8 +336,6 @@ Les contributions sont les bienvenues ! Pour contribuer :
 Besoin d'aide ?
 
 - 📧 Email : support@cash360.com
-- 💬 Discord : [Rejoindre la communauté](#)
-- 📱 WhatsApp : +33 6 12 34 56 78
 - 🌐 Site web : [www.cash360.com](#)
 
 ---
