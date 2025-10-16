@@ -2,6 +2,8 @@
 
 <div align="center">
 
+<img src="public/images/logo/logofinal.png" alt="Cash360 Logo" width="300" />
+
 ![Cash360](https://img.shields.io/badge/Cash360-Formation%20Financière-yellow?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
@@ -11,7 +13,7 @@
 
 Une plateforme moderne de formation financière pour particuliers, entrepreneurs, pasteurs et églises.
 
-[🚀 Démo Live](#) | [📚 Documentation](#) | [💬 Support](#)
+[🚀 Démo Live](https://www.cash360.finance)
 
 </div>
 
