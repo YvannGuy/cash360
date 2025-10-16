@@ -19,11 +19,23 @@ export async function POST(request: NextRequest) {
     const phone = formData.get('phone') as string;
     const status = formData.get('status') as string;
 
+    console.log('Données reçues:', { fullName, email, phone, status });
+
     // Validation des données
     if (!fullName || !email || !phone || !status) {
+      console.error('Validation échouée:', { fullName, email, phone, status });
       return NextResponse.json(
         { error: 'Tous les champs sont requis' },
         { status: 400 }
+      );
+    }
+
+    // Vérification de la clé API Resend
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY manquante');
+      return NextResponse.json(
+        { error: 'Configuration email manquante' },
+        { status: 500 }
       );
     }
 
@@ -174,7 +186,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Erreur serveur:', error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { 
+        error: 'Erreur interne du serveur',
+        details: error instanceof Error ? error.message : 'Erreur inconnue'
+      },
       { status: 500 }
     );
   }

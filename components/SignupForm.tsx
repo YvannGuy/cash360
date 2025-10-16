@@ -79,9 +79,12 @@ export default function SignupForm() {
         setSubmitMessage(t.signup.form.success);
         setFormData({ fullName: '', email: '', phone: '', status: '' });
       } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Erreur API:', errorData);
         setSubmitMessage(t.signup.form.error);
       }
     } catch (error) {
+      console.error('Erreur réseau:', error);
       setSubmitMessage(t.signup.form.error);
     }
 
