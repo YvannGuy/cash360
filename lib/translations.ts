@@ -18,9 +18,9 @@ export const translations = {
     
     // Signup Form
     signup: {
-      title: "Commencez votre transformation financière",
-      subtitle: "Comme des milliers d'autres, changez dès aujourd'hui votre manière de voir et gérer l'argent",
-      socialProof: "personnes inscrites cette semaine",
+      title: "Réservez votre appel découverte gratuit",
+      subtitle: "Prenez 15 minutes pour découvrir comment Cash360 peut transformer votre relation à l'argent",
+      socialProof: "personnes ont réservé cette semaine",
       form: {
         fullName: "Nom complet",
         fullNamePlaceholder: "Votre nom complet",
@@ -40,7 +40,7 @@ export const translations = {
         submitting: "Inscription en cours...",
         success: "Inscription réussie ! Nous vous contacterons bientôt.",
         error: "Erreur lors de l'inscription. Veuillez réessayer.",
-        disclaimer: "En vous inscrivant, vous acceptez de recevoir nos communications sur la formation Cash360."
+        disclaimer: "En réservant un appel, vous acceptez de recevoir nos communications sur la formation Cash360."
       },
       notification: {
         title: "Nouvelle inscription !",
@@ -136,9 +136,9 @@ export const translations = {
     
     // Signup Form
     signup: {
-      title: "Start your financial transformation",
-      subtitle: "Like thousands of others, change today how you see and manage money",
-      socialProof: "people registered this week",
+      title: "Book your free discovery call",
+      subtitle: "Take 15 minutes to discover how Cash360 can transform your relationship with money",
+      socialProof: "people have booked this week",
       form: {
         fullName: "Full name",
         fullNamePlaceholder: "Your full name",
@@ -158,7 +158,7 @@ export const translations = {
         submitting: "Registering...",
         success: "Registration successful! We will contact you soon.",
         error: "Registration error. Please try again.",
-        disclaimer: "By registering, you agree to receive our communications about the Cash360 training."
+        disclaimer: "By booking a call, you agree to receive our communications about the Cash360 training."
       },
       notification: {
         title: "New registration!",
