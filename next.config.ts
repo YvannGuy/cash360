@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Suppression de output: "export" pour permettre les API routes
-  // output: "export", // Commenté pour Vercel deployment avec API routes
+  // Configuration pour déploiement statique (plus d'API routes)
+  output: "export",
   images: {
     unoptimized: true,
   },
@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   },
   // Corriger l'avertissement sur les lockfiles multiples
   outputFileTracingRoot: __dirname,
+  // Désactiver les API routes pour le déploiement statique
+  trailingSlash: true,
 };
 
 export default nextConfig;
