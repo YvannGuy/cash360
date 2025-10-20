@@ -1,6 +1,7 @@
 
 'use client';
 
+import Image from 'next/image';
 import { useLanguage } from '@/lib/LanguageContext';
 import LanguageSwitch from './LanguageSwitch';
 
@@ -12,9 +13,11 @@ export default function Header() {
       <div className="container mx-auto px-6 py-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <img 
+            <Image 
               src="https://static.readdy.ai/image/da957b73b52f8479bc0334fc9a75f115/278ed0c1279a8f73de226a782353c037.png"
               alt="Cash360"
+              width={80}
+              height={80}
               className="h-20 w-auto"
             />
             <div className="ml-4">

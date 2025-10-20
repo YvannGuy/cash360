@@ -1,6 +1,7 @@
 
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { useLanguage } from '@/lib/LanguageContext';
 import LanguageSwitch from './LanguageSwitch';
 
@@ -17,10 +18,13 @@ export default function Hero() {
       
       {/* Logo en haut */}
       <div className="absolute top-0 left-0 right-0 z-20 flex justify-center pt-4 sm:pt-8">
-        <img 
+        <Image 
           src="https://static.readdy.ai/image/da957b73b52f8479bc0334fc9a75f115/f52c7bde8663a1201da816853efea912.png"
           alt="Cash360"
+          width={200}
+          height={176}
           className="h-32 sm:h-40 md:h-44 w-auto"
+          priority
         />
       </div>
 

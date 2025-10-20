@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   typescript: {
     // ignoreBuildErrors: true,
   },
+  // Corriger l'avertissement sur les lockfiles multiples
+  outputFileTracingRoot: __dirname,
 };
 
 export default nextConfig;
