@@ -91,6 +91,9 @@ export async function POST(request: NextRequest) {
       signedUrls[`releve_${i + 1}`] = signedUrl.signedUrl
     }
 
+    // Fonction helper pour attendre entre les envois
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
     // Envoyer l'email admin
     const adminEmailHtml = generateAdminEmailHtml(validatedClientInfo, ticket, timestamp, signedUrls)
     await sendMail({
@@ -99,6 +102,9 @@ export async function POST(request: NextRequest) {
       html: adminEmailHtml
     })
 
+    // Attendre 1 seconde pour respecter les limites de rate
+    await delay(1000)
+
     // Envoyer l'email client
     const clientEmailHtml = generateClientEmailHtml(validatedClientInfo, ticket)
     await sendMail({
@@ -106,6 +112,9 @@ export async function POST(request: NextRequest) {
       subject: `Cash360 – Confirmation de réception de vos documents – ${ticket}`,
       html: clientEmailHtml
     })
+
+    // Attendre 1 seconde pour respecter les limites de rate
+    await delay(1000)
 
     // Envoyer l'email de notification de paiement à cash@cash360.finance
     const paymentNotificationHtml = generatePaymentNotificationHtml(validatedClientInfo, ticket)
