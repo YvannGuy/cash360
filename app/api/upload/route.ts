@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { v4 as uuidv4 } from 'uuid'
 import { clientInfoSchema, uploadSchema } from '@/lib/validation'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sendMail } from '@/lib/mail'
+
+// Générer un ticket court (5 chiffres + 1 lettre)
+function generateShortTicket(): string {
+  const numbers = Math.floor(10000 + Math.random() * 90000) // 10000-99999
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const letter = letters[Math.floor(Math.random() * letters.length)]
+  return `${numbers}${letter}`
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Générer un ticket unique
-    const ticket = uuidv4()
+    const ticket = generateShortTicket()
     const timestamp = new Date().toISOString()
 
     // Créer le dossier dans Supabase Storage
