@@ -241,52 +241,123 @@ function generateAdminEmailHtml(
 
 function generateClientEmailHtml(clientInfo: any, ticket: string): string {
   return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #1e293b, #1e40af); padding: 30px; border-radius: 10px; color: white; text-align: center; margin-bottom: 20px;">
-        <h1 style="margin: 0; font-size: 24px;">✅ Confirmation de réception</h1>
-        <p style="margin: 10px 0 0 0; opacity: 0.9;">Ticket: ${ticket}</p>
-      </div>
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
       
-      <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${clientInfo.prenom},</h2>
+      <!-- Header avec logo et ticket -->
+      <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center;">
+        <div style="width: 60px; height: 60px; background: #10b981; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="color: white; font-size: 24px; font-weight: bold;">✓</span>
+        </div>
+        <h1 style="margin: 0; font-size: 28px; color: #1f2937; font-weight: 600;">Confirmation de réception</h1>
+        <p style="margin: 10px 0 0 0; color: #6b7280; font-size: 16px;">Ticket: <strong style="color: #1f2937;">${ticket}</strong></p>
+      </div>
+
+      <!-- Contenu principal -->
+      <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         
-        <p style="color: #374151; line-height: 1.6;">
+        <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+          Bonjour <strong>${clientInfo.prenom}</strong>,<br><br>
           Merci pour votre confiance ! Nous avons bien reçu vos documents pour l'analyse approfondie de vos finances.
         </p>
-        
-        <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 20px 0;">
-          <h3 style="color: #1e40af; margin-top: 0;">📋 Prochaines étapes</h3>
-          <ul style="color: #374151; margin: 0; padding-left: 20px;">
-            <li style="margin-bottom: 8px;">Analyse approfondie de vos 3 relevés bancaires</li>
-            <li style="margin-bottom: 8px;">Détection d'éventuelles anomalies financières</li>
-            <li style="margin-bottom: 8px;">Élaboration de recommandations personnalisées</li>
-            <li>Retour sous <strong>48 à 72 heures ouvrées</strong></li>
-          </ul>
+
+        <!-- Prochaines étapes -->
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin-bottom: 20px; text-align: center;">Prochaines étapes</h2>
+          
+          <div style="display: flex; align-items: flex-start; margin-bottom: 15px;">
+            <div style="width: 32px; height: 32px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+              <span style="color: white; font-weight: bold; font-size: 14px;">1</span>
+            </div>
+            <div>
+              <h3 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">Analyse en cours</h3>
+              <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Examen approfondi de vos 3 relevés bancaires</p>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; margin-bottom: 15px;">
+            <div style="width: 32px; height: 32px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+              <span style="color: white; font-weight: bold; font-size: 14px;">2</span>
+            </div>
+            <div>
+              <h3 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">Détection d'anomalies</h3>
+              <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Identification des points d'amélioration</p>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start;">
+            <div style="width: 32px; height: 32px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+              <span style="color: white; font-weight: bold; font-size: 14px;">3</span>
+            </div>
+            <div>
+              <h3 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">Recommandations</h3>
+              <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Solutions personnalisées pour vos finances</p>
+            </div>
+          </div>
         </div>
-        
-        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0;">
-          <p style="margin: 0; color: #92400e;">
-            💡 <strong>Important:</strong> Vos documents sont traités de manière confidentielle et sécurisée.
+
+        <!-- Délai de traitement -->
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 30px;">
+          <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; margin-right: 12px; color: #3b82f6;">
+              <svg style="width: 100%; height: 100%;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 600;">Délai de traitement</h3>
+              <p style="margin: 8px 0 0 0; color: #1e40af; font-size: 14px; line-height: 1.5;">
+                Nous analysons vos relevés et revenons vers vous sous <strong>48 à 72 heures ouvrées</strong> avec un <strong>compte-rendu détaillé</strong> et des <strong>recommandations personnalisées</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Besoin d'aide ?</h3>
+          <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 14px;">
+            Pour toute question concernant votre dossier ou l'analyse :
+          </p>
+          <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; margin-right: 8px; color: #6b7280;">
+              <svg style="width: 100%; height: 100%;" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+              </svg>
+            </div>
+            <a href="mailto:contact@cash360.finance" style="color: #3b82f6; text-decoration: none; font-weight: 500;">contact@cash360.finance</a>
+          </div>
+          <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 12px;">
+            Référencez votre ticket <strong>${ticket}</strong> dans votre email
           </p>
         </div>
-        
-        <div style="text-align: center; margin: 20px 0;">
-          <p style="color: #6b7280; font-size: 14px;">
-            <strong>Mode de paiement:</strong> ${clientInfo.paymentMethod === 'virement' ? 'Virement bancaire' : 'PayPal'}<br>
-            <strong>Montant:</strong> 59,99 €
-          </p>
+
+        <!-- Récapitulatif -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+          <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Récapitulatif</h3>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Service :</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px;">Analyse approfondie de vos finances</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Montant :</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px;">59,99 €</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Ticket :</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px; font-family: monospace;">${ticket}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #6b7280; font-size: 14px;">Statut :</span>
+            <span style="color: #10b981; font-weight: 500; font-size: 14px;">En cours de traitement</span>
+          </div>
         </div>
-        
-        <div style="text-align: center; margin-top: 30px;">
-          <p style="color: #374151;">
-            Pour toute question, contactez-nous :<br>
-            <a href="mailto:contact@cash360.finance" style="color: #3b82f6;">contact@cash360.finance</a>
-          </p>
-        </div>
+
       </div>
-      
+
+      <!-- Footer -->
       <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
-        <p>Cash360 - Analyse financière personnalisée</p>
+        <p style="margin: 0;">Cash360 - Analyse financière personnalisée</p>
       </div>
     </div>
   `
