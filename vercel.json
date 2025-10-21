@@ -1,7 +1,7 @@
 {
   "functions": {
-    "app/api/signup/route.ts": {
-      "maxDuration": 10
+    "app/api/upload/route.ts": {
+      "maxDuration": 30
     }
   }
 }
