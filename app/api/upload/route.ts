@@ -28,7 +28,6 @@ export async function POST(request: NextRequest) {
       prenom: formData.get('prenom') as string,
       nom: formData.get('nom') as string,
       email: formData.get('email') as string,
-      telephone: formData.get('telephone') as string || undefined,
       message: formData.get('message') as string || undefined,
       paymentMethod: formData.get('paymentMethod') as 'virement' | 'paypal',
       consentement: formData.get('consentement') === 'true'
@@ -39,21 +38,12 @@ export async function POST(request: NextRequest) {
 
     // Extraire les fichiers
     const relevesFiles = formData.getAll('releves') as File[]
-    const virementJustificatif = formData.get('virementJustificatif') as File | null
 
     // Validation des fichiers
     uploadSchema.parse({
       files: relevesFiles,
-      virementJustificatif: virementJustificatif || undefined
+      virementJustificatif: undefined
     })
-
-    // Validation spécifique pour le mode virement
-    if (validatedClientInfo.paymentMethod === 'virement' && !virementJustificatif) {
-      return NextResponse.json(
-        { error: 'Le justificatif de virement est requis pour le paiement par virement' },
-        { status: 400 }
-      )
-    }
 
     // Générer un ticket unique
     const ticket = generateShortTicket()
@@ -84,26 +74,6 @@ export async function POST(request: NextRequest) {
       uploadedFiles.push(filePath)
     }
 
-    // Upload du justificatif de virement si présent
-    let virementPath: string | null = null
-    if (virementJustificatif) {
-      const fileName = `justificatif_virement_${virementJustificatif.name}`
-      const filePath = `${folderPath}/${fileName}`
-      
-      const { error: uploadError } = await supabaseAdmin.storage
-        .from('releves')
-        .upload(filePath, virementJustificatif, {
-          contentType: virementJustificatif.type,
-          upsert: false
-        })
-
-      if (uploadError) {
-        console.error('Erreur upload justificatif:', uploadError)
-        throw new Error(`Erreur lors de l'upload du justificatif de virement: ${uploadError.message}`)
-      }
-
-      virementPath = filePath
-    }
 
     // Générer les URLs signées pour l'admin (expiration 15 minutes)
     const signedUrls: { [key: string]: string } = {}
@@ -119,19 +89,6 @@ export async function POST(request: NextRequest) {
       }
 
       signedUrls[`releve_${i + 1}`] = signedUrl.signedUrl
-    }
-
-    if (virementPath) {
-      const { data: signedUrl, error: urlError } = await supabaseAdmin.storage
-        .from('releves')
-        .createSignedUrl(virementPath, 15 * 60) // 15 minutes
-
-      if (urlError) {
-        console.error('Erreur génération URL signée justificatif:', urlError)
-        throw new Error('Erreur lors de la génération de l\'URL pour le justificatif')
-      }
-
-      signedUrls.justificatif_virement = signedUrl.signedUrl
     }
 
     // Envoyer l'email admin
@@ -194,12 +151,6 @@ function generateAdminEmailHtml(
         <div style="margin-bottom: 15px;">
           <strong>Email:</strong> ${clientInfo.email}
         </div>
-        
-        ${clientInfo.telephone ? `
-        <div style="margin-bottom: 15px;">
-          <strong>Téléphone:</strong> ${clientInfo.telephone}
-        </div>
-        ` : ''}
         
         <div style="margin-bottom: 15px;">
           <strong>Mode de paiement:</strong> ${paymentMethodText}

@@ -10,7 +10,6 @@ interface FormData {
   prenom: string
   nom: string
   email: string
-  telephone: string
   message: string
   paymentMethod: 'virement' | 'paypal' | ''
   consentement: boolean
@@ -24,14 +23,12 @@ export default function AnalyseFinancierePage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [relevesFiles, setRelevesFiles] = useState<File[]>([])
-  const [virementJustificatif, setVirementJustificatif] = useState<File | null>(null)
   const [errors, setErrors] = useState<FormErrors>({})
   
   const [formData, setFormData] = useState<FormData>({
     prenom: '',
     nom: '',
     email: '',
-    telephone: '',
     message: '',
     paymentMethod: '',
     consentement: false
@@ -55,11 +52,6 @@ export default function AnalyseFinancierePage() {
     setErrors(prev => ({ ...prev, paymentMethod: '' }))
   }
 
-  const handleVirementJustificatifChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null
-    setVirementJustificatif(file)
-    setErrors(prev => ({ ...prev, virementJustificatif: '' }))
-  }
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -67,7 +59,6 @@ export default function AnalyseFinancierePage() {
     try {
       clientInfoSchema.parse({
         ...formData,
-        telephone: formData.telephone || undefined,
         message: formData.message || undefined
       })
     } catch (error: any) {
@@ -79,10 +70,6 @@ export default function AnalyseFinancierePage() {
     // Validation spécifique pour les fichiers
     if (relevesFiles.length !== 3) {
       newErrors.releves = 'Vous devez téléverser exactement 3 relevés'
-    }
-
-    if (formData.paymentMethod === 'virement' && !virementJustificatif) {
-      newErrors.virementJustificatif = 'Le justificatif de virement est requis'
     }
 
     setErrors(newErrors)
@@ -114,10 +101,6 @@ export default function AnalyseFinancierePage() {
       relevesFiles.forEach(file => {
         submitFormData.append('releves', file)
       })
-      
-      if (virementJustificatif) {
-        submitFormData.append('virementJustificatif', virementJustificatif)
-      }
       
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -196,23 +179,6 @@ export default function AnalyseFinancierePage() {
                     <div><strong>Banque :</strong> Revolut Bank UAB</div>
                     <div><strong>Adresse :</strong> 10 avenue Kléber, 75116 Paris, France</div>
                   </div>
-                  
-                  <div className="mt-4">
-                    <label htmlFor="virementJustificatif" className="block text-sm font-medium text-gray-700 mb-2">
-                      Justificatif de virement <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="virementJustificatif"
-                      name="virementJustificatif"
-                      type="file"
-                      accept=".pdf,.png,.jpg,.jpeg"
-                      onChange={handleVirementJustificatifChange}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
-                    {errors.virementJustificatif && (
-                      <p className="text-sm text-red-600 mt-1">{errors.virementJustificatif}</p>
-                    )}
-                  </div>
                 </div>
               )}
               
@@ -283,15 +249,6 @@ export default function AnalyseFinancierePage() {
                 value={formData.email}
                 onChange={handleInputChange}
                 error={errors.email}
-              />
-              
-              <Field
-                label="Téléphone"
-                name="telephone"
-                type="tel"
-                value={formData.telephone}
-                onChange={handleInputChange}
-                error={errors.telephone}
               />
             </div>
             
