@@ -107,6 +107,14 @@ export async function POST(request: NextRequest) {
       html: clientEmailHtml
     })
 
+    // Envoyer l'email de notification de paiement à cash@cash360.finance
+    const paymentNotificationHtml = generatePaymentNotificationHtml(validatedClientInfo, ticket)
+    await sendMail({
+      to: 'cash@cash360.finance',
+      subject: `[Cash360] Nouveau paiement reçu – ${validatedClientInfo.prenom} ${validatedClientInfo.nom} – ${ticket}`,
+      html: paymentNotificationHtml
+    })
+
     return NextResponse.json({ ticket })
 
   } catch (error) {
@@ -309,6 +317,143 @@ function generateClientEmailHtml(clientInfo: any, ticket: string): string {
       <!-- Footer -->
       <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
         <p style="margin: 0;">Cash360 - Analyse financière personnalisée</p>
+      </div>
+    </div>
+  `
+}
+
+function generatePaymentNotificationHtml(clientInfo: any, ticket: string): string {
+  const paymentMethodText = clientInfo.paymentMethod === 'virement' ? 'Virement bancaire' : 'PayPal'
+  const paymentStatus = clientInfo.paymentMethod === 'virement' 
+    ? 'En attente de réception' 
+    : 'PayPal - Paiement effectué'
+  
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
+      
+      <!-- Header avec notification de paiement -->
+      <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center;">
+        <div style="width: 60px; height: 60px; background: #10b981; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="color: white; font-size: 24px; font-weight: bold;">💰</span>
+        </div>
+        <h1 style="margin: 0; font-size: 28px; color: #1f2937; font-weight: 600;">Nouveau paiement reçu</h1>
+        <p style="margin: 10px 0 0 0; color: #6b7280; font-size: 16px;">Ticket: <strong style="color: #1f2937;">${ticket}</strong></p>
+      </div>
+
+      <!-- Contenu principal -->
+      <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        
+        <!-- Informations client -->
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin-bottom: 20px;">Informations client</h2>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <div style="margin-bottom: 12px;">
+              <strong style="color: #1f2937;">Nom complet:</strong>
+              <span style="color: #374151; margin-left: 8px;">${clientInfo.prenom} ${clientInfo.nom}</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <strong style="color: #1f2937;">Email:</strong>
+              <span style="color: #374151; margin-left: 8px;">${clientInfo.email}</span>
+            </div>
+            ${clientInfo.message ? `
+            <div style="margin-bottom: 12px;">
+              <strong style="color: #1f2937;">Message:</strong>
+              <div style="background: white; padding: 10px; border-radius: 5px; margin-top: 5px; color: #374151;">
+                ${clientInfo.message}
+              </div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Informations de paiement -->
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin-bottom: 20px;">Informations de paiement</h2>
+          
+          <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="color: #1e40af; font-weight: 600;">Mode de paiement:</span>
+              <span style="color: #1e40af; font-weight: 500;">${paymentMethodText}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="color: #1e40af; font-weight: 600;">Montant:</span>
+              <span style="color: #1e40af; font-weight: 500;">59,99 €</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #1e40af; font-weight: 600;">Statut:</span>
+              <span style="color: #10b981; font-weight: 500;">${paymentStatus}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirmation des documents -->
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin-bottom: 20px;">Documents reçus</h2>
+          
+          <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981;">
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+              <div style="width: 20px; height: 20px; margin-right: 12px; color: #10b981;">
+                <svg style="width: 100%; height: 100%;" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <span style="color: #065f46; font-weight: 600;">3 relevés bancaires téléchargés</span>
+            </div>
+            <p style="margin: 0; color: #065f46; font-size: 14px;">
+              Le client a bien téléchargé ses 3 derniers relevés bancaires pour l'analyse approfondie.
+            </p>
+          </div>
+        </div>
+
+        <!-- Actions requises -->
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin-bottom: 20px;">Actions requises</h2>
+          
+          <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <div style="margin-bottom: 15px;">
+              <h3 style="margin: 0; color: #92400e; font-size: 16px; font-weight: 600;">1. Vérifier le paiement</h3>
+              <p style="margin: 5px 0 0 0; color: #92400e; font-size: 14px;">
+                ${clientInfo.paymentMethod === 'virement' 
+                  ? 'Vérifier la réception du virement bancaire sur le compte Revolut'
+                  : 'Le paiement PayPal a été effectué automatiquement'}
+              </p>
+            </div>
+            <div>
+              <h3 style="margin: 0; color: #92400e; font-size: 16px; font-weight: 600;">2. Commencer l'analyse</h3>
+              <p style="margin: 5px 0 0 0; color: #92400e; font-size: 14px;">
+                Accéder aux documents via l'email admin pour commencer l'analyse des relevés
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Récapitulatif -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+          <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Récapitulatif</h3>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Service :</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px;">Analyse approfondie de vos finances</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Ticket :</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px; font-family: monospace;">${ticket}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Date :</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px;">${new Date().toLocaleString('fr-FR')}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #6b7280; font-size: 14px;">Statut :</span>
+            <span style="color: #10b981; font-weight: 500; font-size: 14px;">Paiement reçu - Prêt pour analyse</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
+        <p style="margin: 0;">Cash360 - Notification de paiement automatique</p>
       </div>
     </div>
   `
