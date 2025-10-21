@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     // Envoyer l'email admin
     const adminEmailHtml = generateAdminEmailHtml(validatedClientInfo, ticket, timestamp, signedUrls)
     await sendMail({
-      to: process.env.MAIL_ADMIN || 'cash@cash360.finance',
+      to: process.env.MAIL_ADMIN || process.env.DESTINATION_EMAIL || 'cash@cash360.finance',
       subject: `[Cash360] Nouveau dossier d'analyse – ${validatedClientInfo.prenom} ${validatedClientInfo.nom} – ${ticket}`,
       html: adminEmailHtml
     })

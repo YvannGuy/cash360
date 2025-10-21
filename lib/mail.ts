@@ -11,7 +11,7 @@ export interface MailOptions {
 export async function sendMail({ to, subject, html }: MailOptions) {
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.MAIL_FROM || 'Cash360 <no-reply@cash360.finance>',
+      from: process.env.MAIL_FROM || process.env.FROM_EMAIL || 'Cash360 <no-reply@cash360.finance>',
       to: [to],
       subject,
       html,
