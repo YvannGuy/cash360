@@ -30,7 +30,7 @@ export default function AnalyseFinancierePage() {
     nom: '',
     email: '',
     message: '',
-    modePaiement: '',
+    modePaiement: 'paypal', // Valeur par défaut
     consentement: false
   })
 
@@ -90,6 +90,7 @@ export default function AnalyseFinancierePage() {
       const submitFormData = new FormData()
       
       // Ajouter les données du formulaire
+      console.log('📋 Données du formulaire:', formData)
       Object.entries(formData).forEach(([key, value]) => {
         if (typeof value === 'boolean') {
           submitFormData.append(key, value.toString())
@@ -133,6 +134,41 @@ export default function AnalyseFinancierePage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Analyse approfondie de vos finances
           </h1>
+        </div>
+
+        {/* Étapes du processus */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">📋 Étapes du processus</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">1</div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Entrer vos informations</p>
+                <p className="text-xs text-gray-600">Nom, email, message</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">2</div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Mode de paiement</p>
+                <p className="text-xs text-gray-600">Régler la somme de 39,99€</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">3</div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Télécharger vos relevés</p>
+                <p className="text-xs text-gray-600">3 derniers relevés bancaires</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">✓</div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Finaliser</p>
+                <p className="text-xs text-gray-600">Envoyer mes relevés</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Introduction */}
@@ -214,6 +250,25 @@ export default function AnalyseFinancierePage() {
                 </label>
               </div>
               
+              {formData.modePaiement === 'paypal' && (
+                <div className="ml-7 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800 mb-3">
+                    Cliquez sur le bouton ci-dessous pour effectuer votre paiement PayPal :
+                  </p>
+                  <a
+                    href="https://paypal.me/mbde510"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.068-.405c-.78-4.09-3.356-5.76-7.13-5.76H5.998c-.524 0-.968.382-1.05.9L2.47 20.597h4.606l1.12-7.106c.082-.518.526-.9 1.05-.9h2.19c4.298 0 7.664-1.747 8.647-6.797.03-.149.054-.294.077-.437.292-1.867-.002-3.137-1.012-4.287z"/>
+                    </svg>
+                    Payer avec PayPal
+                  </a>
+                </div>
+              )}
+              
               <div className="flex items-center">
                 <input
                   id="virement"
@@ -228,6 +283,19 @@ export default function AnalyseFinancierePage() {
                   Virement bancaire
                 </label>
               </div>
+              
+              {formData.modePaiement === 'virement' && (
+                <div className="ml-7 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-green-800 mb-3">Virement bancaire</h3>
+                  <div className="text-sm text-green-800 space-y-1">
+                    <p><strong>Bénéficiaire :</strong> Myriam Konan</p>
+                    <p><strong>IBAN :</strong> FR76 2823 3000 0102 8891 4178 672</p>
+                    <p><strong>BIC :</strong> REVOFRP2</p>
+                    <p><strong>Banque :</strong> Revolut Bank UAB</p>
+                    <p><strong>Adresse :</strong> 10 avenue Kléber, 75116 Paris, France</p>
+                  </div>
+                </div>
+              )}
             </div>
             
             {errors.modePaiement && (

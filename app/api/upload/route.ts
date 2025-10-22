@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       nom: formData.get('nom') as string,
       email: formData.get('email') as string,
       message: formData.get('message') as string || undefined,
+      modePaiement: formData.get('modePaiement') as string,
       consentement: formData.get('consentement') === 'true'
     }
 
@@ -293,7 +294,7 @@ function generateClientEmailHtml(clientInfo: any, ticket: string): string {
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
             <span style="color: #6b7280; font-size: 14px;">Montant :</span>
-            <span style="color: #1f2937; font-weight: 500; font-size: 14px;">59,99 €</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px;">39,99 €</span>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
             <span style="color: #6b7280; font-size: 14px;">Ticket :</span>
