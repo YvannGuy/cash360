@@ -17,7 +17,7 @@ export default function LoginPage() {
     // Détecter l'environnement automatiquement
     const isProduction = window.location.hostname !== 'localhost'
     const redirectUrl = isProduction 
-      ? `${window.location.origin}/auth/callback`
+      ? 'https://cash360.finance/auth/callback'
       : 'http://localhost:3000/auth/callback'
     
     console.log('🔗 URL de redirection:', redirectUrl)
