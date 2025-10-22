@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
       nom: formData.get('nom') as string,
       email: formData.get('email') as string,
       message: formData.get('message') as string || undefined,
-      paymentMethod: formData.get('paymentMethod') as 'virement' | 'paypal',
       consentement: formData.get('consentement') === 'true'
     }
 
@@ -137,14 +136,12 @@ function generateAdminEmailHtml(
   ticket: string,
   timestamp: string
 ): string {
-  const paymentMethodText = clientInfo.paymentMethod === 'virement' ? 'Virement bancaire' : 'PayPal'
-  
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1e293b, #1e40af); padding: 30px; border-radius: 10px; color: white; text-align: center; margin-bottom: 20px;">
-        <h1 style="margin: 0; font-size: 24px;">💰 Nouveau paiement reçu - Cash360</h1>
+        <h1 style="margin: 0; font-size: 24px;">📄 Nouveaux documents reçus - Cash360</h1>
         <p style="margin: 10px 0 0 0; opacity: 0.9;">Ticket: ${ticket}</p>
-        <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">Documents + Notification de paiement</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">Documents pour analyse financière</p>
       </div>
       
       <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -156,19 +153,6 @@ function generateAdminEmailHtml(
         
         <div style="margin-bottom: 15px;">
           <strong>Email:</strong> ${clientInfo.email}
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-          <strong>Mode de paiement:</strong> ${paymentMethodText}
-        </div>
-        
-        <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 20px 0;">
-          <h3 style="color: #1e40af; margin-top: 0; font-size: 16px;">💰 Notification de paiement</h3>
-          <p style="margin: 8px 0; color: #1e40af; font-size: 14px;">
-            <strong>Montant:</strong> 59,99 €<br>
-            <strong>Statut:</strong> ${clientInfo.paymentMethod === 'virement' ? 'En attente de réception (vérifier compte Revolut)' : 'PayPal - Paiement effectué'}<br>
-            <strong>Action requise:</strong> ${clientInfo.paymentMethod === 'virement' ? 'Vérifier la réception du virement' : 'Paiement automatique confirmé'}
-          </p>
         </div>
         
         ${clientInfo.message ? `

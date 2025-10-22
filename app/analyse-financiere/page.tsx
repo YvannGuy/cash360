@@ -11,7 +11,6 @@ interface FormData {
   nom: string
   email: string
   message: string
-  paymentMethod: 'virement' | 'paypal' | ''
   consentement: boolean
 }
 
@@ -30,7 +29,6 @@ export default function AnalyseFinancierePage() {
     nom: '',
     email: '',
     message: '',
-    paymentMethod: '',
     consentement: false
   })
 
@@ -47,10 +45,6 @@ export default function AnalyseFinancierePage() {
     }
   }
 
-  const handlePaymentMethodChange = (method: 'virement' | 'paypal') => {
-    setFormData(prev => ({ ...prev, paymentMethod: method }))
-    setErrors(prev => ({ ...prev, paymentMethod: '' }))
-  }
 
 
   const validateForm = (): boolean => {
@@ -132,91 +126,22 @@ export default function AnalyseFinancierePage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Analyse approfondie de vos finances
           </h1>
-          <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-lg font-semibold">
-            59,99 €
-          </div>
         </div>
 
         {/* Introduction */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
           <div className="prose max-w-none">
             <p className="text-gray-700 leading-relaxed">
-              Bonjour,<br/><br/>
-              Je suis très heureuse d'avoir pu échanger avec vous concernant l'état de vos finances.<br/><br/>
-              Comme évoqué par téléphone, j'aurai besoin de vos <strong>trois derniers relevés de compte</strong> afin d'analyser en profondeur vos dépenses. Cela me permettra de vous accompagner au mieux, de détecter d'éventuelles <strong>anomalies financières</strong> et de vous proposer la <strong>solution</strong> et le <strong>module d'accompagnement</strong> les plus adaptés pour redonner un nouveau souffle à vos finances.
+              Merci d'avoir pris rendez-vous pour votre session Zoom de 30 minutes avec Pasteur Myriam Konan.<br/><br/>
+              Le fait que vous ayez confirmé et réglé cette séance démontre votre détermination à reprendre le contrôle de vos finances et à cheminer vers votre liberté financière.<br/><br/>
+              Afin de préparer au mieux notre échange, merci de rassembler vos <strong>trois derniers relevés bancaires</strong> (ou un aperçu de vos revenus et dépenses mensuelles).<br/><br/>
+              Ces éléments me permettront d'analyser votre situation avec précision et de vous proposer des <strong>recommandations personnalisées</strong>, adaptées à vos besoins et à vos objectifs.
             </p>
           </div>
         </div>
 
         {/* Formulaire */}
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Mode de paiement */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Mode de paiement</h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <input
-                  id="virement"
-                  name="paymentMethod"
-                  type="radio"
-                  checked={formData.paymentMethod === 'virement'}
-                  onChange={() => handlePaymentMethodChange('virement')}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                />
-                <label htmlFor="virement" className="ml-3 text-sm font-medium text-gray-700">
-                  Virement bancaire
-                </label>
-              </div>
-              
-              {formData.paymentMethod === 'virement' && (
-                <div className="ml-7 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h3 className="font-medium text-gray-900 mb-3">Informations bancaires :</h3>
-                  <div className="space-y-2 text-sm">
-                    <div><strong>Bénéficiaire :</strong> Myriam Konan</div>
-                    <div><strong>IBAN :</strong> FR76 2823 3000 0102 8891 4178 672</div>
-                    <div><strong>BIC :</strong> REVOFRP2</div>
-                    <div><strong>Banque :</strong> Revolut Bank UAB</div>
-                    <div><strong>Adresse :</strong> 10 avenue Kléber, 75116 Paris, France</div>
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex items-center">
-                <input
-                  id="paypal"
-                  name="paymentMethod"
-                  type="radio"
-                  checked={formData.paymentMethod === 'paypal'}
-                  onChange={() => handlePaymentMethodChange('paypal')}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                />
-                <label htmlFor="paypal" className="ml-3 text-sm font-medium text-gray-700">
-                  PayPal
-                </label>
-              </div>
-              
-              {formData.paymentMethod === 'paypal' && (
-                <div className="ml-7 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-600 mb-3">
-                    Après paiement, revenez sur cette page pour envoyer vos relevés.
-                  </p>
-                  <a
-                    href="https://paypal.me/mbde510/59.99"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    Payer avec PayPal
-                  </a>
-                </div>
-              )}
-              
-              {errors.paymentMethod && (
-                <p className="text-sm text-red-600">{errors.paymentMethod}</p>
-              )}
-            </div>
-          </div>
 
           {/* Informations personnelles */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

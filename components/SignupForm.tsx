@@ -53,11 +53,7 @@ export default function SignupForm() {
 
           {/* Widget Calendly */}
           <div id="cash360-signup" className="calendly-container">
-            <div 
-              className="calendly-inline-widget" 
-              data-url="https://calendly.com/cash360/15min" 
-              style={{minWidth: '320px', height: '700px'}}
-            ></div>
+            <div className="calendly-inline-widget" data-url="https://calendly.com/cash360/30" style={{minWidth: '320px', height: '700px'}}></div>
           </div>
 
           <div className="mt-8 text-center text-sm text-white/60">
