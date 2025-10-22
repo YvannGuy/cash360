@@ -13,8 +13,15 @@ export default function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    // Forcer l'URL locale pour le développement
-    const redirectUrl = 'http://localhost:3000/auth/callback'
+    
+    // Détecter l'environnement automatiquement
+    const isProduction = window.location.hostname !== 'localhost'
+    const redirectUrl = isProduction 
+      ? `${window.location.origin}/auth/callback`
+      : 'http://localhost:3000/auth/callback'
+    
+    console.log('🔗 URL de redirection:', redirectUrl)
+    
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectUrl },
