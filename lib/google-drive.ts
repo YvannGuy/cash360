@@ -122,7 +122,7 @@ export async function createShareableLink(fileId: string): Promise<string> {
 
 // Fonction principale pour uploader les relevés
 export async function uploadRelevesToDrive(relevesFiles: File[], ticket: string): Promise<{ [key: string]: string }> {
-  const driveClient = getGoogleDriveClient()
+  // const driveClient = getGoogleDriveClient()
   const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID
   
   if (!parentFolderId) {

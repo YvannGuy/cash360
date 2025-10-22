@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     if (!supabaseAdmin) {
       return NextResponse.json(
@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
     }
     
     // Recherche récursive avec permissions admin
-    const getAllFiles = async (path = '') => {
-      const { data, error } = await supabaseAdmin.storage
+    const getAllFiles = async (path = ''): Promise<any[]> => {
+      const { data, error } = await supabaseAdmin!.storage
         .from('releves')
         .list(path, { limit: 1000, offset: 0 })
       

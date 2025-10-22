@@ -1,18 +1,13 @@
 'use client'
-import { useEffect, useState, useMemo } from 'react'
-import { createClientBrowser } from '@/lib/supabase'
+import { useEffect, useState } from 'react'
 
 type Props = { userId: string; email: string }
-type FileRow = { name: string; id?: string; created_at?: string; updated_at?: string }
+type FileRow = { name: string; id?: string; created_at?: string; updated_at?: string; path: string; size?: number }
 
 export default function FilesClient({ userId }: Props) {
-  // Créer une seule instance de Supabase client
-  const supabase = useMemo(() => createClientBrowser(), [])
   const [rows, setRows] = useState<FileRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const prefix = `releves` // Les fichiers sont dans releves/releves/
 
   useEffect(() => {
     (async () => {
@@ -36,7 +31,7 @@ export default function FilesClient({ userId }: Props) {
         
       } catch (error) {
         console.error('❌ Erreur lors de la recherche:', error)
-        setError(`Erreur: ${error.message}`)
+        setError(`Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
       }
       
       setLoading(false)
@@ -67,7 +62,7 @@ export default function FilesClient({ userId }: Props) {
       }
     } catch (error) {
       console.error('❌ Erreur lors du téléchargement:', error)
-      alert(`Erreur: ${error.message}`)
+      alert(`Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
     }
   }
 
