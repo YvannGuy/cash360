@@ -132,10 +132,7 @@ export default function AnalyseFinancierePage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
           <div className="prose max-w-none">
             <p className="text-gray-700 leading-relaxed">
-              Merci d'avoir pris rendez-vous pour votre session Zoom de 30 minutes avec Pasteur Myriam Konan.<br/><br/>
-              Le fait que vous ayez confirmé et réglé cette séance démontre votre détermination à reprendre le contrôle de vos finances et à cheminer vers votre liberté financière.<br/><br/>
-              Afin de préparer au mieux notre échange, merci de rassembler vos <strong>trois derniers relevés bancaires</strong> (ou un aperçu de vos revenus et dépenses mensuelles).<br/><br/>
-              Ces éléments me permettront d'analyser votre situation avec précision et de vous proposer des <strong>recommandations personnalisées</strong>, adaptées à vos besoins et à vos objectifs.
+              Je suis très heureuse d'avoir pu échanger avec vous concernant l'état de vos finances. Comme évoqué par téléphone, j'aurai besoin de vos trois derniers relevés de compte afin d'analyser en profondeur vos dépenses. Cela me permettra de vous accompagner au mieux, de détecter d'éventuelles anomalies financières et de vous proposer la solution et le module d'accompagnement les plus adaptés pour redonner un nouveau souffle à vos finances.
             </p>
           </div>
         </div>
