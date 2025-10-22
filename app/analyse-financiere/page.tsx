@@ -11,6 +11,7 @@ interface FormData {
   nom: string
   email: string
   message: string
+  modePaiement: string
   consentement: boolean
 }
 
@@ -29,10 +30,11 @@ export default function AnalyseFinancierePage() {
     nom: '',
     email: '',
     message: '',
+    modePaiement: '',
     consentement: false
   })
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     setFormData(prev => ({
       ...prev,
@@ -64,6 +66,11 @@ export default function AnalyseFinancierePage() {
     // Validation spécifique pour les fichiers
     if (relevesFiles.length !== 3) {
       newErrors.releves = 'Vous devez téléverser exactement 3 relevés'
+    }
+
+    // Validation du mode de paiement
+    if (!formData.modePaiement) {
+      newErrors.modePaiement = 'Veuillez sélectionner un mode de paiement'
     }
 
     setErrors(newErrors)
@@ -185,6 +192,47 @@ export default function AnalyseFinancierePage() {
                 placeholder="Ajoutez toute information que vous jugez utile pour l'analyse..."
               />
             </div>
+          </div>
+
+          {/* Mode de paiement */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Mode de paiement</h2>
+            
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <input
+                  id="paypal"
+                  name="modePaiement"
+                  type="radio"
+                  value="paypal"
+                  checked={formData.modePaiement === 'paypal'}
+                  onChange={handleInputChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="paypal" className="ml-3 text-sm font-medium text-gray-700">
+                  PayPal
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  id="virement"
+                  name="modePaiement"
+                  type="radio"
+                  value="virement"
+                  checked={formData.modePaiement === 'virement'}
+                  onChange={handleInputChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="virement" className="ml-3 text-sm font-medium text-gray-700">
+                  Virement bancaire
+                </label>
+              </div>
+            </div>
+            
+            {errors.modePaiement && (
+              <p className="text-sm text-red-600 mt-2">{errors.modePaiement}</p>
+            )}
           </div>
 
           {/* Upload des relevés */}

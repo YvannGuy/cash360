@@ -155,6 +155,10 @@ function generateAdminEmailHtml(
           <strong>Email:</strong> ${clientInfo.email}
         </div>
         
+        <div style="margin-bottom: 15px;">
+          <strong>Mode de paiement:</strong> ${clientInfo.modePaiement === 'paypal' ? 'PayPal' : 'Virement bancaire'}
+        </div>
+        
         ${clientInfo.message ? `
         <div style="margin-bottom: 20px;">
           <strong>Message:</strong><br>
