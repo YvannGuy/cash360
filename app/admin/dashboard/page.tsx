@@ -255,48 +255,6 @@ export default function AdminDashboardPage() {
     loadAllAnalyses() // Recharger les analyses pour afficher le PDF
   }
 
-  const handleCheckStorage = async () => {
-    try {
-      // Vérifier le storage
-      const storageResponse = await fetch('/api/test/check-storage')
-      const storageData = await storageResponse.json()
-      console.log('Diagnostic Storage:', storageData)
-      
-      if (!storageData.success) {
-        // Si le bucket n'existe pas, essayer de le créer
-        if (storageData.error?.includes('bucket "analyses" n\'existe pas')) {
-          const createResponse = await fetch('/api/test/create-bucket', { method: 'POST' })
-          const createData = await createResponse.json()
-          console.log('Création bucket:', createData)
-          alert(createData.success ? 'Bucket créé avec succès!' : `Erreur création bucket: ${createData.error}`)
-        } else {
-          alert(`Erreur Storage: ${storageData.error}`)
-        }
-      } else {
-        alert('Storage OK! Buckets disponibles: ' + storageData.buckets?.map((b: any) => b.name).join(', '))
-      }
-    } catch (error) {
-      console.error('Erreur lors du diagnostic storage:', error)
-      alert('Erreur lors du diagnostic storage')
-    }
-  }
-
-  const handleTestPdfUpload = async () => {
-    try {
-      const response = await fetch('/api/test/test-pdf-upload', { method: 'POST' })
-      const data = await response.json()
-      console.log('Test PDF Upload:', data)
-      
-      if (data.success) {
-        alert('Test PDF Upload réussi! Le bucket fonctionne correctement.')
-      } else {
-        alert(`Erreur Test PDF: ${data.error}`)
-      }
-    } catch (error) {
-      console.error('Erreur lors du test PDF upload:', error)
-      alert('Erreur lors du test PDF upload')
-    }
-  }
 
   const getPdfFileName = (pdfUrl: string) => {
     try {
@@ -418,146 +376,145 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       {/* Header Admin */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
               <button
                 onClick={() => router.push('/')}
-                className="cursor-pointer"
+                className="cursor-pointer group"
               >
                 <Image
                   src="/images/logo/logofinal.png"
                   alt="Cash360 Admin"
                   width={120}
                   height={120}
-                  className="h-16 w-auto hover:opacity-80 transition-opacity duration-200"
+                  className="h-12 w-auto group-hover:scale-105 transition-transform duration-200"
                 />
               </button>
             </div>
 
-            {/* Titre et informations admin */}
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <h1 className="text-xl font-bold text-gray-900">Dashboard Administrateur</h1>
-                <p className="text-sm text-gray-600">Gestion des analyses financières</p>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <div className="relative admin-menu-container">
-                  <button
-                    onClick={() => setShowAdminMenu(!showAdminMenu)}
-                    className="flex items-center space-x-2 bg-red-50 px-3 py-2 rounded-lg border border-red-200 hover:bg-red-100 transition-colors duration-200"
-                  >
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-red-700">
-                      Admin: {adminSession.email}
-                    </span>
-                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {showAdminMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                      <button
-                        onClick={() => {
-                          router.push('/admin/dashboard')
-                          setShowAdminMenu(false)
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Mon compte
-                      </button>
-                      <button
-                        onClick={() => {
-                          handleSignOut()
-                          setShowAdminMenu(false)
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                      >
-                        Se déconnecter
-                      </button>
-                    </div>
-                  )}
-                </div>
+            {/* Titre central */}
+            <div className="text-center">
+              <h1 className="text-lg font-bold text-gray-900">Dashboard Administrateur</h1>
+              <p className="text-xs text-gray-600">Gestion des analyses financières</p>
+            </div>
+            
+            {/* Menu admin */}
+            <div className="flex items-center space-x-3">
+              <div className="relative admin-menu-container">
+                <button
+                  onClick={() => setShowAdminMenu(!showAdminMenu)}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-red-50 to-red-100 px-4 py-2 rounded-xl border border-red-200/50 hover:from-red-100 hover:to-red-200 transition-all duration-200 shadow-sm"
+                >
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-red-700">
+                    {adminSession.email?.split('@')[0]}
+                  </span>
+                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {showAdminMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <button
+                      onClick={() => {
+                        router.push('/admin/dashboard')
+                        setShowAdminMenu(false)
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Mon compte
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSignOut()
+                        setShowAdminMenu(false)
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      Se déconnecter
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="py-8">
+      <div className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Statistiques */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg border border-blue-200/50 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Analyses</p>
-                  <p className="text-2xl font-semibold text-gray-900">{analyses.length}</p>
+                  <p className="text-sm font-medium text-blue-700">Total Analyses</p>
+                  <p className="text-3xl font-bold text-blue-900">{analyses.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl shadow-lg border border-yellow-200/50 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">En cours</p>
-                  <p className="text-2xl font-semibold text-gray-900">
+                  <p className="text-sm font-medium text-yellow-700">En cours</p>
+                  <p className="text-3xl font-bold text-yellow-900">
                     {analyses.filter(a => a.status === 'en_cours').length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl shadow-lg border border-purple-200/50 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">En analyse</p>
-                  <p className="text-2xl font-semibold text-gray-900">
+                  <p className="text-sm font-medium text-purple-700">En analyse</p>
+                  <p className="text-3xl font-bold text-purple-900">
                     {analyses.filter(a => a.status === 'en_analyse').length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl shadow-lg border border-green-200/50 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Terminées</p>
-                  <p className="text-2xl font-semibold text-gray-900">
+                  <p className="text-sm font-medium text-green-700">Terminées</p>
+                  <p className="text-3xl font-bold text-green-900">
                     {analyses.filter(a => a.status === 'terminee').length}
                   </p>
                 </div>
@@ -566,7 +523,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Filtres et recherche */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
@@ -591,18 +548,6 @@ export default function AdminDashboardPage() {
                   className="px-3 py-1 text-xs font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200"
                 >
                   🔍 Diagnostic
-                </button>
-                <button
-                  onClick={handleCheckStorage}
-                  className="px-3 py-1 text-xs font-medium rounded-md text-green-600 bg-green-50 hover:bg-green-100 border border-green-200"
-                >
-                  📁 Storage
-                </button>
-                <button
-                  onClick={handleTestPdfUpload}
-                  className="px-3 py-1 text-xs font-medium rounded-md text-purple-600 bg-purple-50 hover:bg-purple-100 border border-purple-200"
-                >
-                  🧪 Test PDF
                 </button>
               </div>
               
@@ -640,9 +585,14 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Liste des analyses */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
+            <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200/50">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
                 Demandes d'analyse ({filteredAnalyses.length})
               </h2>
             </div>
