@@ -84,14 +84,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-y-auto my-4">
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-6">
+        <div className="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-xl sm:text-2xl font-bold">
               {isSignUp ? 'Créer un compte' : 'Se connecter'}
             </h2>
             <button
@@ -104,7 +104,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -175,8 +175,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </form>
 
           {/* Toggle */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
+          <div className="mt-4 sm:mt-6 text-center">
+            <p className="text-gray-600 text-sm sm:text-base">
               {isSignUp ? 'Déjà un compte ?' : 'Pas encore de compte ?'}
               <button
                 type="button"
@@ -194,7 +194,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
           {/* Mot de passe oublié */}
           {!isSignUp && (
-            <div className="mt-4 text-center">
+            <div className="mt-3 sm:mt-4 text-center">
               <button
                 type="button"
                 onClick={async () => {
