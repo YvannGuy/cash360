@@ -80,8 +80,8 @@ export default function Hero() {
             {/* Stats - Centrées */}
             <div className="grid grid-cols-3 gap-4 sm:gap-8 w-full max-w-2xl">
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-yellow-400">20</div>
-                <div className="text-white/60 text-xs sm:text-sm">Personnes inscrites cette semaine</div>
+                <div className="text-2xl sm:text-3xl font-bold text-yellow-400">200</div>
+                <div className="text-white/60 text-xs sm:text-sm">Personnes inscrites ce mois</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-blue-400">24h</div>
