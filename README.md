@@ -109,6 +109,7 @@ Le site présente **6 avantages clés** de la formation :
 
 ### Backend & Services
 
+- **[Supabase](https://supabase.com/)** - Base de données PostgreSQL et authentification
 - **[Resend](https://resend.com/)** - Service d'envoi d'emails transactionnels
 - **API Routes Next.js** - Endpoints serverless
 - **[Vercel](https://vercel.com/)** - Plateforme de déploiement
@@ -127,6 +128,7 @@ Le site présente **6 avantages clés** de la formation :
 
 - **Node.js** 18.x ou supérieur
 - **npm**, **yarn**, **pnpm** ou **bun**
+- Un compte [Supabase](https://supabase.com/) pour la base de données
 - Un compte [Resend](https://resend.com/) pour les emails
 
 ### Installation locale
@@ -155,6 +157,11 @@ bun install
 Créez un fichier `.env.local` à la racine du projet :
 
 ```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
 # Resend API Key
 RESEND_API_KEY=your_resend_api_key_here
 
@@ -186,23 +193,50 @@ Accédez à [http://localhost:3000](http://localhost:3000) pour voir le résulta
 cash360/
 ├── app/                          # App Router Next.js
 │   ├── api/                     # API Routes
-│   │   └── signup/              # Endpoint d'inscription
-│   │       └── route.ts         # Handler POST pour les inscriptions
+│   │   ├── admin/               # Endpoints admin
+│   │   │   ├── analyses/        # Gestion des analyses
+│   │   │   └── upload-pdf/      # Upload de PDF
+│   │   ├── auth/                # Authentification
+│   │   │   └── callback/        # Callback Supabase
+│   │   ├── test/                # Endpoints de diagnostic
+│   │   │   ├── check-storage/   # Vérification Storage
+│   │   │   ├── create-bucket/   # Création bucket
+│   │   │   └── test-pdf-upload/ # Test upload PDF
+│   │   ├── upload/              # Upload d'analyses
+│   │   └── user/                # Endpoints utilisateur
+│   ├── admin/                   # Interface administrateur
+│   │   ├── dashboard/           # Dashboard admin
+│   │   └── login/               # Connexion admin
+│   ├── auth/                    # Pages d'authentification
+│   ├── dashboard/               # Dashboard utilisateur
+│   ├── analyse-financiere/      # Formulaire d'analyse
 │   ├── globals.css              # Styles globaux
 │   ├── layout.tsx               # Layout principal
 │   ├── not-found.tsx            # Page 404 personnalisée
-│   └── page.tsx                 # Page d'accueil
+│   ├── page.tsx                 # Page d'accueil
+│   └── middleware.ts            # Middleware d'authentification
 │
 ├── components/                   # Composants React réutilisables
+│   ├── AdminPdfUploadModal.tsx  # Modal d'upload PDF admin
+│   ├── AuthModal.tsx            # Modal d'authentification
 │   ├── Benefits.tsx             # Section des avantages
+│   ├── CTASection.tsx           # Section call-to-action
+│   ├── Features.tsx             # Section des fonctionnalités
+│   ├── Footer.tsx               # Pied de page
 │   ├── Header.tsx               # En-tête du site
 │   ├── Hero.tsx                 # Section héro avec vidéo
 │   ├── LanguageSwitch.tsx       # Sélecteur de langue
-│   └── SignupForm.tsx           # Formulaire d'inscription
+│   ├── LiveTikTok.tsx           # Section TikTok live
+│   ├── Navbar.tsx               # Navigation principale
+│   ├── SignupForm.tsx           # Formulaire d'inscription
+│   ├── Steps.tsx                # Section des étapes
+│   └── About.tsx                # Section à propos
 │
 ├── lib/                         # Utilitaires et contextes
 │   ├── LanguageContext.tsx      # Contexte i18n
-│   └── translations.ts          # Traductions FR/EN
+│   ├── translations.ts          # Traductions FR/EN
+│   ├── supabase.ts             # Configuration Supabase
+│   └── database.ts             # Services base de données
 │
 ├── public/                      # Assets statiques
 │
@@ -211,6 +245,7 @@ cash360/
 ├── next.config.ts              # Configuration Next.js
 ├── package.json                # Dépendances du projet
 ├── postcss.config.mjs          # Configuration PostCSS
+├── setup-database.sql          # Script de création de la base de données
 ├── tailwind.config.js          # Configuration Tailwind CSS
 ├── tsconfig.json               # Configuration TypeScript
 └── vercel.json                 # Configuration Vercel
@@ -252,6 +287,9 @@ cash360/
 
 | Variable | Description | Requis |
 |----------|-------------|--------|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL de votre projet Supabase | ✅ Oui |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique Supabase | ✅ Oui |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé service role Supabase | ✅ Oui |
 | `RESEND_API_KEY` | Clé API Resend pour l'envoi d'emails | ✅ Oui |
 | `NOTIFICATION_EMAIL` | Email de destination des notifications | ✅ Oui |
 
@@ -272,6 +310,123 @@ Le projet utilise un thème personnalisé avec :
 - **Gradients** - Dégradés de couleurs
 - **Responsive breakpoints** - Mobile-first
 
+### Configuration Supabase
+
+#### 1. Création du projet Supabase
+
+1. Créez un compte sur [Supabase](https://supabase.com/)
+2. Créez un nouveau projet
+3. Notez l'URL et les clés API dans les paramètres du projet
+
+#### 2. Configuration de la base de données
+
+Exécutez le script SQL fourni dans `setup-database.sql` pour créer les tables nécessaires :
+
+```sql
+-- Tables principales
+CREATE TABLE analyses (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ticket TEXT UNIQUE NOT NULL,
+  client_name TEXT NOT NULL,
+  client_email TEXT NOT NULL,
+  status TEXT DEFAULT 'en_cours',
+  progress INTEGER DEFAULT 10,
+  pdf_url TEXT,
+  user_id UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Politiques RLS (Row Level Security)
+ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own analyses" ON analyses
+  FOR SELECT USING (auth.uid() = user_id OR client_email = auth.email());
+
+CREATE POLICY "Users can insert their own analyses" ON analyses
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own analyses" ON analyses
+  FOR UPDATE USING (auth.uid() = user_id);
+```
+
+#### 3. Configuration du Storage Supabase
+
+**⚠️ IMPORTANT :** Le bucket `analyses` est requis pour l'upload de PDF.
+
+##### Option A : Création automatique (Recommandée)
+
+1. Connectez-vous à l'espace admin : `/admin/login`
+2. Cliquez sur le bouton **"📁 Storage"** pour diagnostiquer
+3. Si le bucket n'existe pas, il sera créé automatiquement
+
+##### Option B : Création manuelle
+
+1. Allez dans **Storage** dans votre dashboard Supabase
+2. Créez un nouveau bucket nommé `analyses`
+3. Configurez les paramètres :
+   - **Public** : ✅ Activé
+   - **File size limit** : 10 MB
+   - **Allowed MIME types** : `application/pdf`
+
+##### Option C : Via l'API
+
+```bash
+curl -X POST "https://your-project.supabase.co/storage/v1/bucket" \
+  -H "Authorization: Bearer YOUR_SERVICE_ROLE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "analyses",
+    "public": true,
+    "file_size_limit": 10485760,
+    "allowed_mime_types": ["application/pdf"]
+  }'
+```
+
+#### 4. Configuration de l'authentification
+
+1. Activez l'authentification par email dans Supabase
+2. Configurez les templates d'email si nécessaire
+3. Définissez les URL de redirection :
+   - **Site URL** : `http://localhost:3000` (développement)
+   - **Redirect URLs** : `http://localhost:3000/auth/callback`
+
+#### 5. Test de la configuration
+
+Utilisez les outils de diagnostic intégrés :
+
+1. **Diagnostic général** : Bouton "🔍 Diagnostic" dans l'espace admin
+2. **Diagnostic Storage** : Bouton "📁 Storage" dans l'espace admin  
+3. **Test PDF Upload** : Bouton "🧪 Test PDF" dans l'espace admin
+
+Ces boutons vérifient :
+- ✅ Connexion à Supabase
+- ✅ Existence du bucket `analyses`
+- ✅ Permissions de lecture/écriture
+- ✅ Fonctionnement de l'upload PDF
+
+#### 6. Résolution des problèmes courants
+
+##### Erreur : "Le bucket analyses n'existe pas"
+```bash
+# Solution : Utilisez le bouton "📁 Storage" dans l'admin
+# Ou créez le bucket manuellement dans Supabase Storage
+```
+
+##### Erreur : "Configuration Supabase manquante"
+```bash
+# Vérifiez vos variables d'environnement dans .env.local
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+##### Erreur : "Permissions insuffisantes"
+```bash
+# Vérifiez que la SERVICE_ROLE_KEY a les bonnes permissions
+# Elle doit avoir accès au Storage et à la base de données
+```
+
 ---
 
 ## 🚀 Déploiement
@@ -282,7 +437,13 @@ Le projet utilise un thème personnalisé avec :
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
-2. **Configurez les variables d'environnement** dans le dashboard Vercel
+2. **Configurez les variables d'environnement** dans le dashboard Vercel :
+
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `RESEND_API_KEY`
+   - `NOTIFICATION_EMAIL`
 
 3. **Déployez** - Le déploiement se fait automatiquement à chaque push
 

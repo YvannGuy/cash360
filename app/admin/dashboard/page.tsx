@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { type AnalysisRecord } from '@/lib/database'
 import Image from 'next/image'
+import AdminPdfUploadModal from '@/components/AdminPdfUploadModal'
 
 interface AdminSession {
   isAdmin: boolean
@@ -20,6 +21,8 @@ export default function AdminDashboardPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [diagnosticInfo, setDiagnosticInfo] = useState<any>(null)
   const [showAdminMenu, setShowAdminMenu] = useState(false)
+  const [showPdfModal, setShowPdfModal] = useState(false)
+  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
 
   useEffect(() => {
     checkAdminSession()
@@ -201,6 +204,58 @@ export default function AdminDashboardPage() {
       console.log('Diagnostic admin:', data)
     } catch (error) {
       console.error('Erreur lors du diagnostic:', error)
+    }
+  }
+
+  const handleUploadPdf = (analysisId: string) => {
+    setSelectedAnalysisId(analysisId)
+    setShowPdfModal(true)
+  }
+
+  const handlePdfUploadSuccess = () => {
+    loadAllAnalyses() // Recharger les analyses pour afficher le PDF
+  }
+
+  const handleCheckStorage = async () => {
+    try {
+      // Vérifier le storage
+      const storageResponse = await fetch('/api/test/check-storage')
+      const storageData = await storageResponse.json()
+      console.log('Diagnostic Storage:', storageData)
+      
+      if (!storageData.success) {
+        // Si le bucket n'existe pas, essayer de le créer
+        if (storageData.error?.includes('bucket "analyses" n\'existe pas')) {
+          const createResponse = await fetch('/api/test/create-bucket', { method: 'POST' })
+          const createData = await createResponse.json()
+          console.log('Création bucket:', createData)
+          alert(createData.success ? 'Bucket créé avec succès!' : `Erreur création bucket: ${createData.error}`)
+        } else {
+          alert(`Erreur Storage: ${storageData.error}`)
+        }
+      } else {
+        alert('Storage OK! Buckets disponibles: ' + storageData.buckets?.map((b: any) => b.name).join(', '))
+      }
+    } catch (error) {
+      console.error('Erreur lors du diagnostic storage:', error)
+      alert('Erreur lors du diagnostic storage')
+    }
+  }
+
+  const handleTestPdfUpload = async () => {
+    try {
+      const response = await fetch('/api/test/test-pdf-upload', { method: 'POST' })
+      const data = await response.json()
+      console.log('Test PDF Upload:', data)
+      
+      if (data.success) {
+        alert('Test PDF Upload réussi! Le bucket fonctionne correctement.')
+      } else {
+        alert(`Erreur Test PDF: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Erreur lors du test PDF upload:', error)
+      alert('Erreur lors du test PDF upload')
     }
   }
 
@@ -394,6 +449,18 @@ export default function AdminDashboardPage() {
                 >
                   🔍 Diagnostic
                 </button>
+                <button
+                  onClick={handleCheckStorage}
+                  className="px-3 py-1 text-xs font-medium rounded-md text-green-600 bg-green-50 hover:bg-green-100 border border-green-200"
+                >
+                  📁 Storage
+                </button>
+                <button
+                  onClick={handleTestPdfUpload}
+                  className="px-3 py-1 text-xs font-medium rounded-md text-purple-600 bg-purple-50 hover:bg-purple-100 border border-purple-200"
+                >
+                  🧪 Test PDF
+                </button>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -517,9 +584,17 @@ export default function AdminDashboardPage() {
                             </button>
                           )}
                           {analysis.status === 'terminee' && (
-                            <span className="text-green-600">
-                              Analyse terminée
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-green-600">
+                                Analyse terminée
+                              </span>
+                              <button
+                                onClick={() => handleUploadPdf(analysis.id)}
+                                className="text-yellow-600 hover:text-yellow-900 text-xs"
+                              >
+                                📄 Upload PDF
+                              </button>
+                            </div>
                           )}
                         </div>
                       </td>
@@ -531,6 +606,19 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal d'upload PDF */}
+      {showPdfModal && selectedAnalysisId && (
+        <AdminPdfUploadModal
+          isOpen={showPdfModal}
+          onClose={() => {
+            setShowPdfModal(false)
+            setSelectedAnalysisId(null)
+          }}
+          analysisId={selectedAnalysisId}
+          onUploadSuccess={handlePdfUploadSuccess}
+        />
+      )}
 
     </div>
   )
