@@ -1,10 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { clientInfoSchema } from '@/lib/validation'
 import Field from '@/components/Field'
 import UploadDropzone from '@/components/UploadDropzone'
+import { createClientBrowser } from '@/lib/supabase'
 
 interface FormData {
   prenom: string
@@ -21,9 +23,11 @@ interface FormErrors {
 
 export default function AnalyseFinancierePage() {
   const router = useRouter()
+  const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [relevesFiles, setRelevesFiles] = useState<File[]>([])
   const [errors, setErrors] = useState<FormErrors>({})
+  const [user, setUser] = useState<any>(null)
   
   const [formData, setFormData] = useState<FormData>({
     prenom: '',
@@ -33,6 +37,31 @@ export default function AnalyseFinancierePage() {
     modePaiement: 'paypal', // Valeur par défaut
     consentement: false
   })
+
+  const supabase = createClientBrowser()
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/')
+        return
+      }
+      setUser(user)
+      setFormData(prev => ({
+        ...prev,
+        email: user.email || ''
+      }))
+      setLoading(false)
+    }
+
+    checkUser()
+  }, [supabase.auth, router])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -126,9 +155,59 @@ export default function AnalyseFinancierePage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Vérification de votre authentification...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header simplifié */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <Image
+                src="/images/logo/logofinal.png"
+                alt="Cash360"
+                width={192}
+                height={192}
+                className="h-48 w-auto"
+              />
+            </div>
+
+            {/* Informations de connexion */}
+            <div className="flex items-center space-x-4">
+              {user && (
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.email?.split('@')[0]}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="text-sm text-gray-500 hover:text-red-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-red-50"
+                  >
+                    Se déconnecter
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <div className="py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
@@ -398,6 +477,7 @@ export default function AnalyseFinancierePage() {
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   )

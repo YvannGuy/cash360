@@ -2,6 +2,8 @@
 import { useState, useMemo } from 'react'
 import { createClientBrowser } from '@/lib/supabase'
 
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
