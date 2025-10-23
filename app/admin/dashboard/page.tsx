@@ -20,7 +20,6 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<any[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [diagnosticInfo, setDiagnosticInfo] = useState<any>(null)
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
@@ -235,16 +234,6 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const handleDiagnostic = async () => {
-    try {
-      const response = await fetch('/api/test/fix-dashboard')
-      const data = await response.json()
-      setDiagnosticInfo(data)
-      console.log('Diagnostic admin:', data)
-    } catch (error) {
-      console.error('Erreur lors du diagnostic:', error)
-    }
-  }
 
   const handleUploadPdf = (analysisId: string) => {
     setSelectedAnalysisId(analysisId)
@@ -378,7 +367,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       {/* Header Admin */}
-      <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/50">
+      <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/50 relative z-[9998]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -400,12 +389,11 @@ export default function AdminDashboardPage() {
             {/* Titre central */}
             <div className="text-center">
               <h1 className="text-lg font-bold text-gray-900">Dashboard Administrateur</h1>
-              <p className="text-xs text-gray-600">Gestion des analyses financières</p>
             </div>
             
             {/* Menu admin */}
             <div className="flex items-center space-x-3">
-              <div className="relative admin-menu-container">
+              <div className="relative admin-menu-container z-[9999]">
                 <button
                   onClick={() => setShowAdminMenu(!showAdminMenu)}
                   className="flex items-center space-x-2 bg-gradient-to-r from-red-50 to-red-100 px-4 py-2 rounded-xl border border-red-200/50 hover:from-red-100 hover:to-red-200 transition-all duration-200 shadow-sm"
@@ -420,7 +408,7 @@ export default function AdminDashboardPage() {
                 </button>
                 
                 {showAdminMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
                     <button
                       onClick={() => {
                         router.push('/admin/dashboard')
@@ -543,12 +531,6 @@ export default function AdminDashboardPage() {
                   </select>
                 </div>
                 
-                <button
-                  onClick={handleDiagnostic}
-                  className="px-3 py-1 text-xs font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200"
-                >
-                  🔍 Diagnostic
-                </button>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -566,22 +548,6 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             </div>
-            
-            {diagnosticInfo && (
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
-                <div className="text-xs text-gray-600">
-                  <div className="font-medium mb-1">Diagnostic Admin :</div>
-                  <div>Total analyses: {diagnosticInfo.summary?.totalAnalyses || 0}</div>
-                  <div>Avec user_id: {diagnosticInfo.summary?.analysesWithUserId || 0}</div>
-                  <div>Sans user_id: {diagnosticInfo.summary?.analysesWithoutUserId || 0}</div>
-                  {diagnosticInfo.allAnalyses?.slice(0, 3).map((analysis: any) => (
-                    <div key={analysis.id} className="ml-2">
-                      {analysis.ticket} - {analysis.client_name} ({analysis.user_id ? 'avec user_id' : 'sans user_id'})
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Liste des analyses */}
