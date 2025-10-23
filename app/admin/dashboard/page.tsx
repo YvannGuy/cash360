@@ -17,12 +17,21 @@ export default function AdminDashboardPage() {
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [analyses, setAnalyses] = useState<AnalysisRecord[]>([])
   const [filteredAnalyses, setFilteredAnalyses] = useState<AnalysisRecord[]>([])
+  const [users, setUsers] = useState<any[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [diagnosticInfo, setDiagnosticInfo] = useState<any>(null)
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
+  
+  // Pagination pour les analyses
+  const [currentAnalysisPage, setCurrentAnalysisPage] = useState(1)
+  const analysesPerPage = 10
+  
+  // Pagination pour les utilisateurs
+  const [currentUserPage, setCurrentUserPage] = useState(1)
+  const usersPerPage = 10
 
   useEffect(() => {
     checkAdminSession()
@@ -31,6 +40,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (adminSession?.isAdmin) {
       loadAllAnalyses()
+      loadAllUsers()
     }
   }, [adminSession])
 
@@ -81,6 +91,21 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const loadAllUsers = async () => {
+    try {
+      const response = await fetch('/api/admin/users')
+      const data = await response.json()
+      
+      if (data.success) {
+        setUsers(data.users)
+      } else {
+        console.error('Erreur lors du chargement des utilisateurs:', data.error)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs:', error)
+    }
+  }
+
   const filterAnalyses = () => {
     let filtered = analyses
 
@@ -99,7 +124,21 @@ export default function AdminDashboardPage() {
     }
 
     setFilteredAnalyses(filtered)
+    // Reset à la page 1 quand on filtre
+    setCurrentAnalysisPage(1)
   }
+
+  // Calculs de pagination pour les analyses
+  const totalAnalysisPages = Math.ceil(filteredAnalyses.length / analysesPerPage)
+  const startAnalysisIndex = (currentAnalysisPage - 1) * analysesPerPage
+  const endAnalysisIndex = startAnalysisIndex + analysesPerPage
+  const currentAnalyses = filteredAnalyses.slice(startAnalysisIndex, endAnalysisIndex)
+
+  // Calculs de pagination pour les utilisateurs
+  const totalUserPages = Math.ceil(users.length / usersPerPage)
+  const startUserIndex = (currentUserPage - 1) * usersPerPage
+  const endUserIndex = startUserIndex + usersPerPage
+  const currentUsers = users.slice(startUserIndex, endUserIndex)
 
   const handleSignOut = () => {
     localStorage.removeItem('admin_session')
@@ -258,6 +297,110 @@ export default function AdminDashboardPage() {
       alert('Erreur lors du test PDF upload')
     }
   }
+
+  const getPdfFileName = (pdfUrl: string) => {
+    try {
+      const url = new URL(pdfUrl)
+      const pathParts = url.pathname.split('/')
+      const fileName = pathParts[pathParts.length - 1]
+      return fileName || 'PDF uploadé'
+    } catch {
+      return 'PDF uploadé'
+    }
+  }
+
+  const handleDeleteAnalysis = async (analysisId: string, analysisTicket: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'analyse ${analysisTicket} ?\n\nCette action est irréversible et supprimera :\n- L'analyse de la base de données\n- Le fichier PDF associé (si il existe)\n- L'accès utilisateur à cette analyse`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/delete-analysis', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ analysisId })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Supprimer de la liste locale
+        setAnalyses(prev => prev.filter(a => a.id !== analysisId))
+        alert('Analyse supprimée avec succès!')
+      } else {
+        console.error('Erreur lors de la suppression:', data.error)
+        alert(`Erreur lors de la suppression: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      alert('Erreur lors de la suppression de l\'analyse')
+    }
+  }
+
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userEmail} ?\n\nCette action est irréversible et supprimera :\n- L'utilisateur de Supabase Auth\n- Toutes ses analyses de la base de données\n- Tous ses fichiers PDF associés\n- Son accès à l'application`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Supprimer de la liste locale
+        setUsers(prev => prev.filter(u => u.id !== userId))
+        // Recharger les analyses pour mettre à jour la liste
+        loadAllAnalyses()
+        alert('Utilisateur supprimé avec succès!')
+      } else {
+        console.error('Erreur lors de la suppression:', data.error)
+        alert(`Erreur lors de la suppression: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      alert('Erreur lors de la suppression de l\'utilisateur')
+    }
+  }
+
+  const handleDeleteUserByEmail = async (userEmail: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer toutes les analyses de ${userEmail} ?\n\nCette action est irréversible et supprimera :\n- Toutes les analyses de cet email\n- Tous les fichiers PDF associés`)) {
+      return
+    }
+
+    try {
+      // Supprimer toutes les analyses de cet email
+      const { data: userAnalyses } = await fetch('/api/admin/analyses').then(res => res.json())
+      const analysesToDelete = userAnalyses.analyses.filter((a: any) => a.client_email === userEmail)
+
+      for (const analysis of analysesToDelete) {
+        const response = await fetch('/api/admin/delete-analysis', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ analysisId: analysis.id })
+        })
+      }
+
+      // Recharger les données
+      loadAllAnalyses()
+      loadAllUsers()
+      alert('Analyses supprimées avec succès!')
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      alert('Erreur lors de la suppression des analyses')
+    }
+  }
+
 
   if (loading) {
     return (
@@ -524,12 +667,15 @@ export default function AdminDashboardPage() {
                       Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      PDF
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredAnalyses.map((analysis) => (
+                  {currentAnalyses.map((analysis) => (
                     <tr key={analysis.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
@@ -565,6 +711,27 @@ export default function AdminDashboardPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(analysis.created_at).toLocaleDateString('fr-FR')}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {analysis.pdf_url ? (
+                          <div className="flex items-center space-x-2">
+                            <span className="text-green-600">📄</span>
+                            <a
+                              href={analysis.pdf_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 underline text-xs max-w-32 truncate"
+                              title={getPdfFileName(analysis.pdf_url)}
+                            >
+                              {getPdfFileName(analysis.pdf_url)}
+                            </a>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <span className="text-gray-400">❌</span>
+                            <span className="text-gray-500 text-xs">Aucun PDF</span>
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           {analysis.status === 'en_cours' && (
@@ -596,6 +763,15 @@ export default function AdminDashboardPage() {
                               </button>
                             </div>
                           )}
+                          
+                          {/* Bouton de suppression pour toutes les analyses */}
+                          <button
+                            onClick={() => handleDeleteAnalysis(analysis.id, analysis.ticket)}
+                            className="text-red-600 hover:text-red-900 text-xs ml-2"
+                            title="Supprimer cette analyse"
+                          >
+                            🗑️ Supprimer
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -603,6 +779,215 @@ export default function AdminDashboardPage() {
                 </tbody>
               </table>
             </div>
+            
+            {/* Pagination pour les analyses */}
+            {totalAnalysisPages > 1 && (
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setCurrentAnalysisPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentAnalysisPage === 1}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Précédent
+                  </button>
+                  <button
+                    onClick={() => setCurrentAnalysisPage(prev => Math.min(totalAnalysisPages, prev + 1))}
+                    disabled={currentAnalysisPage === totalAnalysisPages}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Suivant
+                  </button>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Affichage de <span className="font-medium">{startAnalysisIndex + 1}</span> à{' '}
+                      <span className="font-medium">{Math.min(endAnalysisIndex, filteredAnalyses.length)}</span> sur{' '}
+                      <span className="font-medium">{filteredAnalyses.length}</span> analyses
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                      <button
+                        onClick={() => setCurrentAnalysisPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentAnalysisPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Précédent</span>
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        Page {currentAnalysisPage} sur {totalAnalysisPages}
+                      </span>
+                      <button
+                        onClick={() => setCurrentAnalysisPage(prev => Math.min(totalAnalysisPages, prev + 1))}
+                        disabled={currentAnalysisPage === totalAnalysisPages}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Suivant</span>
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Section Utilisateurs */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-8">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Utilisateurs inscrits ({users.length})
+              </h2>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email / Nom
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Première analyse
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Dernière connexion
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Analyses
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentUsers.map((user) => (
+                    <tr key={user.id || user.email} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.email}
+                          </div>
+                          {user.name && (
+                            <div className="text-sm text-gray-500">
+                              {user.name}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(user.first_analysis_date || user.created_at).toLocaleDateString('fr-FR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Jamais'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {user.analysis_count} analyse{user.analysis_count > 1 ? 's' : ''}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.is_authenticated 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-orange-100 text-orange-800'
+                        }`}>
+                          {user.is_authenticated ? 'Compte créé' : 'Email uniquement'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        {user.is_authenticated ? (
+                          <button
+                            onClick={() => handleDeleteUser(user.id, user.email)}
+                            className="text-red-600 hover:text-red-900 text-xs"
+                            title="Supprimer cet utilisateur"
+                          >
+                            🗑️ Supprimer
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleDeleteUserByEmail(user.email)}
+                            className="text-red-600 hover:text-red-900 text-xs"
+                            title="Supprimer toutes les analyses de cet email"
+                          >
+                            🗑️ Supprimer analyses
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Pagination pour les utilisateurs */}
+            {totalUserPages > 1 && (
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setCurrentUserPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentUserPage === 1}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Précédent
+                  </button>
+                  <button
+                    onClick={() => setCurrentUserPage(prev => Math.min(totalUserPages, prev + 1))}
+                    disabled={currentUserPage === totalUserPages}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Suivant
+                  </button>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Affichage de <span className="font-medium">{startUserIndex + 1}</span> à{' '}
+                      <span className="font-medium">{Math.min(endUserIndex, users.length)}</span> sur{' '}
+                      <span className="font-medium">{users.length}</span> utilisateurs
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                      <button
+                        onClick={() => setCurrentUserPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentUserPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Précédent</span>
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        Page {currentUserPage} sur {totalUserPages}
+                      </span>
+                      <button
+                        onClick={() => setCurrentUserPage(prev => Math.min(totalUserPages, prev + 1))}
+                        disabled={currentUserPage === totalUserPages}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Suivant</span>
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

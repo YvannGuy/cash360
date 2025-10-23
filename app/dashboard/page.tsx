@@ -12,8 +12,6 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [analyses, setAnalyses] = useState<AnalysisRecord[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isCreatingDemo, setIsCreatingDemo] = useState(false)
-  const [diagnosticInfo, setDiagnosticInfo] = useState<any>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
   
@@ -74,83 +72,9 @@ export default function DashboardPage() {
     router.push('/analyse-financiere')
   }
 
-  const handleCreateDemoAnalysis = async () => {
-    setIsCreatingDemo(true)
-    try {
-      const response = await fetch('/api/test/create-demo-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      
-      if (response.ok) {
-        // Recharger les analyses
-        await loadAnalyses()
-      } else {
-        console.error('Erreur lors de la création de l\'analyse de démo')
-      }
-    } catch (error) {
-      console.error('Erreur:', error)
-    } finally {
-      setIsCreatingDemo(false)
-    }
-  }
 
-  const handleCheckDatabase = async () => {
-    try {
-      const response = await fetch('/api/test/check-database')
-      const data = await response.json()
-      setDiagnosticInfo(data)
-      console.log('Diagnostic base de données:', data)
-    } catch (error) {
-      console.error('Erreur lors du diagnostic:', error)
-    }
-  }
 
-  const handleFixDashboard = async () => {
-    try {
-      const response = await fetch('/api/test/fix-dashboard')
-      const data = await response.json()
-      setDiagnosticInfo(data)
-      console.log('Diagnostic dashboard:', data)
-      
-      // Recharger les analyses après le diagnostic
-      await loadAnalyses()
-    } catch (error) {
-      console.error('Erreur lors du diagnostic dashboard:', error)
-    }
-  }
 
-  const handleUpdateUserAnalyses = async () => {
-    try {
-      if (!user?.email) {
-        alert('Email utilisateur non disponible')
-        return
-      }
-
-      const response = await fetch('/api/test/update-user-analyses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userEmail: user.email })
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        alert(`✅ ${data.message}`)
-        // Recharger les analyses
-        await loadAnalyses()
-      } else {
-        alert(`❌ Erreur: ${data.error}`)
-      }
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error)
-      alert('Erreur lors de la mise à jour des analyses')
-    }
-  }
 
   const handleWhatsAppClick = () => {
     setShowWhatsAppPopup(true)
@@ -316,76 +240,6 @@ export default function DashboardPage() {
                   Créer ma première analyse
                 </button>
                 
-                <div className="text-xs text-gray-500">ou</div>
-                
-                <button
-                  onClick={handleCreateDemoAnalysis}
-                  disabled={isCreatingDemo}
-                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                  {isCreatingDemo ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
-                      Création...
-                    </>
-                  ) : (
-                    'Créer une analyse de test'
-                  )}
-                </button>
-                
-                <div className="mt-4 space-y-2">
-                  <div className="space-y-2">
-                    <button
-                      onClick={handleCheckDatabase}
-                      className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-600 bg-gray-50 hover:bg-gray-100"
-                    >
-                      🔍 Vérifier la base de données
-                    </button>
-                    
-                    <button
-                      onClick={handleFixDashboard}
-                      className="w-full inline-flex items-center justify-center px-3 py-2 border border-blue-300 text-xs font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100"
-                    >
-                      🔧 Diagnostic Dashboard
-                    </button>
-                    
-                    <button
-                      onClick={handleUpdateUserAnalyses}
-                      className="w-full inline-flex items-center justify-center px-3 py-2 border border-green-300 text-xs font-medium rounded-md text-green-600 bg-green-50 hover:bg-green-100"
-                    >
-                      🔗 Associer mes analyses
-                    </button>
-                  </div>
-                  
-                  {diagnosticInfo && (
-                    <div className="text-xs text-left bg-gray-50 p-2 rounded border">
-                      <div className="font-medium mb-1">Diagnostic :</div>
-                      {diagnosticInfo.summary ? (
-                        <>
-                          <div>Total analyses: {diagnosticInfo.summary.totalAnalyses}</div>
-                          <div>Avec user_id: {diagnosticInfo.summary.analysesWithUserId}</div>
-                          <div>Sans user_id: {diagnosticInfo.summary.analysesWithoutUserId}</div>
-                          <div className="mt-2 font-medium">Analyses récentes:</div>
-                          {diagnosticInfo.allAnalyses?.slice(0, 3).map((analysis: any) => (
-                            <div key={analysis.id} className="ml-2">
-                              {analysis.ticket} - {analysis.client_name} ({analysis.user_id ? 'avec user_id' : 'sans user_id'})
-                            </div>
-                          ))}
-                        </>
-                      ) : (
-                        <>
-                          <div>Tables: {diagnosticInfo.database?.tables?.join(', ') || 'Aucune'}</div>
-                          <div>Analyses: {diagnosticInfo.database?.analysesCount || 0}</div>
-                          <div>Configuration: {diagnosticInfo.success ? '✅ OK' : '❌ Erreur'}</div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  
-                  <p className="text-xs text-gray-400">
-                    ⚠️ Assurez-vous d'avoir créé les tables dans Supabase (voir DATABASE_SETUP.md)
-                  </p>
-                </div>
               </div>
             </div>
           ) : (
