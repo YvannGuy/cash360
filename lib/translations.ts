@@ -19,8 +19,8 @@ export const translations = {
     // Signup Form
     signup: {
       title: "Réservez votre appel découverte gratuit",
-      subtitle: "Prenez 15 minutes pour découvrir comment Cash360 peut transformer votre relation à l'argent",
-      socialProof: "personnes ont réservé cette semaine",
+      subtitle: "Prenez 10 minutes pour découvrir comment Cash360 peut transformer votre relation à l'argent",
+      socialProof: "personnes ont déjà réservé ce mois",
       form: {
         fullName: "Nom complet",
         fullNamePlaceholder: "Votre nom complet",
@@ -137,8 +137,8 @@ export const translations = {
     // Signup Form
     signup: {
       title: "Book your free discovery call",
-      subtitle: "Take 15 minutes to discover how Cash360 can transform your relationship with money",
-      socialProof: "people have booked this week",
+      subtitle: "Take 10 minutes to discover how Cash360 can transform your relationship with money",
+      socialProof: "people have already booked this month",
       form: {
         fullName: "Full name",
         fullNamePlaceholder: "Your full name",

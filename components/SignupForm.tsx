@@ -47,7 +47,7 @@ export default function SignupForm() {
                 <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-2 border-white"></div>
                 <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full border-2 border-white"></div>
               </div>
-              <span className="text-white/90 text-xs sm:text-sm font-medium">20 {t.signup.socialProof}</span>
+              <span className="text-white/90 text-xs sm:text-sm font-medium">Plus de 200 {t.signup.socialProof}</span>
             </div>
           </div>
 
