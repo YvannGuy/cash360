@@ -84,27 +84,28 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-black bg-opacity-50 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-y-auto my-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative">
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-4 sm:p-6">
+        <div className="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-2 sm:p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl sm:text-2xl font-bold">
+            <h2 className="text-base sm:text-2xl font-bold">
               {isSignUp ? 'Créer un compte' : 'Se connecter'}
             </h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
+              className="w-5 h-5 sm:w-8 sm:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
             >
-              <span className="text-white text-lg">×</span>
+              <span className="text-white text-xs sm:text-lg">×</span>
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-6">
+        <div className="p-2 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -175,8 +176,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </form>
 
           {/* Toggle */}
-          <div className="mt-4 sm:mt-6 text-center">
-            <p className="text-gray-600 text-sm sm:text-base">
+          <div className="mt-3 sm:mt-6 text-center">
+            <p className="text-gray-600 text-xs sm:text-base">
               {isSignUp ? 'Déjà un compte ?' : 'Pas encore de compte ?'}
               <button
                 type="button"
@@ -185,7 +186,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   setError('')
                   setMessage('')
                 }}
-                className="ml-2 text-yellow-600 hover:text-yellow-700 font-semibold transition-colors duration-200"
+                className="ml-1 sm:ml-2 text-yellow-600 hover:text-yellow-700 font-semibold transition-colors duration-200"
               >
                 {isSignUp ? 'Se connecter' : 'Créer un compte'}
               </button>
@@ -194,7 +195,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
           {/* Mot de passe oublié */}
           {!isSignUp && (
-            <div className="mt-3 sm:mt-4 text-center">
+            <div className="mt-2 sm:mt-4 text-center">
               <button
                 type="button"
                 onClick={async () => {
@@ -246,6 +247,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </button>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
