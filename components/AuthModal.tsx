@@ -192,38 +192,43 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </p>
           </div>
 
-          {/* Magic Link */}
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={async () => {
-                if (!email) {
-                  setError('Veuillez entrer votre email')
-                  return
-                }
-                setLoading(true)
-                setError('')
-                try {
-                  const { error } = await supabase.auth.signInWithOtp({
-                    email,
-                    options: {
-                      emailRedirectTo: `${window.location.origin}/auth/callback?next=/analyse-financiere`
+          {/* Mot de passe oublié */}
+          {!isSignUp && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!email) {
+                    setError('Veuillez entrer votre email')
+                    return
+                  }
+                  setLoading(true)
+                  setError('')
+                  try {
+                    console.log('Envoi du lien de réinitialisation pour:', email)
+                    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                      redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+                    })
+                    console.log('Réponse resetPasswordForEmail:', { data, error })
+                    if (error) {
+                      console.error('Erreur resetPasswordForEmail:', error)
+                      throw error
                     }
-                  })
-                  if (error) throw error
-                  setMessage('Lien de connexion envoyé par email !')
-                } catch (error: any) {
-                  setError(error.message)
-                } finally {
-                  setLoading(false)
-                }
-              }}
-              disabled={loading || !email}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 disabled:opacity-50"
-            >
-              Recevoir un lien de connexion par email
-            </button>
-          </div>
+                    setMessage('Lien de réinitialisation envoyé par email ! Vérifiez votre boîte de réception.')
+                  } catch (error: any) {
+                    console.error('Erreur complète:', error)
+                    setError(`Erreur: ${error.message}`)
+                  } finally {
+                    setLoading(false)
+                  }
+                }}
+                disabled={loading}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 disabled:opacity-50"
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
+          )}
 
           {/* Lien vers l'espace admin */}
           <div className="mt-6 border-t border-gray-200 pt-4">

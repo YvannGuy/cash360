@@ -46,13 +46,15 @@ export default function AdminLoginPage() {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Image
-            src="/images/logo/logofinal.png"
-            alt="Cash360 Admin"
-            width={120}
-            height={120}
-            className="h-24 w-auto mx-auto mb-4"
-          />
+          <div className="bg-white rounded-lg mx-auto mb-4 inline-block">
+            <Image
+              src="/images/logo/logofinal.png"
+              alt="Cash360 Admin"
+              width={200}
+              height={200}
+              className="h-48 w-auto"
+            />
+          </div>
           <h1 className="text-2xl font-bold text-white mb-2">
             Espace Administrateur
           </h1>
