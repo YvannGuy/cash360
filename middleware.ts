@@ -59,8 +59,8 @@ export async function middleware(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protéger la page d'analyse financière
-  if (req.nextUrl.pathname.startsWith('/analyse-financiere') && !user) {
+  // Protéger les pages nécessitant une authentification
+  if ((req.nextUrl.pathname.startsWith('/analyse-financiere') || req.nextUrl.pathname.startsWith('/dashboard')) && !user) {
     const url = req.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)
@@ -70,5 +70,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/analyse-financiere/:path*']
+  matcher: ['/analyse-financiere/:path*', '/dashboard/:path*']
 }

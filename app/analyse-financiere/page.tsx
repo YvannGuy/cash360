@@ -133,8 +133,17 @@ export default function AnalyseFinancierePage() {
         submitFormData.append('releves', file)
       })
       
+      // Récupérer le token d'authentification
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: HeadersInit = {}
+      
+      if (session?.access_token) {
+        headers['authorization'] = `Bearer ${session.access_token}`
+      }
+      
       const response = await fetch('/api/upload', {
         method: 'POST',
+        headers,
         body: submitFormData
       })
       

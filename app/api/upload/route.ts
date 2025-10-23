@@ -21,6 +21,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Récupérer l'utilisateur connecté depuis le token
+    const authHeader = request.headers.get('authorization')
+    let userId: string | null = null
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7)
+      try {
+        const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+        if (!error && user) {
+          userId = user.id
+        }
+      } catch (tokenError) {
+        console.log('Token invalide ou expiré, on continue sans user_id:', tokenError)
+      }
+    }
+
     const formData = await request.formData()
     
     // Extraire les données du formulaire
@@ -48,6 +64,32 @@ export async function POST(request: NextRequest) {
     // Générer un ticket unique
     const ticket = generateShortTicket()
     const timestamp = new Date().toISOString()
+
+    // Créer l'analyse dans la base de données avec l'utilisateur connecté si disponible
+    const { data: analysis, error: analysisError } = await supabaseAdmin
+      .from('analyses')
+      .insert({
+        ticket: `CASH-${ticket}`,
+        client_name: `${validatedClientInfo.prenom} ${validatedClientInfo.nom}`,
+        client_email: validatedClientInfo.email,
+        status: 'en_cours',
+        progress: 10,
+        mode_paiement: validatedClientInfo.modePaiement,
+        message: validatedClientInfo.message || null,
+        user_id: userId // Utiliser l'ID utilisateur si disponible
+      })
+      .select()
+      .single()
+
+    if (analysisError) {
+      console.error('Erreur lors de la création de l\'analyse:', analysisError)
+      // On continue quand même, mais on log l'erreur
+    }
+
+    if (!analysis) {
+      console.error('Erreur lors de la création de l\'analyse dans la base de données')
+      // On continue quand même, mais on log l'erreur
+    }
 
     // Créer le dossier dans Supabase Storage
     const folderPath = `releves/${ticket}`
@@ -89,6 +131,26 @@ export async function POST(request: NextRequest) {
       }
 
       signedUrls[`releve_${i + 1}`] = signedUrl.signedUrl
+    }
+
+    // Ajouter les fichiers à l'analyse dans la base de données
+    if (analysis) {
+      for (let i = 0; i < uploadedFiles.length; i++) {
+        const file = relevesFiles[i]
+        const { error: fileError } = await supabaseAdmin
+          .from('analysis_files')
+          .insert({
+            analysis_id: analysis.id,
+            file_name: file.name,
+            file_url: uploadedFiles[i], // Le chemin dans Supabase Storage
+            file_size: file.size,
+            file_type: 'document'
+          })
+
+        if (fileError) {
+          console.error('Erreur lors de l\'ajout du fichier:', fileError)
+        }
+      }
     }
 
     // Fonction helper pour attendre entre les envois

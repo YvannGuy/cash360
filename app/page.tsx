@@ -29,16 +29,16 @@ export default function Home() {
       setLegalModalOpen(true)
     }
 
-    // Vérifier si l'utilisateur est connecté et rediriger vers l'analyse financière
+    // Vérifier si l'utilisateur est connecté et rediriger vers le dashboard
     const checkAuthAndRedirect = async () => {
       // Attendre un peu pour que la session soit établie
       setTimeout(async () => {
         const supabase = createClientBrowser()
         const { data: { user } } = await supabase.auth.getUser()
         
-        // Si l'utilisateur est connecté, rediriger vers l'analyse financière
+        // Si l'utilisateur est connecté, rediriger vers le dashboard
         if (user) {
-          window.location.href = '/analyse-financiere'
+          window.location.href = '/dashboard'
         }
       }, 500)
     }

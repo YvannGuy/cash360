@@ -64,7 +64,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         setTimeout(() => {
           onClose()
           // Forcer le rechargement pour que le middleware détecte la session
-          window.location.href = '/analyse-financiere'
+          window.location.href = '/dashboard'
         }, 1000)
       }
     } catch (error: any) {
@@ -223,6 +223,23 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             >
               Recevoir un lien de connexion par email
             </button>
+          </div>
+
+          {/* Lien vers l'espace admin */}
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <div className="text-center">
+              <p className="text-xs text-gray-500 mb-2">Accès administrateur</p>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  window.open('/admin/login', '_blank')
+                }}
+                className="text-xs text-red-600 hover:text-red-500 font-medium transition-colors duration-200"
+              >
+                Espace administrateur →
+              </button>
+            </div>
           </div>
         </div>
       </div>
