@@ -80,8 +80,8 @@ export default function LiveTikTok() {
                 <div className="relative">
                   <div className="aspect-video bg-gradient-to-br from-blue-100 to-slate-100 rounded-2xl overflow-hidden">
                     <img
-                      src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=250&fit=crop"
-                      alt="Lundi du Déclic - Live TikTok"
+                      src="/images/logo/mymy.jpg"
+                      alt="Myriam Konan - Live TikTok"
                       className="w-full h-full object-cover"
                     />
                   </div>
