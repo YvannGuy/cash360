@@ -79,9 +79,9 @@ export default function CTASection() {
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
+                className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/15 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
               >
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300">
                   <span className="text-white text-xl">{benefit.icon}</span>
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">
@@ -96,7 +96,7 @@ export default function CTASection() {
 
           {/* Main CTA */}
           <div className={`transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-3xl p-8 sm:p-12 text-gray-900 shadow-2xl">
+            <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-3xl p-8 sm:p-12 text-gray-900 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="max-w-2xl mx-auto">
                 <h3 className="text-2xl sm:text-3xl font-bold mb-4">
                   Le début de votre liberté financière

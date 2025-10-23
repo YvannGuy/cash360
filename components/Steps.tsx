@@ -94,13 +94,13 @@ export default function Steps() {
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
               >
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 h-full">
+                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 h-full">
                   {/* Step Number & Icon */}
                   <div className="flex items-center mb-6">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${step.color} rounded-xl flex items-center justify-center mr-3`}>
+                    <div className={`w-12 h-12 bg-gradient-to-r ${step.color} rounded-xl flex items-center justify-center mr-3 hover:scale-110 transition-transform duration-300`}>
                       <span className="text-white font-bold text-lg">{step.number}</span>
                     </div>
-                    <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center hover:scale-110 transition-transform duration-300">
                       <span className="text-white text-lg">{step.icon}</span>
                     </div>
                   </div>

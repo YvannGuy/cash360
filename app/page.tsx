@@ -29,18 +29,11 @@ export default function Home() {
       setLegalModalOpen(true)
     }
 
-    // Vérifier si l'utilisateur est connecté et rediriger vers le dashboard
+    // Désactiver la redirection automatique vers le dashboard
+    // L'utilisateur peut naviguer librement entre la homepage et le dashboard
     const checkAuthAndRedirect = async () => {
-      // Attendre un peu pour que la session soit établie
-      setTimeout(async () => {
-        const supabase = createClientBrowser()
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        // Si l'utilisateur est connecté, rediriger vers le dashboard
-        if (user) {
-          window.location.href = '/dashboard'
-        }
-      }, 500)
+      // Ne plus rediriger automatiquement vers le dashboard
+      // L'utilisateur peut choisir de rester sur la homepage même s'il est connecté
     }
 
     window.addEventListener('scroll', handleScroll)

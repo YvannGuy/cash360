@@ -19,6 +19,7 @@ export default function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [diagnosticInfo, setDiagnosticInfo] = useState<any>(null)
+  const [showAdminMenu, setShowAdminMenu] = useState(false)
 
   useEffect(() => {
     checkAdminSession()
@@ -29,6 +30,20 @@ export default function AdminDashboardPage() {
       loadAllAnalyses()
     }
   }, [adminSession])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showAdminMenu) {
+        const target = event.target as Element
+        if (!target.closest('.admin-menu-container')) {
+          setShowAdminMenu(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showAdminMenu])
 
   useEffect(() => {
     filterAnalyses()
@@ -212,13 +227,18 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Image
-                src="/images/logo/logofinal.png"
-                alt="Cash360 Admin"
-                width={120}
-                height={120}
-                className="h-16 w-auto"
-              />
+              <button
+                onClick={() => router.push('/')}
+                className="cursor-pointer"
+              >
+                <Image
+                  src="/images/logo/logofinal.png"
+                  alt="Cash360 Admin"
+                  width={120}
+                  height={120}
+                  className="h-16 w-auto hover:opacity-80 transition-opacity duration-200"
+                />
+              </button>
             </div>
 
             {/* Titre et informations admin */}
@@ -229,18 +249,43 @@ export default function AdminDashboardPage() {
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-red-700">
-                    Admin: {adminSession.email}
-                  </span>
+                <div className="relative admin-menu-container">
+                  <button
+                    onClick={() => setShowAdminMenu(!showAdminMenu)}
+                    className="flex items-center space-x-2 bg-red-50 px-3 py-2 rounded-lg border border-red-200 hover:bg-red-100 transition-colors duration-200"
+                  >
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-red-700">
+                      Admin: {adminSession.email}
+                    </span>
+                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {showAdminMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                      <button
+                        onClick={() => {
+                          router.push('/admin/dashboard')
+                          setShowAdminMenu(false)
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Mon compte
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleSignOut()
+                          setShowAdminMenu(false)
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Se déconnecter
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="text-sm text-gray-500 hover:text-red-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-red-50"
-                >
-                  Se déconnecter
-                </button>
               </div>
             </div>
           </div>

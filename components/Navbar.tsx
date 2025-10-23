@@ -10,6 +10,7 @@ export default function Navbar() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showUserMenu, setShowUserMenu] = useState(false)
 
   const supabase = createClientBrowser()
 
@@ -41,6 +42,20 @@ export default function Navbar() {
 
     return () => subscription.unsubscribe()
   }, [supabase.auth])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showUserMenu) {
+        const target = event.target as Element
+        if (!target.closest('.user-menu-container')) {
+          setShowUserMenu(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showUserMenu])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -101,18 +116,43 @@ export default function Navbar() {
               <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
             ) : user ? (
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {user.email?.split('@')[0]}
-                  </span>
+                <div className="relative user-menu-container">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.email?.split('@')[0]}
+                    </span>
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                      <button
+                        onClick={() => {
+                          window.location.href = '/dashboard'
+                          setShowUserMenu(false)
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Mon compte
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleSignOut()
+                          setShowUserMenu(false)
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Se déconnecter
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="text-sm text-gray-500 hover:text-red-600 transition-colors duration-200 px-2 py-1 rounded hover:bg-red-50"
-                >
-                  Se déconnecter
-                </button>
               </div>
             ) : (
               <button
@@ -186,15 +226,26 @@ export default function Navbar() {
                       Connecté en tant que {user.email?.split('@')[0]}
                     </span>
                   </div>
-                  <button
-                    onClick={() => {
-                      handleSignOut();
-                      setIsMenuOpen(false);
-                    }}
-                    className="text-sm text-gray-500 hover:text-red-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-red-50"
-                  >
-                    Se déconnecter
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        window.location.href = '/dashboard';
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                    >
+                      Mon compte
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                    >
+                      Se déconnecter
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <button

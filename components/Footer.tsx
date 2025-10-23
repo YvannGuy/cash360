@@ -139,27 +139,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Final CTA */}
-        <div className="border-t border-gray-800 py-8">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold mb-4">
-              Prêt(e) à transformer votre relation à l'argent ?
-            </h3>
-            <p className="text-gray-300 mb-6">
-              Rejoignez les centaines de personnes qui ont déjà retrouvé l'équilibre financier
-            </p>
-            <button
-              onClick={() => {
-                const modal = document.getElementById('calendly-modal');
-                if (modal) modal.style.display = 'block';
-              }}
-              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              <span className="w-5 h-5 mr-2">📅</span>
-              Réserver mon appel
-            </button>
-          </div>
-        </div>
       </div>
     </footer>
   )

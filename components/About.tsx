@@ -72,11 +72,11 @@ export default function About() {
             {/* Image */}
             <div className="lg:col-span-1">
               <div className="relative">
-                <div className="w-full h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+                <div className="w-full h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2">
                   <img
                     src="/images/logo/myriam.jpeg"
                     alt="Pasteur Myriam Konan"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               </div>
@@ -97,9 +97,9 @@ export default function About() {
                 {achievements.map((achievement, index) => (
                   <div
                     key={index}
-                    className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl"
+                    className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
                   >
-                    <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0 hover:scale-110 transition-transform duration-300">
                       <span className="text-xl">{achievement.icon}</span>
                     </div>
                     <div>
@@ -115,7 +115,7 @@ export default function About() {
               </div>
 
               {/* Mission Statement */}
-              <div className="bg-gradient-to-r from-slate-900 to-blue-900 rounded-2xl p-6 text-white">
+              <div className="bg-gradient-to-r from-slate-900 to-blue-900 rounded-2xl p-6 text-white hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <h3 className="text-xl font-bold mb-3">
                   Ma mission
                 </h3>
