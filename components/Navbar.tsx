@@ -80,7 +80,7 @@ export default function Navbar() {
               <img
                 src="/images/logo/logofinal.png"
                 alt="Cash360"
-                className="h-48 w-auto"
+                className="h-12 sm:h-16 lg:h-48 w-auto"
               />
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function Navbar() {
               </div>
             ) : (
               <button
-                onClick={() => setAuthModalOpen(true)}
+                onClick={() => window.location.href = '/login'}
                 className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
                 <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -250,7 +250,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => {
-                    setAuthModalOpen(true);
+                    window.location.href = '/login';
                     setIsMenuOpen(false);
                   }}
                   className="block w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"

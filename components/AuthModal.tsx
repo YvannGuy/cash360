@@ -84,28 +84,29 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black bg-opacity-50 overflow-y-auto"
+      className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto"
+      style={{ zIndex: 99999 }}
       onClick={handleBackdropClick}
     >
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative">
+      <div className="min-h-screen flex items-start justify-center p-2 sm:p-4 pt-8 sm:pt-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mb-4 relative" style={{ zIndex: 100000 }}>
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-2 sm:p-6">
+        <div className="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base sm:text-2xl font-bold">
+            <h2 className="text-lg sm:text-2xl font-bold">
               {isSignUp ? 'Créer un compte' : 'Se connecter'}
             </h2>
             <button
               onClick={onClose}
-              className="w-5 h-5 sm:w-8 sm:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
+              className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
             >
-              <span className="text-white text-xs sm:text-lg">×</span>
+              <span className="text-white text-sm sm:text-lg">×</span>
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-2 sm:p-6">
+        <div className="p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
