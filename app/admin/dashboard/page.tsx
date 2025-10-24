@@ -23,6 +23,8 @@ export default function AdminDashboardPage() {
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
+  const [relevesFiles, setRelevesFiles] = useState<{ [ticket: string]: any[] }>({})
+  const [loadingReleves, setLoadingReleves] = useState<{ [ticket: string]: boolean }>({})
   
   // Pagination pour les analyses
   const [currentAnalysisPage, setCurrentAnalysisPage] = useState(1)
@@ -242,6 +244,48 @@ export default function AdminDashboardPage() {
 
   const handlePdfUploadSuccess = () => {
     loadAllAnalyses() // Recharger les analyses pour afficher le PDF
+  }
+
+  const loadRelevesForAnalysis = async (ticket: string) => {
+    setLoadingReleves(prev => ({ ...prev, [ticket]: true }))
+    try {
+      const response = await fetch(`/api/admin/releves?ticket=${ticket}`)
+      const data = await response.json()
+      
+      if (data.files) {
+        setRelevesFiles(prev => ({ ...prev, [ticket]: data.files }))
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des relevés:', error)
+    } finally {
+      setLoadingReleves(prev => ({ ...prev, [ticket]: false }))
+    }
+  }
+
+  const handleDownloadReleve = async (filePath: string, fileName: string) => {
+    try {
+      const response = await fetch('/api/files/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          filePath: filePath,
+          bucket: 'releves'
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.downloadUrl) {
+        // Ouvrir le fichier dans un nouvel onglet
+        window.open(data.downloadUrl, '_blank')
+      } else {
+        console.error('Erreur lors du téléchargement:', data.error)
+      }
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error)
+    }
   }
 
 
@@ -586,6 +630,9 @@ export default function AdminDashboardPage() {
                       PDF
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Relevés
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -645,6 +692,33 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center space-x-2">
                             <span className="text-gray-400">❌</span>
                             <span className="text-gray-500 text-xs">Aucun PDF</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {!relevesFiles[analysis.ticket] ? (
+                          <button
+                            onClick={() => loadRelevesForAnalysis(analysis.ticket)}
+                            className="text-blue-600 hover:text-blue-900 text-xs"
+                          >
+                            🔍 Charger relevés
+                          </button>
+                        ) : loadingReleves[analysis.ticket] ? (
+                          <span className="text-gray-500 text-xs">⏳ Chargement...</span>
+                        ) : relevesFiles[analysis.ticket].length === 0 ? (
+                          <span className="text-gray-500 text-xs">❌ Aucun relevé</span>
+                        ) : (
+                          <div className="space-y-1">
+                            {relevesFiles[analysis.ticket].map((file: any, index: number) => (
+                              <button
+                                key={index}
+                                onClick={() => handleDownloadReleve(file.path, file.name)}
+                                className="block text-blue-600 hover:text-blue-900 text-xs truncate max-w-32"
+                                title={file.name}
+                              >
+                                📄 {file.name}
+                              </button>
+                            ))}
                           </div>
                         )}
                       </td>
