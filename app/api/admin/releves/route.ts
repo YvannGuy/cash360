@@ -28,6 +28,8 @@ export async function GET(request: NextRequest) {
     
     // Méthode alternative : récupérer tous les fichiers et filtrer côté client
     const getAllFiles = async (path = ''): Promise<any[]> => {
+      if (!supabaseAdmin) return []
+      
       const { data, error } = await supabaseAdmin.storage
         .from('releves')
         .list(path, { limit: 1000, offset: 0 })
