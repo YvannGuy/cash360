@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Tooltip, fmtEUR } from '@/components/Helpers'
 import CTABox from '@/components/CTABox'
 
@@ -146,7 +147,7 @@ export default function SimulationPage() {
         <div className="max-w-6xl mx-auto px-4 py-6">
           {/* Bouton retour */}
           <div className="mb-6">
-            <a
+            <Link
               href="/"
               className="inline-flex items-center text-gray-600 hover:text-[#0B1B2B] transition-colors"
             >
@@ -154,7 +155,7 @@ export default function SimulationPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Retour à l'accueil
-            </a>
+            </Link>
           </div>
 
           {/* Titre et description centrés */}
