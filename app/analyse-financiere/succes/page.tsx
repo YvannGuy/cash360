@@ -1,12 +1,31 @@
 'use client'
 
-import React, { Suspense } from 'react'
+import React, { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Script from 'next/script'
+
+// Declare gtag function for TypeScript
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
 
 function SuccesContent() {
   const searchParams = useSearchParams()
   const ticket = searchParams.get('ticket')
+
+  // Track conversion when page loads
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-17668382284/ngfGCKnU5LAbEMy8-OhB',
+        'value': 1.0,
+        'currency': 'EUR'
+      })
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
