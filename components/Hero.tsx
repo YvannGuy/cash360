@@ -42,7 +42,7 @@ export default function Hero() {
             </p>
 
             {/* Video */}
-            <div className="mb-12">
+            <div className="mb-8">
               <div className="relative w-full max-w-4xl mx-auto">
                 <div className="aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
                   <iframe
@@ -57,24 +57,28 @@ export default function Hero() {
               </div>
             </div>
 
+            {/* Texte sous la vidéo */}
+            <p className="mb-8 text-base sm:text-lg text-white/90 max-w-2xl mx-auto">
+              Faites le point en 60 secondes : découvrez votre équilibre financier et passez à l'action.
+            </p>
+
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+              <a
+                href="/simulation"
+                className="inline-flex items-center px-8 py-3.5 bg-[#D4AF37] text-[#0B1B2B] text-base font-medium rounded-lg hover:brightness-95 transition-all duration-200"
+              >
+                Commencer la simulation
+              </a>
+              
               <button
                 onClick={() => {
                   const modal = document.getElementById('calendly-modal');
                   if (modal) modal.style.display = 'block';
                 }}
-                className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold text-lg rounded-2xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-yellow-500/25"
+                className="inline-flex items-center px-8 py-3.5 border border-white/50 text-white text-base font-medium rounded-lg hover:bg-white/10 transition-all duration-200"
               >
-                Réserver un appel
-                <span className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
-              </button>
-              
-              <button
-                onClick={() => scrollToSection('apropos')}
-                className="inline-flex items-center px-8 py-4 border-2 border-white/30 text-white font-semibold text-lg rounded-2xl hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
-              >
-                En savoir plus
+                Réserver mon appel
               </button>
             </div>
 

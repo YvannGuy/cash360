@@ -40,6 +40,17 @@ export default function AnalyseFinancierePage() {
 
   const supabase = createClientBrowser()
 
+  // Fonction pour extraire les initiales de l'email
+  const getInitials = (email: string | undefined): string => {
+    if (!email) return ''
+    const localPart = email.split('@')[0] // Partie avant @
+    const parts = localPart.split('.') // Séparer par les points
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+    return localPart.substring(0, 2).toUpperCase()
+  }
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -199,7 +210,7 @@ export default function AnalyseFinancierePage() {
                   <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-sm font-medium text-gray-700">
-                      {user.email?.split('@')[0]}
+                      {getInitials(user.email)}
                     </span>
                   </div>
                   <button

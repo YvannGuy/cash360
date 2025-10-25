@@ -14,6 +14,17 @@ export default function Navbar() {
 
   const supabase = createClientBrowser()
 
+  // Fonction pour extraire les initiales de l'email
+  const getInitials = (email: string | undefined): string => {
+    if (!email) return ''
+    const localPart = email.split('@')[0] // Partie avant @
+    const parts = localPart.split('.') // Séparer par les points
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+    return localPart.substring(0, 2).toUpperCase()
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
@@ -123,7 +134,7 @@ export default function Navbar() {
                   >
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-sm font-medium text-gray-700">
-                      {user.email?.split('@')[0]}
+                      {getInitials(user.email)}
                     </span>
                     <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -174,7 +185,6 @@ export default function Navbar() {
               }}
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              <span className="w-4 h-4 mr-2">📅</span>
               Réserver un appel
             </button>
           </div>
@@ -223,7 +233,7 @@ export default function Navbar() {
                   <div className="flex items-center space-x-2 mb-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-sm font-medium text-gray-700">
-                      Connecté en tant que {user.email?.split('@')[0]}
+                      Connecté en tant que {getInitials(user.email)}
                     </span>
                   </div>
                   <div className="space-y-2">
@@ -270,7 +280,6 @@ export default function Navbar() {
                 }}
                 className="block w-full mt-4 px-3 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-xl text-center hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300"
               >
-                <span className="w-4 h-4 inline mr-2">📅</span>
                 Réserver un appel
               </button>
             </div>

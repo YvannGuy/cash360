@@ -21,6 +21,17 @@ export default function DashboardPage() {
   
   const supabase = createClientBrowser()
 
+  // Fonction pour extraire les initiales de l'email
+  const getInitials = (email: string | undefined): string => {
+    if (!email) return ''
+    const localPart = email.split('@')[0] // Partie avant @
+    const parts = localPart.split('.') // Séparer par les points
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+    return localPart.substring(0, 2).toUpperCase()
+  }
+
   // Calculs de pagination
   const totalPages = Math.ceil(analyses.length / analysesPerPage)
   const startIndex = (currentPage - 1) * analysesPerPage
@@ -168,11 +179,8 @@ export default function DashboardPage() {
                       className="flex items-center space-x-1 sm:space-x-2 bg-gray-50 px-2 sm:px-3 py-1 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                     >
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-xs sm:text-sm font-medium text-gray-700 hidden sm:inline">
-                        {user.email?.split('@')[0]}
-                      </span>
-                      <span className="text-xs sm:text-sm font-medium text-gray-700 sm:hidden">
-                        {user.email?.split('@')[0]?.substring(0, 8)}...
+                      <span className="text-xs sm:text-sm font-medium text-gray-700">
+                        {getInitials(user.email)}
                       </span>
                       <svg className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
