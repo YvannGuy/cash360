@@ -111,12 +111,12 @@ export default function Navbar() {
               >
                 À propos
               </button>
-              <a
-                href="/analyse-financiere"
+              <button
+                onClick={() => scrollToSection('section-analyse')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
                 Analyse personnalisée
-              </a>
+              </button>
             </div>
           </div>
 
@@ -220,13 +220,15 @@ export default function Navbar() {
               >
                 À propos
               </button>
-              <a
-                href="/analyse-financiere"
-                onClick={() => setIsMenuOpen(false)}
+              <button
+                onClick={() => {
+                  scrollToSection('section-analyse')
+                  setIsMenuOpen(false)
+                }}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
               >
                 Analyse personnalisée
-              </a>
+              </button>
               
               {/* Mobile Auth */}
               {user ? (
