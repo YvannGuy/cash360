@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function SectionAnalyse() {
   const [isVisible, setIsVisible] = useState(false)
@@ -31,37 +32,49 @@ export default function SectionAnalyse() {
   return (
     <section
       id="section-analyse"
-      className={`py-20 bg-gray-50 text-gray-900 transition-all duration-1000 ${
+      className={`py-12 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
-            Analyse personnalisée de vos relevés bancaires
-          </h2>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Left Section - Text */}
+            <div className="space-y-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+                Analyse personnalisée de vos relevés bancaires
+              </h2>
+              <p className="text-base text-white/90 leading-relaxed">
+                Découvrez où part votre argent et identifiez les points à améliorer grâce à une analyse claire et confidentielle de vos relevés bancaires.
+              </p>
+              
+              {/* CTA Button */}
+              <div className="pt-2">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#D4AF37] px-6 py-3 text-[#0B1B2B] font-semibold text-base hover:brightness-95 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  Envoyer mes relevés
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
 
-          <p className="text-lg sm:text-xl text-gray-600 leading-relaxed mb-8">
-            Découvrez où part votre argent et identifiez les points à améliorer grâce à une analyse claire et confidentielle de vos relevés bancaires.
-            Recevez des recommandations concrètes pour reprendre le contrôle de vos finances.
-          </p>
-
-          {/* Variante spirituelle (optionnelle) */}
-          {/* <p className="text-base text-white/70 mb-8 max-w-2xl mx-auto">
-            Mettez de l'ordre dans vos finances et retrouvez la paix intérieure.
-            Une analyse claire et bienveillante pour vous guider vers l'équilibre et la liberté financière.
-          </p> */}
-
-          <div>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#D4AF37] px-8 py-4 text-[#0B1B2B] font-semibold text-lg hover:brightness-95 transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              Envoyer mes relevés
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
+            {/* Right Section - Image */}
+            <div className="relative flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-md">
+                <Image
+                  src="/images/logo/money1.png"
+                  alt="Analyse financière"
+                  width={500}
+                  height={400}
+                  className="object-contain rounded-2xl"
+                  priority
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

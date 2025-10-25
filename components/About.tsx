@@ -31,7 +31,7 @@ export default function About() {
     {
       icon: "🏆",
       title: "Expertise bancaire",
-      description: "15 ans d'expérience dans le secteur bancaire"
+      description: "10 ans d'expérience dans le secteur bancaire"
     },
     {
       icon: "❤️",
@@ -86,7 +86,7 @@ export default function About() {
             <div className="lg:col-span-2 space-y-8">
               <div>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  Forte de 15 ans d'expérience dans le secteur bancaire et d'une vocation spirituelle profonde, 
+                  Forte de 10 ans d'expérience dans le secteur bancaire et d'une vocation spirituelle profonde, 
                   j'ai développé une méthode unique qui combine expertise financière et accompagnement spirituel 
                   pour vous aider à retrouver l'équilibre et la prospérité.
                 </p>

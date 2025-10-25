@@ -7,8 +7,8 @@ export default function FAQ() {
 
   const faqs = [
     {
-      question: "Qu'est-ce que Cash360 ?",
-      answer: "Cash360 est une plateforme d'accompagnement financier dédiée aux particuliers et aux églises. Notre mission : vous aider à comprendre, organiser et améliorer votre gestion de l'argent pour retrouver paix et équilibre."
+      question: "Comment Cash360 peut m'aider ?",
+      answer: "Cash360 vous aide à comprendre où part votre argent, à identifier vos priorités et à réorganiser vos finances. Grâce à une approche simple, humaine et spirituelle, vous retrouvez équilibre, sérénité et liberté financière."
     },
     {
       question: "Comment fonctionne l'analyse financière ?",

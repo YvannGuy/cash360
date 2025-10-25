@@ -138,7 +138,7 @@ export default function Testimonials() {
                 <div className="text-gray-300">Délai d'analyse</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-purple-400 mb-2">15 ans</div>
+                <div className="text-3xl font-bold text-purple-400 mb-2">10 ans</div>
                 <div className="text-gray-300">D'expérience</div>
               </div>
             </div>
