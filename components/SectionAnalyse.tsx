@@ -31,7 +31,7 @@ export default function SectionAnalyse() {
   return (
     <section
       id="section-analyse"
-      className={`py-20 bg-[#0B1B2B] text-white transition-all duration-1000 ${
+      className={`py-20 bg-gray-50 text-gray-900 transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
@@ -41,7 +41,7 @@ export default function SectionAnalyse() {
             Analyse personnalisée de vos relevés bancaires
           </h2>
 
-          <p className="text-lg sm:text-xl text-white/90 leading-relaxed mb-8">
+          <p className="text-lg sm:text-xl text-gray-600 leading-relaxed mb-8">
             Découvrez où part votre argent et identifiez les points à améliorer grâce à une analyse claire et confidentielle de vos relevés bancaires.
             Recevez des recommandations concrètes pour reprendre le contrôle de vos finances.
           </p>
@@ -54,7 +54,7 @@ export default function SectionAnalyse() {
 
           <div>
             <Link
-              href="/analyse-financiere"
+              href="/login"
               className="inline-flex items-center gap-2 rounded-lg bg-[#D4AF37] px-8 py-4 text-[#0B1B2B] font-semibold text-lg hover:brightness-95 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               Envoyer mes relevés
