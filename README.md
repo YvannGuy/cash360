@@ -3,7 +3,7 @@
 <div align="center">
 
 <div style="background-color: white; display: inline-block; padding: 8px; border-radius: 8px;">
-  <img src="public/images/logo/logofinal.png" alt="Cash360 Logo" width="300" />
+  <img src="public/images/logo/cashaz.jpg" alt="Cash360 Logo" width="300" />
 </div>
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)
