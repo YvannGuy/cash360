@@ -154,7 +154,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 ml-16 mt-4">
               <button
                 onClick={() => router.push('/')}
                 className="cursor-pointer"
@@ -162,15 +162,15 @@ export default function DashboardPage() {
                 <Image
                   src="/images/logo/logofinal.png"
                   alt="Cash360"
-                  width={192}
-                  height={192}
-                  className="h-12 sm:h-16 w-auto hover:opacity-80 transition-opacity duration-200"
+                  width={540}
+                  height={540}
+                  className="h-32 sm:h-42 w-auto hover:opacity-80 transition-opacity duration-200"
                 />
               </button>
             </div>
-
+            
             {/* Informations de connexion */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 mr-20">
               {user && (
                 <div className="flex items-center space-x-2 sm:space-x-3">
                   <div className="relative user-menu-container z-[9999]">
