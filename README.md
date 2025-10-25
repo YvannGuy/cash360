@@ -154,9 +154,9 @@ NEXT_PUBLIC_CALENDLY_URL=
 - Capture de leads avec stockage Supabase
 
 ### Architecture Scalable
-- Prêt pour 10k+ utilisateurs sans refactoring
-- Cache tiers pour réduire les coûts Supabase
-- CDN Vercel pour assets statiques
+- **Scalabilité horizontale** : Architecture serverless permettant de supporter ~10k utilisateurs concurrents sans modifications majeures du code
+- **Optimisations** : Cache tiers pour réduire les coûts Supabase, CDN Vercel pour assets statiques
+- **Montée en charge** : Pas de serveur à dimensionner, scaling automatique par Vercel/Supabase
 
 ---
 
@@ -167,7 +167,7 @@ NEXT_PUBLIC_CALENDLY_URL=
 Node.js >= 18.0
 npm >= 9.0
 
-# Clone du repository
+# Clone du repository (si accès accordé)
 git clone https://github.com/YvannGuy/cash360.git
 cd cash360
 
