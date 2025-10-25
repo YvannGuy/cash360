@@ -11,6 +11,7 @@ import About from '@/components/About'
 import CTASection from '@/components/CTASection'
 import Footer from '@/components/Footer'
 import FAQ from '@/components/FAQ'
+import SectionAnalyse from '@/components/SectionAnalyse'
 import LegalModal from '@/components/LegalModal'
 
 export default function Home() {
@@ -69,6 +70,9 @@ export default function Home() {
         
         {/* Steps Section */}
         <Steps />
+        
+        {/* Section Analyse */}
+        <SectionAnalyse />
         
         {/* About Section */}
         <About />
