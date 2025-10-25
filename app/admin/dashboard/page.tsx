@@ -28,21 +28,35 @@ export default function AdminDashboardPage() {
   
   // Pagination pour les analyses
   const [currentAnalysisPage, setCurrentAnalysisPage] = useState(1)
-  const analysesPerPage = 10
+  const analysesPerPage = 2
   
   // Pagination pour les utilisateurs
   const [currentUserPage, setCurrentUserPage] = useState(1)
-  const usersPerPage = 10
+  const usersPerPage = 2
 
   useEffect(() => {
+    const checkAdminSession = () => {
+      const adminSessionData = localStorage.getItem('admin_session')
+      const adminEmail = localStorage.getItem('admin_email')
+      
+      if (adminSessionData === 'true' && adminEmail) {
+        setAdminSession({ isAdmin: true, email: adminEmail })
+      } else {
+        router.push('/admin/login')
+        return
+      }
+      setLoading(false)
+    }
+    
     checkAdminSession()
-  }, [])
+  }, [router])
 
   useEffect(() => {
     if (adminSession?.isAdmin) {
       loadAllAnalyses()
       loadAllUsers()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminSession])
 
   useEffect(() => {
@@ -59,22 +73,31 @@ export default function AdminDashboardPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showAdminMenu])
 
-  useEffect(() => {
-    filterAnalyses()
+  const filterAnalyses = React.useCallback(() => {
+    let filtered = analyses
+
+    // Filtre par statut
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(analysis => analysis.status === statusFilter)
+    }
+
+    // Filtre par terme de recherche
+    if (searchTerm) {
+      filtered = filtered.filter(analysis => 
+        analysis.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        analysis.client_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        analysis.ticket.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    setFilteredAnalyses(filtered)
+    // Reset à la page 1 quand on filtre
+    setCurrentAnalysisPage(1)
   }, [analyses, statusFilter, searchTerm])
 
-  const checkAdminSession = () => {
-    const adminSessionData = localStorage.getItem('admin_session')
-    const adminEmail = localStorage.getItem('admin_email')
-    
-    if (adminSessionData === 'true' && adminEmail) {
-      setAdminSession({ isAdmin: true, email: adminEmail })
-    } else {
-      router.push('/admin/login')
-      return
-    }
-    setLoading(false)
-  }
+  useEffect(() => {
+    filterAnalyses()
+  }, [filterAnalyses])
 
   const loadAllAnalyses = async () => {
     try {
@@ -105,28 +128,6 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs:', error)
     }
-  }
-
-  const filterAnalyses = () => {
-    let filtered = analyses
-
-    // Filtre par statut
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(analysis => analysis.status === statusFilter)
-    }
-
-    // Filtre par terme de recherche
-    if (searchTerm) {
-      filtered = filtered.filter(analysis => 
-        analysis.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        analysis.client_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        analysis.ticket.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    setFilteredAnalyses(filtered)
-    // Reset à la page 1 quand on filtre
-    setCurrentAnalysisPage(1)
   }
 
   // Calculs de pagination pour les analyses
@@ -286,6 +287,9 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error('Erreur lors du téléchargement:', error)
     }
+    
+    // fileName est conservé pour une utilisation future potentielle (logs, analytics, etc.)
+    void fileName
   }
 
 
@@ -380,6 +384,11 @@ export default function AdminDashboardPage() {
           },
           body: JSON.stringify({ analysisId: analysis.id })
         })
+        
+        // Vérifier si la suppression a réussi
+        if (!response.ok) {
+          console.error(`Erreur lors de la suppression de l'analyse ${analysis.id}`)
+        }
       }
 
       // Recharger les données
@@ -409,13 +418,13 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+    <div className="min-h-screen bg-[#F5F7FA]">
       {/* Header Admin */}
-      <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/50 relative z-[9998]">
+      <header className="bg-white border-b border-gray-200 relative z-[9998]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex-shrink-0">
+            <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/')}
                 className="cursor-pointer group"
@@ -425,560 +434,481 @@ export default function AdminDashboardPage() {
                   alt="Cash360 Admin"
                   width={120}
                   height={120}
-                  className="h-12 w-auto group-hover:scale-105 transition-transform duration-200"
+                  className="h-10 w-auto group-hover:opacity-80 transition-opacity duration-200"
                 />
               </button>
+              <div className="hidden md:block text-sm text-gray-500">/ Dashboard</div>
             </div>
 
-            {/* Titre central */}
-            <div className="text-center">
-              <h1 className="text-lg font-bold text-gray-900">Dashboard Administrateur</h1>
-            </div>
-            
             {/* Menu admin */}
-            <div className="flex items-center space-x-3">
-              <div className="relative admin-menu-container z-[9999]">
-                <button
-                  onClick={() => setShowAdminMenu(!showAdminMenu)}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-red-50 to-red-100 px-4 py-2 rounded-xl border border-red-200/50 hover:from-red-100 hover:to-red-200 transition-all duration-200 shadow-sm"
-                >
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-red-700">
-                    {adminSession.email?.split('@')[0]}
-                  </span>
-                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {showAdminMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
-                    <button
-                      onClick={() => {
-                        router.push('/admin/dashboard')
-                        setShowAdminMenu(false)
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Mon compte
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleSignOut()
-                        setShowAdminMenu(false)
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Se déconnecter
-                    </button>
-                  </div>
-                )}
-              </div>
+            <div className="relative admin-menu-container z-[9999]">
+              <button
+                onClick={() => setShowAdminMenu(!showAdminMenu)}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                  {adminSession.email?.charAt(0).toUpperCase()}
+                </div>
+              </button>
+              
+              {showAdminMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
+                  <button
+                    onClick={() => {
+                      router.push('/admin/dashboard')
+                      setShowAdminMenu(false)
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Mon compte
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSignOut()
+                      setShowAdminMenu(false)
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    Se déconnecter
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </header>
 
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Statistiques */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg border border-blue-200/50 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-blue-700">Total Analyses</p>
-                  <p className="text-3xl font-bold text-blue-900">{analyses.length}</p>
-                </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Total Analyses</p>
+                <p className="text-2xl font-bold text-gray-900">{analyses.length}</p>
               </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl shadow-lg border border-yellow-200/50 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-yellow-700">En cours</p>
-                  <p className="text-3xl font-bold text-yellow-900">
-                    {analyses.filter(a => a.status === 'en_cours').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl shadow-lg border border-purple-200/50 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-purple-700">En analyse</p>
-                  <p className="text-3xl font-bold text-purple-900">
-                    {analyses.filter(a => a.status === 'en_analyse').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl shadow-lg border border-green-200/50 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-green-700">Terminées</p>
-                  <p className="text-3xl font-bold text-green-900">
-                    {analyses.filter(a => a.status === 'terminee').length}
-                  </p>
-                </div>
+              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
               </div>
             </div>
           </div>
 
-          {/* Filtres et recherche */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <label htmlFor="status-filter" className="text-sm font-medium text-gray-700">
-                    Statut:
-                  </label>
-                  <select
-                    id="status-filter"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="all">Tous</option>
-                    <option value="en_cours">En cours</option>
-                    <option value="en_analyse">En analyse</option>
-                    <option value="terminee">Terminées</option>
-                  </select>
-                </div>
-                
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">En cours</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  {analyses.filter(a => a.status === 'en_cours').length}
+                </p>
               </div>
+              <div className="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">En analyse</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {analyses.filter(a => a.status === 'en_analyse').length}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Terminées</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {analyses.filter(a => a.status === 'terminee').length}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Demandes d'analyse</h2>
+            <div className="flex items-center space-x-3">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">Tous</option>
+                <option value="en_cours">En cours</option>
+                <option value="en_analyse">En analyse</option>
+                <option value="terminee">Terminées</option>
+              </select>
               
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Rechercher par nom, email ou ticket..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-64 pl-9 pr-4 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <svg className="absolute left-2.5 top-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
             </div>
           </div>
 
-          {/* Liste des analyses */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200/50">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                Demandes d'analyse ({filteredAnalyses.length})
-              </h2>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ticket
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Client
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Statut
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Progression
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      PDF
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Relevés
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentAnalyses.map((analysis) => (
-                    <tr key={analysis.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {analysis.ticket}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {analysis.client_name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {analysis.client_email}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+          {/* Liste des analyses en cartes */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6">
+            {currentAnalyses.map((analysis) => (
+              <div key={analysis.id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                {/* Header de la carte */}
+                <div className="p-5 border-b border-gray-200">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-lg font-bold text-gray-900">#{analysis.ticket}</span>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(analysis.status)}`}>
                           {getStatusLabel(analysis.status)}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                            <div
-                              className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
-                              style={{ width: analysis.status === 'terminee' ? '100%' : '70%' }}
-                            ></div>
-                          </div>
-                          <span className="text-sm text-gray-600">{analysis.status === 'terminee' ? '100%' : '70%'}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(analysis.created_at).toLocaleDateString('fr-FR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {analysis.pdf_url ? (
-                          <div className="flex items-center space-x-2">
-                            <span className="text-green-600">📄</span>
-                            <a
-                              href={analysis.pdf_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 underline text-xs max-w-32 truncate"
-                              title={getPdfFileName(analysis.pdf_url)}
-                            >
-                              {getPdfFileName(analysis.pdf_url)}
-                            </a>
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            <span className="text-gray-400">❌</span>
-                            <span className="text-gray-500 text-xs">Aucun PDF</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {!relevesFiles[analysis.ticket] ? (
-                          <button
-                            onClick={() => loadRelevesForAnalysis(analysis.ticket)}
-                            className="text-blue-600 hover:text-blue-900 text-xs"
-                          >
-                            🔍 Charger relevés
-                          </button>
-                        ) : loadingReleves[analysis.ticket] ? (
-                          <span className="text-gray-500 text-xs">⏳ Chargement...</span>
-                        ) : relevesFiles[analysis.ticket].length === 0 ? (
-                          <span className="text-gray-500 text-xs">❌ Aucun relevé</span>
-                        ) : (
-                          <div className="space-y-1">
-                            {relevesFiles[analysis.ticket].map((file: any, index: number) => (
-                              <button
-                                key={index}
-                                onClick={() => handleDownloadReleve(file.path, file.name)}
-                                className="block text-blue-600 hover:text-blue-900 text-xs truncate max-w-32"
-                                title={file.name}
-                              >
-                                📄 {file.name}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          {analysis.status === 'en_cours' && (
-                            <button
-                              onClick={() => handleUpdateStatus(analysis.id, 'en_analyse', 70)}
-                              className="text-blue-600 hover:text-blue-900"
-                            >
-                              Démarrer analyse
-                            </button>
-                          )}
-                          {analysis.status === 'en_analyse' && (
-                            <button
-                              onClick={() => handleMarkAsCompleted(analysis)}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              Marquer comme terminée
-                            </button>
-                          )}
-                          {analysis.status === 'terminee' && (
-                            <div className="flex items-center space-x-2">
-                              <span className="text-green-600">
-                                Analyse terminée
-                              </span>
-                              <button
-                                onClick={() => handleUploadPdf(analysis.id)}
-                                className="text-yellow-600 hover:text-yellow-900 text-xs"
-                              >
-                                📄 Upload PDF
-                              </button>
-                            </div>
-                          )}
-                          
-                          {/* Bouton de suppression pour toutes les analyses */}
-                          <button
-                            onClick={() => handleDeleteAnalysis(analysis.id, analysis.ticket)}
-                            className="text-red-600 hover:text-red-900 text-xs ml-2"
-                            title="Supprimer cette analyse"
-                          >
-                            🗑️ Supprimer
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Pagination pour les analyses */}
-            {totalAnalysisPages > 1 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div className="flex-1 flex justify-between sm:hidden">
-                  <button
-                    onClick={() => setCurrentAnalysisPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentAnalysisPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Précédent
-                  </button>
-                  <button
-                    onClick={() => setCurrentAnalysisPage(prev => Math.min(totalAnalysisPages, prev + 1))}
-                    disabled={currentAnalysisPage === totalAnalysisPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Suivant
-                  </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Affichage de <span className="font-medium">{startAnalysisIndex + 1}</span> à{' '}
-                      <span className="font-medium">{Math.min(endAnalysisIndex, filteredAnalyses.length)}</span> sur{' '}
-                      <span className="font-medium">{filteredAnalyses.length}</span> analyses
-                    </p>
+                      </div>
+                      <div className="text-sm">
+                        <p className="font-medium text-gray-900">{analysis.client_name}</p>
+                        <p className="text-gray-500 text-xs">{analysis.client_email}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteAnalysis(analysis.id, analysis.ticket)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                      title="Supprimer"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
+                </div>
+
+                {/* Body de la carte */}
+                <div className="p-5 space-y-4">
+                  {/* Progression */}
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                      <button
-                        onClick={() => setCurrentAnalysisPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentAnalysisPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-gray-600">Progression</span>
+                      <span className="text-xs font-semibold text-gray-900">{analysis.status === 'terminee' ? '100%' : '70%'}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: analysis.status === 'terminee' ? '100%' : '70%' }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Date */}
+                  <div className="flex items-center text-sm text-gray-600">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {new Date(analysis.created_at).toLocaleDateString('fr-FR')}
+                  </div>
+
+                  {/* PDF */}
+                  <div>
+                    <span className="text-xs font-medium text-gray-600 block mb-1">Fichier PDF</span>
+                    {analysis.pdf_url ? (
+                      <a
+                        href={analysis.pdf_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
                       >
-                        <span className="sr-only">Précédent</span>
-                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
-                      </button>
-                      <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                        Page {currentAnalysisPage} sur {totalAnalysisPages}
-                      </span>
+                        <span className="truncate">{getPdfFileName(analysis.pdf_url)}</span>
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 text-sm">Aucun PDF</span>
+                    )}
+                  </div>
+
+                  {/* Relevés */}
+                  <div>
+                    <span className="text-xs font-medium text-gray-600 block mb-1">Relevés bancaires</span>
+                    {!relevesFiles[analysis.ticket] ? (
                       <button
-                        onClick={() => setCurrentAnalysisPage(prev => Math.min(totalAnalysisPages, prev + 1))}
-                        disabled={currentAnalysisPage === totalAnalysisPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => loadRelevesForAnalysis(analysis.ticket)}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
                       >
-                        <span className="sr-only">Suivant</span>
-                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                        </svg>
+                        🔍 Charger les relevés
                       </button>
-                    </nav>
+                    ) : loadingReleves[analysis.ticket] ? (
+                      <span className="text-gray-500 text-sm">⏳ Chargement...</span>
+                    ) : relevesFiles[analysis.ticket].length === 0 ? (
+                      <span className="text-gray-400 text-sm">Aucun relevé</span>
+                    ) : (
+                      <div className="space-y-1">
+                        {relevesFiles[analysis.ticket].map((file: any, index: number) => (
+                          <button
+                            key={index}
+                            onClick={() => handleDownloadReleve(file.path, file.name)}
+                            className="block text-blue-600 hover:text-blue-800 text-sm truncate"
+                            title={file.name}
+                          >
+                            📄 {file.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="pt-3 border-t border-gray-100">
+                    {analysis.status === 'en_cours' && (
+                      <button
+                        onClick={() => handleUpdateStatus(analysis.id, 'en_analyse', 70)}
+                        className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Démarrer l'analyse
+                      </button>
+                    )}
+                    {analysis.status === 'en_analyse' && (
+                      <button
+                        onClick={() => handleMarkAsCompleted(analysis)}
+                        className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Marquer comme terminée
+                      </button>
+                    )}
+                    {analysis.status === 'terminee' && (
+                      <div className="space-y-2">
+                        <div className="text-center text-sm text-green-600 font-medium">
+                          ✓ Analyse terminée
+                        </div>
+                        {!analysis.pdf_url && (
+                          <button
+                            onClick={() => handleUploadPdf(analysis.id)}
+                            className="w-full px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600 transition-colors"
+                          >
+                            📄 Uploader le PDF
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
+            ))}
           </div>
-
-          {/* Section Utilisateurs */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-8">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
-                Utilisateurs inscrits ({users.length})
-              </h2>
+          
+          {/* Pagination pour les analyses */}
+          {totalAnalysisPages > 1 && (
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentAnalysisPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentAnalysisPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Précédent
+                </button>
+                <button
+                  onClick={() => setCurrentAnalysisPage(prev => Math.min(totalAnalysisPages, prev + 1))}
+                  disabled={currentAnalysisPage === totalAnalysisPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Suivant
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Affichage de <span className="font-medium">{startAnalysisIndex + 1}</span> à{' '}
+                    <span className="font-medium">{Math.min(endAnalysisIndex, filteredAnalyses.length)}</span> sur{' '}
+                    <span className="font-medium">{filteredAnalyses.length}</span> analyses
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentAnalysisPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentAnalysisPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Précédent</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                      Page {currentAnalysisPage} sur {totalAnalysisPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentAnalysisPage(prev => Math.min(totalAnalysisPages, prev + 1))}
+                      disabled={currentAnalysisPage === totalAnalysisPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Suivant</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+              </div>
             </div>
-            
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email / Nom
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Première analyse
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Dernière connexion
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Analyses
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentUsers.map((user) => (
-                    <tr key={user.id || user.email} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.email}
-                          </div>
-                          {user.name && (
-                            <div className="text-sm text-gray-500">
-                              {user.name}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(user.first_analysis_date || user.created_at).toLocaleDateString('fr-FR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Jamais'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {user.analysis_count} analyse{user.analysis_count > 1 ? 's' : ''}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+          )}
+        </div>
+
+        {/* Section Utilisateurs */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-8">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">
+              Utilisateurs inscrits ({users.length})
+            </h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+            {currentUsers.map((user) => (
+              <div key={user.id || user.email} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                {/* Header de la carte */}
+                <div className="p-5 border-b border-gray-200">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           user.is_authenticated 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-orange-100 text-orange-800'
                         }`}>
-                          {user.is_authenticated ? 'Compte créé' : 'Email uniquement'}
+                          {user.is_authenticated ? '✓ Compte créé' : '📧 Email uniquement'}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {user.is_authenticated ? (
-                          <button
-                            onClick={() => handleDeleteUser(user.id, user.email)}
-                            className="text-red-600 hover:text-red-900 text-xs"
-                            title="Supprimer cet utilisateur"
-                          >
-                            🗑️ Supprimer
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleDeleteUserByEmail(user.email)}
-                            className="text-red-600 hover:text-red-900 text-xs"
-                            title="Supprimer toutes les analyses de cet email"
-                          >
-                            🗑️ Supprimer analyses
-                          </button>
+                      </div>
+                      <div className="text-sm">
+                        <p className="font-medium text-gray-900">{user.email}</p>
+                        {user.name && (
+                          <p className="text-gray-500 text-xs">{user.name}</p>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Pagination pour les utilisateurs */}
-            {totalUserPages > 1 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div className="flex-1 flex justify-between sm:hidden">
-                  <button
-                    onClick={() => setCurrentUserPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentUserPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Précédent
-                  </button>
-                  <button
-                    onClick={() => setCurrentUserPage(prev => Math.min(totalUserPages, prev + 1))}
-                    disabled={currentUserPage === totalUserPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Suivant
-                  </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Affichage de <span className="font-medium">{startUserIndex + 1}</span> à{' '}
-                      <span className="font-medium">{Math.min(endUserIndex, users.length)}</span> sur{' '}
-                      <span className="font-medium">{users.length}</span> utilisateurs
-                    </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => user.is_authenticated ? handleDeleteUser(user.id, user.email) : handleDeleteUserByEmail(user.email)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                      title={user.is_authenticated ? "Supprimer cet utilisateur" : "Supprimer toutes les analyses"}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                      <button
-                        onClick={() => setCurrentUserPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentUserPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="sr-only">Précédent</span>
-                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                      <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                        Page {currentUserPage} sur {totalUserPages}
-                      </span>
-                      <button
-                        onClick={() => setCurrentUserPage(prev => Math.min(totalUserPages, prev + 1))}
-                        disabled={currentUserPage === totalUserPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="sr-only">Suivant</span>
-                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    </nav>
+                </div>
+
+                {/* Body de la carte */}
+                <div className="p-5 space-y-3">
+                  {/* Nombre d'analyses */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-gray-600">Analyses</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {user.analysis_count} analyse{user.analysis_count > 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Première analyse */}
+                  <div className="flex items-center text-sm text-gray-600">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span className="text-xs">1ère analyse : {new Date(user.first_analysis_date || user.created_at).toLocaleDateString('fr-FR')}</span>
+                  </div>
+
+                  {/* Dernière connexion */}
+                  <div className="flex items-center text-sm text-gray-600">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span className="text-xs">Dernière connexion : {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Jamais'}</span>
                   </div>
                 </div>
               </div>
-            )}
+            ))}
           </div>
+          
+          {/* Pagination pour les utilisateurs */}
+          {totalUserPages > 1 && (
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentUserPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentUserPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Précédent
+                </button>
+                <button
+                  onClick={() => setCurrentUserPage(prev => Math.min(totalUserPages, prev + 1))}
+                  disabled={currentUserPage === totalUserPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Suivant
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Affichage de <span className="font-medium">{startUserIndex + 1}</span> à{' '}
+                    <span className="font-medium">{Math.min(endUserIndex, users.length)}</span> sur{' '}
+                    <span className="font-medium">{users.length}</span> utilisateurs
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentUserPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentUserPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Précédent</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                      Page {currentUserPage} sur {totalUserPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentUserPage(prev => Math.min(totalUserPages, prev + 1))}
+                      disabled={currentUserPage === totalUserPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Suivant</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
