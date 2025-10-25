@@ -30,13 +30,13 @@ export default function Steps() {
   const steps = [
     {
       number: "01",
-      icon: "📅",
-      title: "Réserver votre appel",
-      description: "Prenez 10 minutes pour échanger sur votre situation financière et vos objectifs.",
+      icon: "🔹",
+      title: "Créer un compte",
+      description: "Prenez quelques minutes pour créer votre compte et accéder à votre espace personnel Cash360.",
       details: [
-        "Appel confidentiel et bienveillant",
-        "Évaluation de vos besoins",
-        "Présentation de la méthode Cash360"
+        "Accès à votre espace sécurisé",
+        "Suivi de vos finances et progrès",
+        "Découverte de la méthode Cash360"
       ],
       color: "from-blue-500 to-blue-600"
     },
