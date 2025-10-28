@@ -26,7 +26,8 @@ export const translations = {
       subtitleHighlight: "équilibre et liberté financière",
       videoDescription: "Faites le point en 60 secondes : découvrez votre équilibre financier et passez à l'action.",
       ctaPrimary: "Commencer la simulation",
-      ctaSecondary: "Réserver mon appel"
+      ctaSecondary: "Réserver mon appel",
+      cta: "Commencer la simulation"
     },
     
     // Signup Form
@@ -425,7 +426,8 @@ export const translations = {
       subtitleHighlight: "balance and financial freedom",
       videoDescription: "Take stock in 60 seconds: discover your financial balance and take action.",
       ctaPrimary: "Start the simulation",
-      ctaSecondary: "Book my call"
+      ctaSecondary: "Book my call",
+      cta: "Start the simulation"
     },
     
     // Signup Form
@@ -824,7 +826,8 @@ export const translations = {
       subtitleHighlight: "equilibrio y libertad financiera",
       videoDescription: "Haz un balance en 60 segundos: descubre tu equilibrio financiero y pasa a la acción.",
       ctaPrimary: "Comenzar la simulación",
-      ctaSecondary: "Reservar mi llamada"
+      ctaSecondary: "Reservar mi llamada",
+      cta: "Comenzar la simulación"
     },
     
     // Signup Form
@@ -1222,7 +1225,8 @@ export const translations = {
       subtitleHighlight: "equilíbrio e liberdade financeira",
       videoDescription: "Faça um balanço em 60 segundos: descubra seu equilíbrio financeiro e passe à ação.",
       ctaPrimary: "Começar a simulação",
-      ctaSecondary: "Reservar minha chamada"
+      ctaSecondary: "Reservar minha chamada",
+      cta: "Começar a simulação"
     },
     
     // Signup Form
