@@ -15,9 +15,14 @@ export default function LoginPage() {
   const [message, setMessage] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [mounted, setMounted] = useState(false)
 
   const supabase = createClientBrowser()
   const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
@@ -80,6 +85,18 @@ export default function LoginPage() {
     } catch (error: any) {
       setError(error.message)
     }
+  }
+
+  // Afficher un loader pendant l'hydration
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4 sm:p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+          <p className="text-white">Chargement...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

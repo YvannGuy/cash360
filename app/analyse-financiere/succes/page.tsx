@@ -17,6 +17,12 @@ function SuccesContent() {
   const { t } = useLanguage()
   const searchParams = useSearchParams()
   const ticket = searchParams.get('ticket')
+  const [mounted, setMounted] = React.useState(false)
+
+  // Set mounted state
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Track conversion when page loads
   useEffect(() => {
@@ -28,6 +34,17 @@ function SuccesContent() {
       })
     }
   }, [])
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

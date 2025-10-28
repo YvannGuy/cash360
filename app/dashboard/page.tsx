@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
+  const [mounted, setMounted] = useState(false)
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
@@ -43,6 +44,10 @@ export default function DashboardPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const checkUser = async () => {
@@ -138,12 +143,12 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t.dashboard.loading}</p>
+          <p className="text-gray-600">{mounted ? t.dashboard.loading : 'Chargement...'}</p>
         </div>
       </div>
     )
