@@ -396,6 +396,119 @@ export const translations = {
       username: "@ev.myriamkonan",
       schedule: "Tous les lundis à 22h00 (Paris)",
       button: "Suivre sur TikTok"
+    },
+
+    // Login Page
+    login: {
+      createAccount: "Créer un compte",
+      signIn: "Se connecter",
+      joinCommunity: "Rejoignez la communauté Cash360",
+      accessAccount: "Accédez à votre espace personnel",
+      email: "Email",
+      emailPlaceholder: "votre@email.com",
+      password: "Mot de passe",
+      passwordPlaceholder: "••••••••",
+      confirmPassword: "Confirmer le mot de passe",
+      loading: "Chargement...",
+      createMyAccount: "Créer mon compte",
+      alreadyAccount: "Déjà un compte ?",
+      noAccount: "Pas encore de compte ?",
+      forgotPassword: "Mot de passe oublié ?",
+      backToSite: "← Retour au site principal",
+      adminSpace: "Espace Administrateur →",
+      errorPasswordMismatch: "Les mots de passe ne correspondent pas",
+      errorEnterEmail: "Veuillez entrer votre email",
+      messageVerifyEmail: "Vérifiez votre email pour confirmer votre compte",
+      messageResetSent: "Lien de réinitialisation envoyé par email"
+    },
+
+    // Dashboard Page
+    dashboard: {
+      title: "Tableau de bord - Mes analyses",
+      subtitle: "Suivez l'avancement de vos analyses financières personnalisées",
+      loading: "Chargement de votre tableau de bord...",
+      myAccount: "Mon compte",
+      signOut: "Se déconnecter",
+      newAnalysis: "Nouvelle analyse",
+      newAnalysisShort: "Nouvelle",
+      noAnalysisTitle: "Aucune analyse trouvée",
+      noAnalysisText: "Commencez par créer votre première analyse financière",
+      createFirstAnalysis: "Créer ma première analyse",
+      analysisNumber: "Analyse #",
+      createdOn: "Créée le",
+      status: {
+        inProgress: "En cours",
+        analyzing: "En analyse",
+        completed: "Terminée",
+        unknown: "Inconnu"
+      },
+      progressLabel: "Progression de l'analyse",
+      steps: {
+        reception: "Réception",
+        receptionDesc: "Documents reçus",
+        analysis: "Analyse",
+        analysisDesc: "En cours d'étude",
+        report: "Rapport",
+        reportDesc: "Finalisation"
+      },
+      details: "Détails de l'analyse",
+      client: "Client",
+      emailLabel: "Email",
+      lastUpdate: "Dernière mise à jour",
+      statusLabel: "Statut",
+      completedTitle: "Analyse terminée - Prêt pour le RDV",
+      completedText: "Votre analyse est terminée, prenez rendez-vous pour la présentation",
+      downloadPdf: "Télécharger le PDF",
+      bookAppointment: "Prendre RDV",
+      contactWhatsApp: "Contacter par WhatsApp",
+      whatsAppPopup: {
+        title: "Contacter l'équipe Cash360",
+        text: "Vous allez être redirigé vers WhatsApp pour contacter notre équipe.",
+        confirm: "Continuer",
+        cancel: "Annuler"
+      },
+      pagination: {
+        showing: "Affichage",
+        to: "à",
+        of: "sur",
+        analyses: "analyses",
+        previous: "Précédent",
+        next: "Suivant"
+      }
+    },
+
+    // Success Page
+    success: {
+      title: "Merci, nous avons bien reçu votre dossier",
+      yourTicket: "Votre ticket :",
+      nextSteps: "Prochaines étapes",
+      step1Title: "Analyse en cours",
+      step1Desc: "Examen approfondi de vos 3 relevés bancaires",
+      step2Title: "Détection d'anomalies",
+      step2Desc: "Identification des points d'amélioration",
+      step3Title: "Recommandations",
+      step3Desc: "Solutions personnalisées pour vos finances",
+      processingTime: "Délai de traitement",
+      processingDesc: "Nous analysons vos relevés et revenons vers vous sous",
+      processingDuration: "48 à 72 heures ouvrées",
+      processingWith: "avec un",
+      detailedReport: "compte-rendu détaillé",
+      and: "et des",
+      personalizedRecommendations: "recommandations personnalisées",
+      needHelp: "Besoin d'aide ?",
+      needHelpText: "Pour toute question concernant votre dossier ou l'analyse :",
+      referenceTicket: "Référencez votre ticket",
+      inYourEmail: "dans votre email",
+      summary: "Récapitulatif",
+      service: "Service :",
+      serviceValue: "Analyse approfondie de vos finances",
+      amount: "Montant :",
+      ticket: "Ticket :",
+      statusLabel: "Statut :",
+      statusValue: "En cours de traitement",
+      viewProgress: "Voir l'avancée de mon analyse",
+      trackText: "Vous pouvez suivre l'avancement de votre analyse sur votre tableau de bord personnel",
+      loadingText: "Chargement..."
     }
   },
   
@@ -796,6 +909,119 @@ export const translations = {
       username: "@ev.myriamkonan",
       schedule: "Every Monday at 10:00 PM (Paris)",
       button: "Follow on TikTok"
+    },
+
+    // Login Page
+    login: {
+      createAccount: "Create an account",
+      signIn: "Sign in",
+      joinCommunity: "Join the Cash360 community",
+      accessAccount: "Access your personal space",
+      email: "Email",
+      emailPlaceholder: "your@email.com",
+      password: "Password",
+      passwordPlaceholder: "••••••••",
+      confirmPassword: "Confirm password",
+      loading: "Loading...",
+      createMyAccount: "Create my account",
+      alreadyAccount: "Already have an account?",
+      noAccount: "Don't have an account yet?",
+      forgotPassword: "Forgot password?",
+      backToSite: "← Back to main site",
+      adminSpace: "Admin Area →",
+      errorPasswordMismatch: "Passwords do not match",
+      errorEnterEmail: "Please enter your email",
+      messageVerifyEmail: "Check your email to confirm your account",
+      messageResetSent: "Reset link sent by email"
+    },
+
+    // Dashboard Page
+    dashboard: {
+      title: "Dashboard - My Analyses",
+      subtitle: "Track the progress of your personalized financial analyses",
+      loading: "Loading your dashboard...",
+      myAccount: "My account",
+      signOut: "Sign out",
+      newAnalysis: "New analysis",
+      newAnalysisShort: "New",
+      noAnalysisTitle: "No analysis found",
+      noAnalysisText: "Start by creating your first financial analysis",
+      createFirstAnalysis: "Create my first analysis",
+      analysisNumber: "Analysis #",
+      createdOn: "Created on",
+      status: {
+        inProgress: "In progress",
+        analyzing: "Analyzing",
+        completed: "Completed",
+        unknown: "Unknown"
+      },
+      progressLabel: "Analysis progress",
+      steps: {
+        reception: "Reception",
+        receptionDesc: "Documents received",
+        analysis: "Analysis",
+        analysisDesc: "Under review",
+        report: "Report",
+        reportDesc: "Finalization"
+      },
+      details: "Analysis details",
+      client: "Client",
+      emailLabel: "Email",
+      lastUpdate: "Last update",
+      statusLabel: "Status",
+      completedTitle: "Analysis completed - Ready for appointment",
+      completedText: "Your analysis is complete, schedule an appointment for the presentation",
+      downloadPdf: "Download PDF",
+      bookAppointment: "Book appointment",
+      contactWhatsApp: "Contact via WhatsApp",
+      whatsAppPopup: {
+        title: "Contact Cash360 team",
+        text: "You will be redirected to WhatsApp to contact our team.",
+        confirm: "Continue",
+        cancel: "Cancel"
+      },
+      pagination: {
+        showing: "Showing",
+        to: "to",
+        of: "of",
+        analyses: "analyses",
+        previous: "Previous",
+        next: "Next"
+      }
+    },
+
+    // Success Page
+    success: {
+      title: "Thank you, we have received your file",
+      yourTicket: "Your ticket:",
+      nextSteps: "Next steps",
+      step1Title: "Analysis in progress",
+      step1Desc: "In-depth review of your 3 bank statements",
+      step2Title: "Anomaly detection",
+      step2Desc: "Identification of improvement points",
+      step3Title: "Recommendations",
+      step3Desc: "Personalized solutions for your finances",
+      processingTime: "Processing time",
+      processingDesc: "We analyze your statements and get back to you within",
+      processingDuration: "48 to 72 business hours",
+      processingWith: "with a",
+      detailedReport: "detailed report",
+      and: "and",
+      personalizedRecommendations: "personalized recommendations",
+      needHelp: "Need help?",
+      needHelpText: "For any questions regarding your file or analysis:",
+      referenceTicket: "Reference your ticket",
+      inYourEmail: "in your email",
+      summary: "Summary",
+      service: "Service:",
+      serviceValue: "In-depth analysis of your finances",
+      amount: "Amount:",
+      ticket: "Ticket:",
+      statusLabel: "Status:",
+      statusValue: "In processing",
+      viewProgress: "View my analysis progress",
+      trackText: "You can track the progress of your analysis on your personal dashboard",
+      loadingText: "Loading..."
     }
   },
   
@@ -1195,6 +1421,119 @@ export const translations = {
       username: "@ev.myriamkonan",
       schedule: "Todos los lunes a las 22:00 (París)",
       button: "Seguir en TikTok"
+    },
+
+    // Login Page
+    login: {
+      createAccount: "Crear una cuenta",
+      signIn: "Iniciar sesión",
+      joinCommunity: "Únete a la comunidad Cash360",
+      accessAccount: "Accede a tu espacio personal",
+      email: "Correo electrónico",
+      emailPlaceholder: "tu@email.com",
+      password: "Contraseña",
+      passwordPlaceholder: "••••••••",
+      confirmPassword: "Confirmar contraseña",
+      loading: "Cargando...",
+      createMyAccount: "Crear mi cuenta",
+      alreadyAccount: "¿Ya tienes una cuenta?",
+      noAccount: "¿Aún no tienes cuenta?",
+      forgotPassword: "¿Olvidaste tu contraseña?",
+      backToSite: "← Volver al sitio principal",
+      adminSpace: "Área de Administración →",
+      errorPasswordMismatch: "Las contraseñas no coinciden",
+      errorEnterEmail: "Por favor ingresa tu correo electrónico",
+      messageVerifyEmail: "Verifica tu correo electrónico para confirmar tu cuenta",
+      messageResetSent: "Enlace de restablecimiento enviado por correo"
+    },
+
+    // Dashboard Page
+    dashboard: {
+      title: "Panel de control - Mis análisis",
+      subtitle: "Sigue el progreso de tus análisis financieros personalizados",
+      loading: "Cargando tu panel de control...",
+      myAccount: "Mi cuenta",
+      signOut: "Cerrar sesión",
+      newAnalysis: "Nuevo análisis",
+      newAnalysisShort: "Nuevo",
+      noAnalysisTitle: "No se encontró ningún análisis",
+      noAnalysisText: "Comienza creando tu primer análisis financiero",
+      createFirstAnalysis: "Crear mi primer análisis",
+      analysisNumber: "Análisis #",
+      createdOn: "Creado el",
+      status: {
+        inProgress: "En progreso",
+        analyzing: "Analizando",
+        completed: "Completado",
+        unknown: "Desconocido"
+      },
+      progressLabel: "Progreso del análisis",
+      steps: {
+        reception: "Recepción",
+        receptionDesc: "Documentos recibidos",
+        analysis: "Análisis",
+        analysisDesc: "En revisión",
+        report: "Informe",
+        reportDesc: "Finalización"
+      },
+      details: "Detalles del análisis",
+      client: "Cliente",
+      emailLabel: "Correo",
+      lastUpdate: "Última actualización",
+      statusLabel: "Estado",
+      completedTitle: "Análisis completado - Listo para cita",
+      completedText: "Tu análisis está completo, agenda una cita para la presentación",
+      downloadPdf: "Descargar PDF",
+      bookAppointment: "Reservar cita",
+      contactWhatsApp: "Contactar por WhatsApp",
+      whatsAppPopup: {
+        title: "Contactar al equipo Cash360",
+        text: "Serás redirigido a WhatsApp para contactar a nuestro equipo.",
+        confirm: "Continuar",
+        cancel: "Cancelar"
+      },
+      pagination: {
+        showing: "Mostrando",
+        to: "a",
+        of: "de",
+        analyses: "análisis",
+        previous: "Anterior",
+        next: "Siguiente"
+      }
+    },
+
+    // Success Page
+    success: {
+      title: "Gracias, hemos recibido tu expediente",
+      yourTicket: "Tu ticket:",
+      nextSteps: "Próximos pasos",
+      step1Title: "Análisis en progreso",
+      step1Desc: "Revisión detallada de tus 3 extractos bancarios",
+      step2Title: "Detección de anomalías",
+      step2Desc: "Identificación de puntos de mejora",
+      step3Title: "Recomendaciones",
+      step3Desc: "Soluciones personalizadas para tus finanzas",
+      processingTime: "Tiempo de procesamiento",
+      processingDesc: "Analizamos tus extractos y te respondemos en",
+      processingDuration: "48 a 72 horas hábiles",
+      processingWith: "con un",
+      detailedReport: "informe detallado",
+      and: "y",
+      personalizedRecommendations: "recomendaciones personalizadas",
+      needHelp: "¿Necesitas ayuda?",
+      needHelpText: "Para cualquier pregunta sobre tu expediente o análisis:",
+      referenceTicket: "Menciona tu ticket",
+      inYourEmail: "en tu correo",
+      summary: "Resumen",
+      service: "Servicio:",
+      serviceValue: "Análisis detallado de tus finanzas",
+      amount: "Monto:",
+      ticket: "Ticket:",
+      statusLabel: "Estado:",
+      statusValue: "En procesamiento",
+      viewProgress: "Ver el progreso de mi análisis",
+      trackText: "Puedes seguir el progreso de tu análisis en tu panel de control personal",
+      loadingText: "Cargando..."
     }
   },
   
@@ -1594,6 +1933,119 @@ export const translations = {
       username: "@ev.myriamkonan",
       schedule: "Todas as segundas-feiras às 22:00 (Paris)",
       button: "Seguir no TikTok"
+    },
+
+    // Login Page
+    login: {
+      createAccount: "Criar uma conta",
+      signIn: "Entrar",
+      joinCommunity: "Junte-se à comunidade Cash360",
+      accessAccount: "Acesse seu espaço pessoal",
+      email: "E-mail",
+      emailPlaceholder: "seu@email.com",
+      password: "Senha",
+      passwordPlaceholder: "••••••••",
+      confirmPassword: "Confirmar senha",
+      loading: "Carregando...",
+      createMyAccount: "Criar minha conta",
+      alreadyAccount: "Já tem uma conta?",
+      noAccount: "Ainda não tem conta?",
+      forgotPassword: "Esqueceu a senha?",
+      backToSite: "← Voltar ao site principal",
+      adminSpace: "Área de Administração →",
+      errorPasswordMismatch: "As senhas não coincidem",
+      errorEnterEmail: "Por favor, insira seu e-mail",
+      messageVerifyEmail: "Verifique seu e-mail para confirmar sua conta",
+      messageResetSent: "Link de redefinição enviado por e-mail"
+    },
+
+    // Dashboard Page
+    dashboard: {
+      title: "Painel de controle - Minhas análises",
+      subtitle: "Acompanhe o progresso de suas análises financeiras personalizadas",
+      loading: "Carregando seu painel de controle...",
+      myAccount: "Minha conta",
+      signOut: "Sair",
+      newAnalysis: "Nova análise",
+      newAnalysisShort: "Nova",
+      noAnalysisTitle: "Nenhuma análise encontrada",
+      noAnalysisText: "Comece criando sua primeira análise financeira",
+      createFirstAnalysis: "Criar minha primeira análise",
+      analysisNumber: "Análise #",
+      createdOn: "Criada em",
+      status: {
+        inProgress: "Em andamento",
+        analyzing: "Analisando",
+        completed: "Concluída",
+        unknown: "Desconhecido"
+      },
+      progressLabel: "Progresso da análise",
+      steps: {
+        reception: "Recepção",
+        receptionDesc: "Documentos recebidos",
+        analysis: "Análise",
+        analysisDesc: "Em revisão",
+        report: "Relatório",
+        reportDesc: "Finalização"
+      },
+      details: "Detalhes da análise",
+      client: "Cliente",
+      emailLabel: "E-mail",
+      lastUpdate: "Última atualização",
+      statusLabel: "Status",
+      completedTitle: "Análise concluída - Pronto para agendamento",
+      completedText: "Sua análise está completa, agende uma consulta para a apresentação",
+      downloadPdf: "Baixar PDF",
+      bookAppointment: "Agendar consulta",
+      contactWhatsApp: "Contatar via WhatsApp",
+      whatsAppPopup: {
+        title: "Contatar equipe Cash360",
+        text: "Você será redirecionado para o WhatsApp para contatar nossa equipe.",
+        confirm: "Continuar",
+        cancel: "Cancelar"
+      },
+      pagination: {
+        showing: "Mostrando",
+        to: "a",
+        of: "de",
+        analyses: "análises",
+        previous: "Anterior",
+        next: "Próximo"
+      }
+    },
+
+    // Success Page
+    success: {
+      title: "Obrigado, recebemos seu arquivo",
+      yourTicket: "Seu ticket:",
+      nextSteps: "Próximos passos",
+      step1Title: "Análise em andamento",
+      step1Desc: "Revisão detalhada de seus 3 extratos bancários",
+      step2Title: "Detecção de anomalias",
+      step2Desc: "Identificação de pontos de melhoria",
+      step3Title: "Recomendações",
+      step3Desc: "Soluções personalizadas para suas finanças",
+      processingTime: "Prazo de processamento",
+      processingDesc: "Analisamos seus extratos e retornamos em",
+      processingDuration: "48 a 72 horas úteis",
+      processingWith: "com um",
+      detailedReport: "relatório detalhado",
+      and: "e",
+      personalizedRecommendations: "recomendações personalizadas",
+      needHelp: "Precisa de ajuda?",
+      needHelpText: "Para qualquer dúvida sobre seu arquivo ou análise:",
+      referenceTicket: "Mencione seu ticket",
+      inYourEmail: "em seu e-mail",
+      summary: "Resumo",
+      service: "Serviço:",
+      serviceValue: "Análise detalhada de suas finanças",
+      amount: "Valor:",
+      ticket: "Ticket:",
+      statusLabel: "Status:",
+      statusValue: "Em processamento",
+      viewProgress: "Ver o progresso da minha análise",
+      trackText: "Você pode acompanhar o progresso de sua análise em seu painel de controle pessoal",
+      loadingText: "Carregando..."
     }
   }
 };

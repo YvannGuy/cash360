@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import { createClientBrowser } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function LoginPage() {
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -35,7 +37,7 @@ export default function LoginPage() {
     setMessage('')
 
     if (isSignUp && password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas')
+      setError(t.login.errorPasswordMismatch)
       setLoading(false)
       return
     }
@@ -47,7 +49,7 @@ export default function LoginPage() {
           password,
         })
         if (error) throw error
-        setMessage('Vérifiez votre email pour confirmer votre compte')
+        setMessage(t.login.messageVerifyEmail)
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -65,7 +67,7 @@ export default function LoginPage() {
 
   const handlePasswordReset = async () => {
     if (!email) {
-      setError('Veuillez entrer votre email')
+      setError(t.login.errorEnterEmail)
       return
     }
 
@@ -74,7 +76,7 @@ export default function LoginPage() {
         redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
       })
       if (error) throw error
-      setMessage('Lien de réinitialisation envoyé par email')
+      setMessage(t.login.messageResetSent)
     } catch (error: any) {
       setError(error.message)
     }
@@ -101,10 +103,10 @@ export default function LoginPage() {
             />
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">
-            {isSignUp ? 'Créer un compte' : 'Se connecter'}
+            {isSignUp ? t.login.createAccount : t.login.signIn}
           </h1>
           <p className="text-sm sm:text-base text-gray-300">
-            {isSignUp ? 'Rejoignez la communauté Cash360' : 'Accédez à votre espace personnel'}
+            {isSignUp ? t.login.joinCommunity : t.login.accessAccount}
           </p>
         </div>
 
@@ -125,7 +127,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-white mb-1 sm:mb-2">
-                Email
+                {t.login.email}
               </label>
               <input
                 id="email"
@@ -134,13 +136,13 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="votre@email.com"
+                placeholder={t.login.emailPlaceholder}
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-white mb-1 sm:mb-2">
-                Mot de passe
+                {t.login.password}
               </label>
               <input
                 id="password"
@@ -149,7 +151,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="••••••••"
+                placeholder={t.login.passwordPlaceholder}
               />
             </div>
 
@@ -157,7 +159,7 @@ export default function LoginPage() {
             {isSignUp && (
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1 sm:mb-2">
-                  Confirmer le mot de passe
+                  {t.login.confirmPassword}
                 </label>
                 <input
                   id="confirmPassword"
@@ -166,7 +168,7 @@ export default function LoginPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="••••••••"
+                  placeholder={t.login.passwordPlaceholder}
                 />
               </div>
             )}
@@ -179,10 +181,10 @@ export default function LoginPage() {
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mr-2"></div>
-                  Chargement...
+                  {t.login.loading}
                 </div>
               ) : (
-                isSignUp ? 'Créer mon compte' : 'Se connecter'
+                isSignUp ? t.login.createMyAccount : t.login.signIn
               )}
             </button>
           </form>
@@ -190,7 +192,7 @@ export default function LoginPage() {
           {/* Toggle inscription/connexion */}
           <div className="mt-4 sm:mt-6 text-center">
             <p className="text-gray-300 text-xs sm:text-sm">
-              {isSignUp ? 'Déjà un compte ?' : 'Pas encore de compte ?'}
+              {isSignUp ? t.login.alreadyAccount : t.login.noAccount}
               <button
                 type="button"
                 onClick={() => {
@@ -200,7 +202,7 @@ export default function LoginPage() {
                 }}
                 className="ml-1 sm:ml-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors duration-200"
               >
-                {isSignUp ? 'Se connecter' : 'Créer un compte'}
+                {isSignUp ? t.login.signIn : t.login.createAccount}
               </button>
             </p>
           </div>
@@ -213,7 +215,7 @@ export default function LoginPage() {
                 onClick={handlePasswordReset}
                 className="text-xs sm:text-sm text-red-400 hover:text-red-300 font-medium transition-colors duration-200"
               >
-                Mot de passe oublié ?
+                {t.login.forgotPassword}
               </button>
             </div>
           )}
@@ -224,7 +226,7 @@ export default function LoginPage() {
               onClick={() => router.push('/')}
               className="text-gray-300 hover:text-white text-sm transition-colors duration-200"
             >
-              ← Retour au site principal
+              {t.login.backToSite}
             </button>
           </div>
         </div>
@@ -235,7 +237,7 @@ export default function LoginPage() {
             onClick={() => window.location.href = '/admin/login'}
             className="text-gray-300 hover:text-white text-sm transition-colors duration-200"
           >
-            Espace Administrateur →
+            {t.login.adminSpace}
           </button>
         </div>
       </div>
