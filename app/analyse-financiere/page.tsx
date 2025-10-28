@@ -7,6 +7,8 @@ import { clientInfoSchema } from '@/lib/validation'
 import Field from '@/components/Field'
 import UploadDropzone from '@/components/UploadDropzone'
 import { createClientBrowser } from '@/lib/supabase'
+import { useLanguage } from '@/lib/LanguageContext'
+import LanguageSwitch from '@/components/LanguageSwitch'
 
 interface FormData {
   prenom: string
@@ -22,12 +24,14 @@ interface FormErrors {
 }
 
 export default function AnalyseFinancierePage() {
+  const { t } = useLanguage()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [relevesFiles, setRelevesFiles] = useState<File[]>([])
   const [errors, setErrors] = useState<FormErrors>({})
   const [user, setUser] = useState<any>(null)
+  const [mounted, setMounted] = useState(false)
   
   const [formData, setFormData] = useState<FormData>({
     prenom: '',
@@ -50,6 +54,10 @@ export default function AnalyseFinancierePage() {
     }
     return localPart.substring(0, 2).toUpperCase()
   }
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const checkUser = async () => {
@@ -105,12 +113,12 @@ export default function AnalyseFinancierePage() {
 
     // Validation spécifique pour les fichiers
     if (relevesFiles.length !== 3) {
-      newErrors.releves = 'Vous devez téléverser exactement 3 relevés'
+      newErrors.releves = mounted ? t.financialAnalysis.errorRequired : 'Vous devez téléverser exactement 3 relevés'
     }
 
     // Validation du mode de paiement
     if (!formData.modePaiement) {
-      newErrors.modePaiement = 'Veuillez sélectionner un mode de paiement'
+      newErrors.modePaiement = mounted ? t.financialAnalysis.errorPayment : 'Veuillez sélectionner un mode de paiement'
     }
 
     setErrors(newErrors)
@@ -169,18 +177,18 @@ export default function AnalyseFinancierePage() {
       
     } catch (error) {
       console.error('Erreur soumission:', error)
-      setErrors({ submit: error instanceof Error ? error.message : 'Une erreur est survenue' })
+      setErrors({ submit: error instanceof Error ? error.message : (mounted ? t.financialAnalysis.errorSubmit : 'Une erreur est survenue') })
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Vérification de votre authentification...</p>
+          <p className="text-gray-600">{mounted ? t.financialAnalysis.loading : 'Chargement...'}</p>
         </div>
       </div>
     )
@@ -199,15 +207,16 @@ export default function AnalyseFinancierePage() {
                 alt="Cash360"
                 width={192}
                 height={192}
-                className="h-48 w-auto"
+                className="h-20 sm:h-32 md:h-48 w-auto"
               />
             </div>
 
             {/* Informations de connexion */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {user && (
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <LanguageSwitch />
+                  <div className="hidden sm:flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-sm font-medium text-gray-700">
                       {getInitials(user.email)}
@@ -215,9 +224,9 @@ export default function AnalyseFinancierePage() {
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="text-sm text-gray-500 hover:text-red-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-red-50"
+                    className="text-xs sm:text-sm text-gray-500 hover:text-red-600 transition-colors duration-200 px-2 sm:px-3 py-2 rounded-lg hover:bg-red-50 whitespace-nowrap"
                   >
-                    Se déconnecter
+                    {t.financialAnalysis.signOut}
                   </button>
                 </div>
               )}
@@ -231,40 +240,40 @@ export default function AnalyseFinancierePage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Analyse approfondie de vos finances
+            {t.financialAnalysis.title}
           </h1>
         </div>
 
         {/* Étapes du processus */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">📋 Étapes du processus</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t.financialAnalysis.processSteps}</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">1</div>
               <div>
-                <p className="text-sm font-medium text-gray-900">Entrer vos informations</p>
-                <p className="text-xs text-gray-600">Nom, email, message</p>
+                <p className="text-sm font-medium text-gray-900">{t.financialAnalysis.step1}</p>
+                <p className="text-xs text-gray-600">{t.financialAnalysis.step1Desc}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">2</div>
               <div>
-                <p className="text-sm font-medium text-gray-900">Mode de paiement</p>
-                <p className="text-xs text-gray-600">Régler la somme de 39,99€</p>
+                <p className="text-sm font-medium text-gray-900">{t.financialAnalysis.step2}</p>
+                <p className="text-xs text-gray-600">{t.financialAnalysis.step2Desc}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">3</div>
               <div>
-                <p className="text-sm font-medium text-gray-900">Télécharger vos relevés</p>
-                <p className="text-xs text-gray-600">3 derniers relevés bancaires</p>
+                <p className="text-sm font-medium text-gray-900">{t.financialAnalysis.step3}</p>
+                <p className="text-xs text-gray-600">{t.financialAnalysis.step3Desc}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">✓</div>
               <div>
-                <p className="text-sm font-medium text-gray-900">Finaliser</p>
-                <p className="text-xs text-gray-600">Envoyer mes relevés</p>
+                <p className="text-sm font-medium text-gray-900">{t.financialAnalysis.step4}</p>
+                <p className="text-xs text-gray-600">{t.financialAnalysis.step4Desc}</p>
               </div>
             </div>
           </div>
@@ -274,7 +283,7 @@ export default function AnalyseFinancierePage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
           <div className="prose max-w-none">
             <p className="text-gray-700 leading-relaxed">
-              Je suis très heureuse d'avoir pu échanger avec vous concernant l'état de vos finances. Comme évoqué par téléphone, j'aurai besoin de vos trois derniers relevés de compte afin d'analyser en profondeur vos dépenses. Cela me permettra de vous accompagner au mieux, de détecter d'éventuelles anomalies financières et de vous proposer la solution et le module d'accompagnement les plus adaptés pour redonner un nouveau souffle à vos finances.
+              {t.financialAnalysis.introduction}
             </p>
           </div>
         </div>
@@ -284,11 +293,11 @@ export default function AnalyseFinancierePage() {
 
           {/* Informations personnelles */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Vos informations</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t.financialAnalysis.yourInfo}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Field
-                label="Prénom"
+                label={t.financialAnalysis.firstName}
                 name="prenom"
                 required
                 value={formData.prenom}
@@ -297,7 +306,7 @@ export default function AnalyseFinancierePage() {
               />
               
               <Field
-                label="Nom"
+                label={t.financialAnalysis.lastName}
                 name="nom"
                 required
                 value={formData.nom}
@@ -306,7 +315,7 @@ export default function AnalyseFinancierePage() {
               />
               
               <Field
-                label="Email"
+                label={t.financialAnalysis.email}
                 name="email"
                 type="email"
                 required
@@ -318,20 +327,20 @@ export default function AnalyseFinancierePage() {
             
             <div className="mt-6">
               <Field
-                label="Message (optionnel)"
+                label={t.financialAnalysis.message}
                 name="message"
                 type="textarea"
                 value={formData.message}
                 onChange={handleInputChange}
                 error={errors.message}
-                placeholder="Ajoutez toute information que vous jugez utile pour l'analyse..."
+                placeholder={t.financialAnalysis.messagePlaceholder}
               />
             </div>
           </div>
 
           {/* Mode de paiement */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Mode de paiement</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t.financialAnalysis.paymentMethod}</h2>
             
             <div className="space-y-4">
               <div className="flex items-center">
@@ -352,7 +361,7 @@ export default function AnalyseFinancierePage() {
               {formData.modePaiement === 'paypal' && (
                 <div className="ml-7 bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800 mb-3">
-                    Cliquez sur le bouton ci-dessous pour effectuer votre paiement PayPal :
+                    {t.financialAnalysis.paypalInstructions}
                   </p>
                   <a
                     href="https://paypal.me/mbde510"
@@ -363,7 +372,7 @@ export default function AnalyseFinancierePage() {
                     <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.068-.405c-.78-4.09-3.356-5.76-7.13-5.76H5.998c-.524 0-.968.382-1.05.9L2.47 20.597h4.606l1.12-7.106c.082-.518.526-.9 1.05-.9h2.19c4.298 0 7.664-1.747 8.647-6.797.03-.149.054-.294.077-.437.292-1.867-.002-3.137-1.012-4.287z"/>
                     </svg>
-                    Payer avec PayPal
+                    {t.financialAnalysis.payWithPaypal}
                   </a>
                 </div>
               )}
@@ -379,19 +388,19 @@ export default function AnalyseFinancierePage() {
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                 />
                 <label htmlFor="virement" className="ml-3 text-sm font-medium text-gray-700">
-                  Virement bancaire
+                  {t.financialAnalysis.bankTransferLabel}
                 </label>
               </div>
               
               {formData.modePaiement === 'virement' && (
                 <div className="ml-7 bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-green-800 mb-3">Virement bancaire</h3>
+                  <h3 className="text-sm font-semibold text-green-800 mb-3">{t.financialAnalysis.bankTransferLabel}</h3>
                   <div className="text-sm text-green-800 space-y-1">
-                    <p><strong>Bénéficiaire :</strong> Myriam Konan</p>
-                    <p><strong>IBAN :</strong> FR76 2823 3000 0102 8891 4178 672</p>
-                    <p><strong>BIC :</strong> REVOFRP2</p>
-                    <p><strong>Banque :</strong> Revolut Bank UAB</p>
-                    <p><strong>Adresse :</strong> 10 avenue Kléber, 75116 Paris, France</p>
+                    <p><strong>{t.financialAnalysis.beneficiary}:</strong> Myriam Konan</p>
+                    <p><strong>IBAN:</strong> FR76 2823 3000 0102 8891 4178 672</p>
+                    <p><strong>BIC:</strong> REVOFRP2</p>
+                    <p><strong>{t.financialAnalysis.bank}:</strong> Revolut Bank UAB</p>
+                    <p><strong>{t.financialAnalysis.address}:</strong> 10 avenue Kléber, 75116 Paris, France</p>
                   </div>
                 </div>
               )}
@@ -405,7 +414,7 @@ export default function AnalyseFinancierePage() {
           {/* Upload des relevés */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Vos trois derniers relevés bancaires
+              {t.financialAnalysis.uploadStatements}
             </h2>
             
             {/* Avertissement pour le nommage des fichiers */}
@@ -418,14 +427,14 @@ export default function AnalyseFinancierePage() {
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-amber-800">
-                    ⚠️ Important : Nommage des fichiers
+                    {t.financialAnalysis.fileNamingTitle}
                   </h3>
                   <div className="mt-2 text-sm text-amber-700">
                     <p className="mb-2">
-                      Pour une bonne gestion de chaque dossier, veuillez nommer vos 3 relevés de manière claire et identifiante :
+                      {t.financialAnalysis.fileNamingDesc}
                     </p>
                     <div className="bg-white rounded p-3 border border-amber-200">
-                      <p className="font-medium text-gray-900 mb-1">Exemple de nommage :</p>
+                      <p className="font-medium text-gray-900 mb-1">{t.financialAnalysis.fileNamingExample}</p>
                       <ul className="text-sm text-gray-700 space-y-1">
                         <li>• <code className="bg-gray-100 px-2 py-1 rounded text-xs">jeangouillonreleve1.jpg</code></li>
                         <li>• <code className="bg-gray-100 px-2 py-1 rounded text-xs">jeangouillonreleve2.jpg</code></li>
@@ -433,7 +442,7 @@ export default function AnalyseFinancierePage() {
                       </ul>
                     </div>
                     <p className="mt-2 text-xs text-amber-600">
-                      Format recommandé : <strong>prénomnomreleve1/2/3.extension</strong>
+                      {t.financialAnalysis.fileNamingFormat}
                     </p>
                   </div>
                 </div>
@@ -460,8 +469,7 @@ export default function AnalyseFinancierePage() {
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
               />
               <label htmlFor="consentement" className="ml-3 text-sm text-gray-700">
-                J'accepte que mes données soient traitées par Cash360 aux seules fins d'analyse, 
-                conformément à la réglementation en vigueur. <span className="text-red-500">*</span>
+                {t.financialAnalysis.consent} <span className="text-red-500">*</span>
               </label>
             </div>
             {errors.consentement && (

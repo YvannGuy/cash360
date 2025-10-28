@@ -5,6 +5,7 @@ import { createClientBrowser } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
+import LanguageSwitch from '@/components/LanguageSwitch'
 
 export default function LoginPage() {
   const { t } = useLanguage()
@@ -100,7 +101,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4 sm:p-6 relative">
+      {/* Language Switcher */}
+      <div className="fixed top-4 right-4 z-[9999]">
+        <LanguageSwitch />
+      </div>
+
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/10 rounded-full blur-3xl"></div>

@@ -6,6 +6,7 @@ import { createClientBrowser } from '@/lib/supabase'
 import { analysisService, type AnalysisRecord } from '@/lib/database'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
+import LanguageSwitch from '@/components/LanguageSwitch'
 
 export default function DashboardPage() {
   const { t } = useLanguage()
@@ -161,7 +162,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex-shrink-0 ml-16 mt-4">
+            <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
               <button
                 onClick={() => router.push('/')}
                 className="cursor-pointer"
@@ -171,15 +172,16 @@ export default function DashboardPage() {
                   alt="Cash360"
                   width={540}
                   height={540}
-                  className="h-32 sm:h-42 w-auto hover:opacity-80 transition-opacity duration-200"
+                  className="h-16 sm:h-32 md:h-42 w-auto hover:opacity-80 transition-opacity duration-200"
                 />
               </button>
             </div>
             
             {/* Informations de connexion */}
-            <div className="flex items-center space-x-2 sm:space-x-4 mr-20">
+            <div className="flex items-center gap-1 sm:gap-4 mr-2 sm:mr-20">
               {user && (
-                <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="flex items-center gap-1 sm:gap-3">
+                  <LanguageSwitch />
                   <div className="relative user-menu-container z-[9999]">
                     <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
