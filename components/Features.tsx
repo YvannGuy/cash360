@@ -73,10 +73,10 @@ export default function Features() {
         <div className="text-center mt-16">
           <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-2xl p-8 text-gray-900">
             <h3 className="text-2xl font-bold mb-4">
-              Prêt(e) à transformer votre relation à l'argent ?
+              {t.features.ctaTitle}
             </h3>
             <p className="text-lg mb-6 opacity-90">
-              Rejoignez les centaines de personnes qui ont déjà retrouvé l'équilibre financier
+              {t.features.ctaSubtitle}
             </p>
             <button
               onClick={() => {
@@ -85,7 +85,7 @@ export default function Features() {
               }}
               className="inline-flex items-center px-8 py-4 bg-white text-gray-900 font-bold text-lg rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              Commencer maintenant
+              {t.features.ctaButton}
             </button>
           </div>
         </div>

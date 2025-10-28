@@ -161,7 +161,10 @@ export const translations = {
           title: "Résultats mesurables",
           description: "Suivi des progrès avec des indicateurs clairs"
         }
-      ]
+      ],
+      ctaTitle: "Prêt(e) à transformer votre relation à l'argent ?",
+      ctaSubtitle: "Rejoignez les centaines de personnes qui ont déjà retrouvé l'équilibre financier",
+      ctaButton: "Commencer maintenant"
     },
     
     // Steps Section
@@ -557,7 +560,10 @@ export const translations = {
           title: "Measurable results",
           description: "Progress tracking with clear indicators"
         }
-      ]
+      ],
+      ctaTitle: "Ready to transform your relationship with money?",
+      ctaSubtitle: "Join hundreds of people who have already regained financial balance",
+      ctaButton: "Start now"
     },
     
     // Steps Section
@@ -952,7 +958,10 @@ export const translations = {
           title: "Resultados medibles",
           description: "Seguimiento del progreso con indicadores claros"
         }
-      ]
+      ],
+      ctaTitle: "¿Listo(a) para transformar tu relación con el dinero?",
+      ctaSubtitle: "Únete a cientos de personas que ya han recuperado el equilibrio financiero",
+      ctaButton: "Comenzar ahora"
     },
     
     // Steps Section
@@ -1347,7 +1356,10 @@ export const translations = {
           title: "Resultados mensuráveis",
           description: "Acompanhamento do progresso com indicadores claros"
         }
-      ]
+      ],
+      ctaTitle: "Pronto(a) para transformar sua relação com o dinheiro?",
+      ctaSubtitle: "Junte-se a centenas de pessoas que já recuperaram o equilíbrio financeiro",
+      ctaButton: "Começar agora"
     },
     
     // Steps Section
