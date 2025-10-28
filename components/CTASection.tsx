@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function CTASection() {
+  const { t } = useLanguage()
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -27,23 +29,7 @@ export default function CTASection() {
     }
   }, [])
 
-  const benefits = [
-    {
-      icon: "🛡️",
-      title: "Analyse confidentielle",
-      description: "Vos données sont protégées et traitées en toute sécurité"
-    },
-    {
-      icon: "⏰",
-      title: "Résultats rapides",
-      description: "Rapport détaillé sous 48-72h maximum"
-    },
-    {
-      icon: "❤️",
-      title: "Approche bienveillante",
-      description: "Accompagnement respectueux de vos valeurs"
-    }
-  ]
+  const benefitsIcons = ["🛡️", "⏰", "❤️"]
 
   return (
     <section id="cta" className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
@@ -59,16 +45,15 @@ export default function CTASection() {
           {/* Header */}
           <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Prêt(e) à redonner un sens à vos{' '}
+              {t.ctaSection.title}{' '}
               <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                finances
+                {t.ctaSection.titleHighlight}
               </span>
               ?
             </h2>
             
             <p className="text-xl sm:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Rejoignez les centaines de personnes qui ont déjà retrouvé l'équilibre financier 
-              grâce à l'accompagnement personnalisé de Cash360.
+              {t.ctaSection.subtitle}
             </p>
           </div>
 
@@ -76,13 +61,13 @@ export default function CTASection() {
           <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 transition-all duration-1000 delay-300 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
-            {benefits.map((benefit, index) => (
+            {t.ctaSection.benefits.map((benefit, index) => (
               <div
                 key={index}
                 className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/15 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
               >
                 <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300">
-                  <span className="text-white text-xl">{benefit.icon}</span>
+                  <span className="text-white text-xl">{benefitsIcons[index]}</span>
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">
                   {benefit.title}
@@ -99,7 +84,7 @@ export default function CTASection() {
             <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-3xl p-8 sm:p-12 text-gray-900 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="max-w-2xl mx-auto">
                 <h3 className="text-2xl sm:text-3xl font-bold mb-4">
-                  Le début de votre liberté financière
+                  {t.ctaSection.mainTitle}
                 </h3>
                 
 
@@ -112,7 +97,7 @@ export default function CTASection() {
                     className="group inline-flex items-center px-8 py-4 bg-white text-gray-900 font-bold text-lg rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
                   >
                     <span className="w-5 h-5 mr-2">📅</span>
-                    Réserver mon appel
+                    {t.ctaSection.ctaButton}
                     <span className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
                   </button>
                 </div>
@@ -124,11 +109,10 @@ export default function CTASection() {
           {/* Final Message */}
           <div className={`mt-12 transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              "La prospérité financière commence par une relation saine avec l'argent. 
-              Laissez-moi vous accompagner sur ce chemin de transformation."
+              {t.ctaSection.quote}
             </p>
             <p className="text-sm text-gray-400 mt-4">
-              — Pasteur Myriam Konan, Fondatrice de Cash360
+              {t.ctaSection.quoteAuthor}
             </p>
           </div>
         </div>

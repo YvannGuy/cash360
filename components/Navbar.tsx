@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react'
 import { createClientBrowser } from '@/lib/supabase'
 import AuthModal from './AuthModal'
+import LanguageSwitch from './LanguageSwitch'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function Navbar() {
+  const { t } = useLanguage()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -103,25 +106,28 @@ export default function Navbar() {
                 onClick={() => scrollToSection('accueil')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
-                Accueil
+                {t.nav.home}
               </button>
               <button
                 onClick={() => scrollToSection('apropos')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
-                À propos
+                {t.nav.about}
               </button>
               <button
                 onClick={() => scrollToSection('section-analyse')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
-                Analyse personnalisée
+                {t.nav.analysis}
               </button>
             </div>
           </div>
 
           {/* Auth & CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Language Selector */}
+            <LanguageSwitch />
+            
             {/* Auth Button */}
             {loading ? (
               <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
@@ -150,7 +156,7 @@ export default function Navbar() {
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Mon compte
+                        {t.nav.myAccount}
                       </button>
                       <button
                         onClick={() => {
@@ -159,7 +165,7 @@ export default function Navbar() {
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
-                        Se déconnecter
+                        {t.nav.signOut}
                       </button>
                     </div>
                   )}
@@ -173,7 +179,7 @@ export default function Navbar() {
                 <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                 </svg>
-                Connexion
+                {t.nav.login}
               </button>
             )}
 
@@ -185,7 +191,7 @@ export default function Navbar() {
               }}
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Réserver un appel
+              {t.nav.bookCall}
             </button>
           </div>
 

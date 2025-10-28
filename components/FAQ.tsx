@@ -1,36 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function FAQ() {
+  const { t } = useLanguage()
   const [openIndex, setOpenIndex] = useState<number | null>(0)
-
-  const faqs = [
-    {
-      question: "Comment Cash360 peut m'aider ?",
-      answer: "Cash360 vous aide à comprendre où part votre argent, à identifier vos priorités et à réorganiser vos finances. Grâce à une approche simple, humaine et spirituelle, vous retrouvez équilibre, sérénité et liberté financière."
-    },
-    {
-      question: "Comment fonctionne l'analyse financière ?",
-      answer: "Après un premier échange, vous pouvez nous transmettre vos trois derniers relevés bancaires pour une analyse complète. Nous identifions vos points forts, vos faiblesses et vous proposons un plan d'action personnalisé."
-    },
-    {
-      question: "L'appel de 15 minutes est-il gratuit ?",
-      answer: "Oui, totalement gratuit et sans engagement. Cet appel permet de mieux comprendre votre situation et de définir ensemble les prochaines étapes pour votre équilibre financier."
-    },
-    {
-      question: "Mes informations sont-elles confidentielles ?",
-      answer: "Absolument. Toutes vos données sont traitées de manière strictement confidentielle et sécurisée. Rien n'est partagé avec des tiers sans votre accord explicite."
-    },
-    {
-      question: "Je suis en Afrique, puis-je bénéficier de l'accompagnement Cash360 ?",
-      answer: "Oui, bien sûr 🌍 Où que vous soyez dans le monde, si vous avez un accès à Internet, vous pouvez bénéficier de l'accompagnement Cash360 via nos appels et outils en ligne."
-    },
-    {
-      question: "À qui s'adresse cette formation ?",
-      answer: "Cette formation s'adresse à toute personne ou organisation souhaitant améliorer la gestion de ses finances. Que vous soyez un particulier, un couple ou une église, la méthode Cash360 s'adapte à votre réalité."
-    }
-  ]
 
   return (
     <section className="py-20 bg-gray-50">
@@ -38,15 +13,15 @@ export default function FAQ() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <span className="inline-block bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">
-              FAQ
+              {t.faq.badge}
             </span>
             <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
-              Questions Fréquentes
+              {t.faq.title}
             </h2>
           </div>
 
           <div className="space-y-4">
-            {faqs.map((faq, index) => (
+            {t.faq.questions.map((faq, index) => (
               <div
                 key={index}
                 className={`bg-white rounded-lg border-2 transition-all duration-300 ${
@@ -60,7 +35,7 @@ export default function FAQ() {
                   className="w-full px-6 py-5 flex items-center justify-between text-left"
                 >
                   <span className="text-lg font-bold text-gray-900 pr-4">
-                    {index + 1}️ {faq.question}
+                    {index + 1}️ {faq.q}
                   </span>
                   <div className="flex-shrink-0">
                     {openIndex === index ? (
@@ -77,7 +52,7 @@ export default function FAQ() {
                 {openIndex === index && (
                   <div className="px-6 pb-5">
                     <p className="text-gray-600 leading-relaxed">
-                      {faq.answer}
+                      {faq.a}
                     </p>
                   </div>
                 )}

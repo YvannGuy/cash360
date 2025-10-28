@@ -1,6 +1,10 @@
 'use client'
 
+import { useLanguage } from '@/lib/LanguageContext'
+
 export default function Footer() {
+  const { t } = useLanguage()
+  
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
@@ -19,8 +23,7 @@ export default function Footer() {
             {/* Description */}
             <div className="lg:col-span-2">
               <p className="text-gray-300 text-lg leading-relaxed mb-6 max-w-md">
-                Reprenez le contrôle de vos finances avec méthode et sérénité. 
-                Une approche unique alliant expertise financière et accompagnement spirituel.
+                {t.footer.description}
               </p>
 
               {/* Contact Info */}
@@ -28,10 +31,10 @@ export default function Footer() {
                 <div className="flex items-center space-x-3">
                   <span className="w-5 h-5 text-yellow-400">📧</span>
                   <a 
-                    href="mailto:cash@cash360.finance"
+                    href={`mailto:${t.footer.contact}`}
                     className="text-gray-300 hover:text-yellow-400 transition-colors duration-200"
                   >
-                    cash@cash360.finance
+                    {t.footer.contact}
                   </a>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -43,7 +46,7 @@ export default function Footer() {
                     }}
                     className="text-gray-300 hover:text-yellow-400 transition-colors duration-200"
                   >
-                    Réserver un appel
+                    {t.footer.bookCall}
                   </button>
                 </div>
               </div>
@@ -51,14 +54,14 @@ export default function Footer() {
 
             {/* Quick Links */}
             <div>
-              <h3 className="text-xl font-semibold mb-6">Navigation</h3>
+              <h3 className="text-xl font-semibold mb-6">{t.footer.navigation}</h3>
               <ul className="space-y-3">
                 <li>
                   <button
                     onClick={() => scrollToSection('accueil')}
                     className="text-gray-300 hover:text-yellow-400 transition-colors duration-200"
                   >
-                    Accueil
+                    {t.footer.home}
                   </button>
                 </li>
                 <li>
@@ -66,7 +69,7 @@ export default function Footer() {
                     onClick={() => scrollToSection('features')}
                     className="text-gray-300 hover:text-yellow-400 transition-colors duration-200"
                   >
-                    Pourquoi Cash360
+                    {t.footer.whyCash360}
                   </button>
                 </li>
                 <li>
@@ -74,7 +77,7 @@ export default function Footer() {
                     onClick={() => scrollToSection('steps')}
                     className="text-gray-300 hover:text-yellow-400 transition-colors duration-200"
                   >
-                    Comment ça marche
+                    {t.footer.howItWorks}
                   </button>
                 </li>
                 <li>
@@ -82,7 +85,7 @@ export default function Footer() {
                     onClick={() => scrollToSection('apropos')}
                     className="text-gray-300 hover:text-yellow-400 transition-colors duration-200"
                   >
-                    À propos
+                    {t.footer.aboutUs}
                   </button>
                 </li>
               </ul>
@@ -90,13 +93,11 @@ export default function Footer() {
 
             {/* Services */}
             <div>
-              <h3 className="text-xl font-semibold mb-6">Services</h3>
+              <h3 className="text-xl font-semibold mb-6">{t.footer.services}</h3>
               <ul className="space-y-3">
-                <li className="text-gray-300">Analyse financière personnalisée</li>
-                <li className="text-gray-300">Accompagnement spirituel</li>
-                <li className="text-gray-300">Formation gestion d'église</li>
-                <li className="text-gray-300">Coaching entrepreneurs</li>
-                <li className="text-gray-300">Suivi personnalisé</li>
+                {t.footer.servicesList.map((service, index) => (
+                  <li key={index} className="text-gray-300">{service}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -107,7 +108,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm">
-              © {currentYear} Cash360. Tous droits réservés.
+              © {currentYear} Cash360. {t.footer.rights}
             </div>
             
             <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
@@ -117,7 +118,7 @@ export default function Footer() {
                 }}
                 className="text-gray-400 hover:text-yellow-400 transition-colors duration-200"
               >
-                Politique de confidentialité
+                {t.footer.privacy}
               </button>
               <button 
                 onClick={() => {
@@ -125,7 +126,7 @@ export default function Footer() {
                 }}
                 className="text-gray-400 hover:text-yellow-400 transition-colors duration-200"
               >
-                Mentions légales
+                {t.footer.legal}
               </button>
               <button 
                 onClick={() => {
@@ -133,7 +134,7 @@ export default function Footer() {
                 }}
                 className="text-gray-400 hover:text-yellow-400 transition-colors duration-200"
               >
-                CGV
+                {t.footer.terms}
               </button>
             </div>
           </div>

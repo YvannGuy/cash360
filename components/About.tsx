@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function About() {
+  const { t } = useLanguage()
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -27,28 +29,7 @@ export default function About() {
     }
   }, [])
 
-  const achievements = [
-    {
-      icon: "🏆",
-      title: "Expertise bancaire",
-      description: "10 ans d'expérience dans le secteur bancaire"
-    },
-    {
-      icon: "❤️",
-      title: "Accompagnement spirituel",
-      description: "Pasteur engagée dans l'église locale"
-    },
-    {
-      icon: "👥",
-      title: "200+ personnes accompagnées",
-      description: "Particuliers, entrepreneurs et églises"
-    },
-    {
-      icon: "📚",
-      title: "Formation continue",
-      description: "Certifications en gestion financière"
-    }
-  ]
+  const achievementsIcons = ["🏆", "❤️", "👥", "📚"]
 
   return (
     <section id="apropos" className="py-20 bg-white">
@@ -57,14 +38,13 @@ export default function About() {
           {/* Header */}
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-              À propos de{' '}
+              {t.about.title}{' '}
               <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                Pasteur Myriam Konan
+                {t.about.titleHighlight}
               </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Professionnelle bancaire et accompagnatrice spirituelle, j'aide aujourd'hui les particuliers, 
-              entrepreneurs et églises à rétablir la santé de leurs finances.
+              {t.about.subtitle}
             </p>
           </div>
 
@@ -86,21 +66,19 @@ export default function About() {
             <div className="lg:col-span-2 space-y-8">
               <div>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  Forte de 10 ans d'expérience dans le secteur bancaire et d'une vocation spirituelle profonde, 
-                  j'ai développé une méthode unique qui combine expertise financière et accompagnement spirituel 
-                  pour vous aider à retrouver l'équilibre et la prospérité.
+                  {t.about.description}
                 </p>
               </div>
 
               {/* Achievements */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {achievements.map((achievement, index) => (
+                {t.about.achievements.map((achievement, index) => (
                   <div
                     key={index}
                     className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
                   >
                     <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0 hover:scale-110 transition-transform duration-300">
-                      <span className="text-xl">{achievement.icon}</span>
+                      <span className="text-xl">{achievementsIcons[index]}</span>
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900 mb-1">
@@ -117,11 +95,10 @@ export default function About() {
               {/* Mission Statement */}
               <div className="bg-gradient-to-r from-slate-900 to-blue-900 rounded-2xl p-6 text-white hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <h3 className="text-xl font-bold mb-3">
-                  Ma mission
+                  {t.about.missionTitle}
                 </h3>
                 <p className="text-gray-200 leading-relaxed">
-                  "Aider chaque personne à reprendre le contrôle de ses finances avec sagesse, 
-                  intégrité et foi, en appliquant les principes bibliques à la gestion financière moderne."
+                  {t.about.mission}
                 </p>
               </div>
 
@@ -133,12 +110,12 @@ export default function About() {
                     href="mailto:cash@cash360.finance"
                     className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                   >
-                    Rencontrer Myriam
+                    {t.about.ctaButton}
                   </a>
 
                   {/* Social Media */}
                   <div className="flex flex-col items-center lg:items-start">
-                    <p className="text-gray-600 font-medium mb-3">Suivez-moi sur :</p>
+                    <p className="text-gray-600 font-medium mb-3">{t.about.followMe}</p>
                     <div className="flex space-x-3">
                       <a
                         href="https://www.instagram.com/myriamkonanofficiel?igsh=MTNwNzZxMHFtc3Y2cw=="

@@ -1,44 +1,14 @@
 'use client'
 
-export default function Features() {
-  const features = [
-    {
-      icon: "🔍",
-      title: "Analyse claire et précise",
-      description: "Diagnostic complet de votre situation financière avec des recommandations concrètes et actionables.",
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      icon: "⚖️",
-      title: "Accompagnement bienveillant et structuré",
-      description: "Suivi personnalisé avec des étapes claires pour retrouver l'équilibre financier sans stress.",
-      color: "from-green-500 to-green-600"
-    },
-    {
-      icon: "❤️",
-      title: "Approche alliant foi et intelligence financière",
-      description: "Méthodes qui respectent vos valeurs spirituelles tout en appliquant les meilleures pratiques financières.",
-      color: "from-purple-500 to-purple-600"
-    }
-  ]
+import { useLanguage } from '@/lib/LanguageContext'
 
-  const additionalFeatures = [
-    {
-      icon: "🎯",
-      title: "Objectifs personnalisés",
-      description: "Plan d'action adapté à votre situation unique"
-    },
-    {
-      icon: "🛡️",
-      title: "Confidentialité totale",
-      description: "Vos données sont protégées et traitées en toute sécurité"
-    },
-    {
-      icon: "📈",
-      title: "Résultats mesurables",
-      description: "Suivi des progrès avec des indicateurs clairs"
-    }
-  ]
+export default function Features() {
+  const { t } = useLanguage()
+  
+  const featuresIcons = ["🔍", "⚖️", "❤️"]
+  const featuresColors = ["from-blue-500 to-blue-600", "from-green-500 to-green-600", "from-purple-500 to-purple-600"]
+  
+  const additionalFeaturesIcons = ["🎯", "🛡️", "📈"]
 
   return (
     <section id="features" className="py-20 bg-gray-50">
@@ -46,25 +16,24 @@ export default function Features() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-            Pourquoi choisir{' '}
+            {t.features.title}{' '}
             <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              Cash360
+              {t.features.titleHighlight}
             </span>
             ?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Une approche unique qui combine expertise financière et accompagnement spirituel 
-            pour vous aider à retrouver la paix et la prospérité.
+            {t.features.subtitle}
           </p>
         </div>
 
         {/* Main Features */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-          {features.map((feature, index) => (
+          {t.features.mainFeatures.map((feature, index) => (
             <div key={index}>
               <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
-                <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 hover:scale-110 transition-transform duration-300`}>
-                  <span className="text-2xl">{feature.icon}</span>
+                <div className={`w-16 h-16 bg-gradient-to-r ${featuresColors[index]} rounded-2xl flex items-center justify-center mb-6 hover:scale-110 transition-transform duration-300`}>
+                  <span className="text-2xl">{featuresIcons[index]}</span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
                   {feature.title}
@@ -80,14 +49,11 @@ export default function Features() {
         {/* Additional Features */}
         <div>
           <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
-            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
-              Nos engagements
-            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {additionalFeatures.map((feature, index) => (
+              {t.features.additionalFeatures.map((feature, index) => (
                 <div key={index} className="flex items-start space-x-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl">{feature.icon}</span>
+                    <span className="text-xl">{additionalFeaturesIcons[index]}</span>
                   </div>
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 mb-2">

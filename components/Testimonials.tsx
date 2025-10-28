@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function Testimonials() {
+  const { t } = useLanguage()
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -27,35 +29,11 @@ export default function Testimonials() {
     }
   }, [])
 
-  const testimonials = [
-    {
-      name: "Rachel K.",
-      role: "Particulier",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-      content: "Grâce à Cash360, j'ai compris mes erreurs financières et retrouvé la paix dans ma gestion. L'approche spirituelle m'a aidée à voir l'argent différemment.",
-      rating: 5
-    },
-    {
-      name: "Pasteur Jean-Marc L.",
-      role: "Église",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-      content: "L'accompagnement de Myriam a transformé la gestion financière de notre église. Nous avons appris à gérer nos ressources avec sagesse et transparence.",
-      rating: 5
-    },
-    {
-      name: "Sarah M.",
-      role: "Entrepreneur",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-      content: "En tant qu'entrepreneure, j'avais du mal à séparer mes finances personnelles et professionnelles. Cash360 m'a donné les outils pour reprendre le contrôle.",
-      rating: 5
-    },
-    {
-      name: "David P.",
-      role: "Particulier",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-      content: "L'analyse de mes relevés bancaires a révélé des dépenses inutiles. Aujourd'hui, j'épargne 30% de plus chaque mois grâce aux conseils reçus.",
-      rating: 5
-    }
+  const testimonialImages = [
+    "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
   ]
 
   return (
@@ -64,20 +42,19 @@ export default function Testimonials() {
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-            Ils ont transformé leur{' '}
+            {t.testimonials.title}{' '}
             <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              relation à l'argent
+              {t.testimonials.titleHighlight}
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Découvrez les témoignages de ceux qui ont retrouvé l'équilibre financier 
-            grâce à l'accompagnement Cash360.
+            {t.testimonials.subtitle}
           </p>
         </div>
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {testimonials.map((testimonial, index) => (
+          {t.testimonials.list.map((testimonial, index) => (
             <div
               key={index}
               className={`group transition-all duration-1000 delay-${index * 200} ${
@@ -94,7 +71,7 @@ export default function Testimonials() {
 
                 {/* Rating */}
                 <div className="flex justify-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
+                  {[...Array(5)].map((_, i) => (
                     <span key={i} className="text-yellow-400 text-lg">★</span>
                   ))}
                 </div>
@@ -108,7 +85,7 @@ export default function Testimonials() {
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden">
                     <img
-                      src={testimonial.image}
+                      src={testimonialImages[index]}
                       alt={testimonial.name}
                       className="w-full h-full object-cover"
                     />
@@ -125,22 +102,14 @@ export default function Testimonials() {
         <div className={`mt-16 transition-all duration-1000 delay-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="bg-gradient-to-r from-slate-900 to-blue-900 rounded-3xl p-8 text-white">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-3xl font-bold text-yellow-400 mb-2">200+</div>
-                <div className="text-gray-300">Personnes accompagnées</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-blue-400 mb-2">95%</div>
-                <div className="text-gray-300">Satisfaction client</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-400 mb-2">48h</div>
-                <div className="text-gray-300">Délai d'analyse</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-purple-400 mb-2">10 ans</div>
-                <div className="text-gray-300">D'expérience</div>
-              </div>
+              {t.testimonials.stats.map((stat, index) => (
+                <div key={index}>
+                  <div className={`text-3xl font-bold mb-2 ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-blue-400' : index === 2 ? 'text-green-400' : 'text-purple-400'}`}>
+                    {stat.value}
+                  </div>
+                  <div className="text-gray-300">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function Steps() {
+  const { t } = useLanguage()
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -27,44 +29,9 @@ export default function Steps() {
     }
   }, [])
 
-  const steps = [
-    {
-      number: "01",
-      icon: "🔹",
-      title: "Créer un compte",
-      description: "Prenez quelques minutes pour créer votre compte et accéder à votre espace personnel Cash360.",
-      details: [
-        "Accès à votre espace sécurisé",
-        "Suivi de vos finances et progrès",
-        "Découverte de la méthode Cash360"
-      ],
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      number: "02",
-      icon: "📤",
-      title: "Envoyer vos relevés",
-      description: "Transmettez vos 3 derniers relevés bancaires de manière sécurisée et confidentielle.",
-      details: [
-        "Upload sécurisé et chiffré",
-        "Analyse de vos habitudes de dépenses",
-        "Identification des points d'amélioration"
-      ],
-      color: "from-green-500 to-green-600"
-    },
-    {
-      number: "03",
-      icon: "📄",
-      title: "Recevoir votre plan d'action",
-      description: "Obtenez un rapport personnalisé avec des recommandations concrètes sous 48-72h.",
-      details: [
-        "Rapport détaillé et personnalisé",
-        "Plan d'action étape par étape",
-        "Suivi et accompagnement continu"
-      ],
-      color: "from-purple-500 to-purple-600"
-    }
-  ]
+  const stepsNumbers = ["01", "02", "03"]
+  const stepsIcons = ["🔹", "📤", "📄"]
+  const stepsColors = ["from-blue-500 to-blue-600", "from-green-500 to-green-600", "from-purple-500 to-purple-600"]
 
   return (
     <section id="steps" className="py-20 bg-gray-50">
@@ -72,22 +39,21 @@ export default function Steps() {
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-            Comment ça{' '}
+            {t.steps.title}{' '}
             <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              fonctionne
+              {t.steps.titleHighlight}
             </span>
             ?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Un processus simple et transparent en 3 étapes pour retrouver l'équilibre financier 
-            avec l'accompagnement de Cash360.
+            {t.steps.subtitle}
           </p>
         </div>
 
         {/* Steps */}
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((step, index) => (
+            {t.steps.stepsList.map((step, index) => (
               <div
                 key={index}
                 className={`transition-all duration-1000 delay-${index * 200} ${
@@ -97,11 +63,11 @@ export default function Steps() {
                 <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 h-full">
                   {/* Step Number & Icon */}
                   <div className="flex items-center mb-6">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${step.color} rounded-xl flex items-center justify-center mr-3 hover:scale-110 transition-transform duration-300`}>
-                      <span className="text-white font-bold text-lg">{step.number}</span>
+                    <div className={`w-12 h-12 bg-gradient-to-r ${stepsColors[index]} rounded-xl flex items-center justify-center mr-3 hover:scale-110 transition-transform duration-300`}>
+                      <span className="text-white font-bold text-lg">{stepsNumbers[index]}</span>
                     </div>
                     <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center hover:scale-110 transition-transform duration-300">
-                      <span className="text-white text-lg">{step.icon}</span>
+                      <span className="text-white text-lg">{stepsIcons[index]}</span>
                     </div>
                   </div>
 
@@ -132,10 +98,10 @@ export default function Steps() {
         <div className={`text-center mt-16 transition-all duration-1000 delay-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-2xl p-8 text-gray-900">
             <h3 className="text-2xl font-bold mb-4">
-              Prêt(e) à commencer votre transformation financière ?
+              {t.steps.ctaTitle}
             </h3>
             <p className="text-lg mb-6 opacity-90">
-              Rejoignez les centaines de personnes qui ont déjà retrouvé l'équilibre
+              {t.steps.ctaSubtitle}
             </p>
             <button
               onClick={() => {
@@ -145,7 +111,7 @@ export default function Steps() {
               className="inline-flex items-center px-8 py-4 bg-white text-gray-900 font-bold text-lg rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               <span className="w-5 h-5 mr-2">📅</span>
-              Réserver mon appel
+              {t.steps.ctaButton}
             </button>
           </div>
         </div>

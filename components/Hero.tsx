@@ -1,6 +1,9 @@
 'use client'
 
+import { useLanguage } from '@/lib/LanguageContext'
+
 export default function Hero() {
+  const { t } = useLanguage()
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
@@ -27,18 +30,18 @@ export default function Hero() {
           <div>
             {/* Main Title */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Reprenez le contrôle de vos{' '}
+              {t.hero.title}{' '}
               <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                finances
+                {t.hero.titleHighlight}
               </span>
               <br />
-              avec méthode et sérénité
+              {t.hero.titleEnd}
             </h1>
 
             {/* Subtitle */}
             <p className="text-xl sm:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Analyse personnalisée + accompagnement spirituel et pratique pour retrouver 
-              <span className="text-yellow-400 font-semibold"> équilibre et liberté financière</span>
+              {t.hero.subtitle}{' '}
+              <span className="text-yellow-400 font-semibold">{t.hero.subtitleHighlight}</span>
             </p>
 
             {/* Video */}
@@ -59,7 +62,7 @@ export default function Hero() {
 
             {/* Texte sous la vidéo */}
             <p className="mb-8 text-base sm:text-lg text-white/90 max-w-2xl mx-auto">
-              Faites le point en 60 secondes : découvrez votre équilibre financier et passez à l'action.
+              {t.hero.videoDescription}
             </p>
 
             {/* CTA Buttons */}
@@ -68,7 +71,7 @@ export default function Hero() {
                 href="/simulation"
                 className="inline-flex items-center px-8 py-3.5 bg-[#D4AF37] text-[#0B1B2B] text-base font-medium rounded-lg hover:brightness-95 transition-all duration-200"
               >
-                Commencer la simulation
+                {t.hero.ctaPrimary}
               </a>
               
               <button
@@ -78,7 +81,7 @@ export default function Hero() {
                 }}
                 className="inline-flex items-center px-8 py-3.5 border border-white/50 text-white text-base font-medium rounded-lg hover:bg-white/10 transition-all duration-200"
               >
-                Réserver mon appel
+                {t.hero.ctaSecondary}
               </button>
             </div>
 
