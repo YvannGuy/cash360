@@ -588,6 +588,140 @@ export const translations = {
       privacy: "Privacy policy",
       terms: "Terms",
       rights: "All rights reserved"
+    },
+    
+    // About Section
+    about: {
+      title: "About",
+      titleHighlight: "Pastor Myriam Konan",
+      subtitle: "Banking professional and spiritual guide, I now help individuals, entrepreneurs and churches restore the health of their finances.",
+      description: "With 10 years of experience in the banking sector and a deep spiritual calling, I have developed a unique method that combines financial expertise and spiritual support to help you regain balance and prosperity.",
+      achievements: [
+        {
+          title: "Banking expertise",
+          description: "10 years of experience in the banking sector"
+        },
+        {
+          title: "Spiritual support",
+          description: "Pastor engaged in the local church"
+        },
+        {
+          title: "200+ people supported",
+          description: "Individuals, entrepreneurs and churches"
+        },
+        {
+          title: "Continuous training",
+          description: "Certifications in financial management"
+        }
+      ],
+      missionTitle: "My mission",
+      mission: "\"Help each person regain control of their finances with wisdom, integrity and faith, by applying biblical principles to modern financial management.\"",
+      ctaButton: "Meet Myriam",
+      followMe: "Follow me on:"
+    },
+    
+    // FAQ Section
+    faq: {
+      badge: "FAQ",
+      title: "Frequently Asked Questions",
+      questions: [
+        {
+          q: "How can Cash360 help me?",
+          a: "Cash360 helps you understand where your money goes, identify your priorities and reorganize your finances. Through a simple, human and spiritual approach, you regain balance, serenity and financial freedom."
+        },
+        {
+          q: "How does the financial analysis work?",
+          a: "After an initial exchange, you can send us your last three bank statements for a complete analysis. We identify your strengths, weaknesses and offer you a personalized action plan."
+        },
+        {
+          q: "Is the 15-minute call free?",
+          a: "Yes, completely free and without obligation. This call allows us to better understand your situation and define together the next steps for your financial balance."
+        },
+        {
+          q: "Is my information confidential?",
+          a: "Absolutely. All your data is treated in a strictly confidential and secure manner. Nothing is shared with third parties without your explicit agreement."
+        },
+        {
+          q: "I am in Africa, can I benefit from Cash360 support?",
+          a: "Yes, of course 🌍 Wherever you are in the world, if you have internet access, you can benefit from Cash360 support via our calls and online tools."
+        },
+        {
+          q: "Who is this training for?",
+          a: "This training is for anyone or organization wishing to improve their financial management. Whether you are an individual, a couple or a church, the Cash360 method adapts to your reality."
+        }
+      ]
+    },
+    
+    // Testimonials Section
+    testimonials: {
+      title: "They transformed their",
+      titleHighlight: "relationship with money",
+      subtitle: "Discover the testimonials of those who have regained financial balance thanks to Cash360 support.",
+      list: [
+        {
+          name: "Rachel K.",
+          role: "Individual",
+          content: "Thanks to Cash360, I understood my financial mistakes and regained peace in my management. The spiritual approach helped me see money differently."
+        },
+        {
+          name: "Pastor Jean-Marc L.",
+          role: "Church",
+          content: "Myriam's support transformed our church's financial management. We learned to manage our resources with wisdom and transparency."
+        },
+        {
+          name: "Sarah M.",
+          role: "Entrepreneur",
+          content: "As an entrepreneur, I struggled to separate my personal and professional finances. Cash360 gave me the tools to regain control."
+        },
+        {
+          name: "David P.",
+          role: "Individual",
+          content: "The analysis of my bank statements revealed unnecessary expenses. Today, I save 30% more each month thanks to the advice received."
+        }
+      ],
+      stats: [
+        {
+          value: "200+",
+          label: "People supported"
+        },
+        {
+          value: "95%",
+          label: "Customer satisfaction"
+        },
+        {
+          value: "48h",
+          label: "Analysis time"
+        },
+        {
+          value: "10 years",
+          label: "Of experience"
+        }
+      ]
+    },
+    
+    // CTA Section
+    ctaSection: {
+      title: "Ready to give meaning back to your",
+      titleHighlight: "finances",
+      subtitle: "Join the hundreds of people who have already regained financial balance thanks to Cash360's personalized support.",
+      benefits: [
+        {
+          title: "Confidential analysis",
+          description: "Your data is protected and processed securely"
+        },
+        {
+          title: "Fast results",
+          description: "Detailed report within 48-72h maximum"
+        },
+        {
+          title: "Caring approach",
+          description: "Support respectful of your values"
+        }
+      ],
+      mainTitle: "The beginning of your financial freedom",
+      ctaButton: "Book my call",
+      quote: "\"Financial prosperity begins with a healthy relationship with money. Let me accompany you on this path of transformation.\"",
+      quoteAuthor: "— Pastor Myriam Konan, Founder of Cash360"
     }
   },
   
@@ -816,6 +950,140 @@ export const translations = {
       privacy: "Política de privacidad",
       terms: "Términos",
       rights: "Todos los derechos reservados"
+    },
+    
+    // About Section
+    about: {
+      title: "Acerca de",
+      titleHighlight: "Pastora Myriam Konan",
+      subtitle: "Profesional bancaria y guía espiritual, ahora ayudo a particulares, emprendedores e iglesias a restablecer la salud de sus finanzas.",
+      description: "Con 10 años de experiencia en el sector bancario y una vocación espiritual profunda, he desarrollado un método único que combina experiencia financiera y apoyo espiritual para ayudarte a recuperar el equilibrio y la prosperidad.",
+      achievements: [
+        {
+          title: "Experiencia bancaria",
+          description: "10 años de experiencia en el sector bancario"
+        },
+        {
+          title: "Acompañamiento espiritual",
+          description: "Pastora comprometida en la iglesia local"
+        },
+        {
+          title: "200+ personas acompañadas",
+          description: "Particulares, emprendedores e iglesias"
+        },
+        {
+          title: "Formación continua",
+          description: "Certificaciones en gestión financiera"
+        }
+      ],
+      missionTitle: "Mi misión",
+      mission: "\"Ayudar a cada persona a retomar el control de sus finanzas con sabiduría, integridad y fe, aplicando principios bíblicos a la gestión financiera moderna.\"",
+      ctaButton: "Conocer a Myriam",
+      followMe: "Sígueme en:"
+    },
+    
+    // FAQ Section
+    faq: {
+      badge: "FAQ",
+      title: "Preguntas Frecuentes",
+      questions: [
+        {
+          q: "¿Cómo puede ayudarme Cash360?",
+          a: "Cash360 te ayuda a entender dónde va tu dinero, identificar tus prioridades y reorganizar tus finanzas. Gracias a un enfoque simple, humano y espiritual, recuperas equilibrio, serenidad y libertad financiera."
+        },
+        {
+          q: "¿Cómo funciona el análisis financiero?",
+          a: "Después de un primer intercambio, puedes enviarnos tus últimos tres extractos bancarios para un análisis completo. Identificamos tus fortalezas, debilidades y te proponemos un plan de acción personalizado."
+        },
+        {
+          q: "¿La llamada de 15 minutos es gratuita?",
+          a: "Sí, completamente gratuita y sin compromiso. Esta llamada permite entender mejor tu situación y definir juntos los próximos pasos para tu equilibrio financiero."
+        },
+        {
+          q: "¿Mi información es confidencial?",
+          a: "Absolutamente. Todos tus datos se tratan de manera estrictamente confidencial y segura. Nada se comparte con terceros sin tu acuerdo explícito."
+        },
+        {
+          q: "Estoy en África, ¿puedo beneficiarme del acompañamiento Cash360?",
+          a: "Sí, por supuesto 🌍 Estés donde estés en el mundo, si tienes acceso a Internet, puedes beneficiarte del acompañamiento Cash360 a través de nuestras llamadas y herramientas en línea."
+        },
+        {
+          q: "¿A quién se dirige esta formación?",
+          a: "Esta formación se dirige a cualquier persona u organización que desee mejorar la gestión de sus finanzas. Ya seas un particular, una pareja o una iglesia, el método Cash360 se adapta a tu realidad."
+        }
+      ]
+    },
+    
+    // Testimonials Section
+    testimonials: {
+      title: "Ellos transformaron su",
+      titleHighlight: "relación con el dinero",
+      subtitle: "Descubre los testimonios de quienes han recuperado el equilibrio financiero gracias al acompañamiento Cash360.",
+      list: [
+        {
+          name: "Rachel K.",
+          role: "Particular",
+          content: "Gracias a Cash360, comprendí mis errores financieros y recuperé la paz en mi gestión. El enfoque espiritual me ayudó a ver el dinero de manera diferente."
+        },
+        {
+          name: "Pastor Jean-Marc L.",
+          role: "Iglesia",
+          content: "El acompañamiento de Myriam transformó la gestión financiera de nuestra iglesia. Aprendimos a gestionar nuestros recursos con sabiduría y transparencia."
+        },
+        {
+          name: "Sarah M.",
+          role: "Emprendedora",
+          content: "Como emprendedora, tenía dificultades para separar mis finanzas personales y profesionales. Cash360 me dio las herramientas para retomar el control."
+        },
+        {
+          name: "David P.",
+          role: "Particular",
+          content: "El análisis de mis extractos bancarios reveló gastos innecesarios. Hoy, ahorro un 30% más cada mes gracias a los consejos recibidos."
+        }
+      ],
+      stats: [
+        {
+          value: "200+",
+          label: "Personas acompañadas"
+        },
+        {
+          value: "95%",
+          label: "Satisfacción del cliente"
+        },
+        {
+          value: "48h",
+          label: "Tiempo de análisis"
+        },
+        {
+          value: "10 años",
+          label: "De experiencia"
+        }
+      ]
+    },
+    
+    // CTA Section
+    ctaSection: {
+      title: "¿Listo(a) para dar sentido a tus",
+      titleHighlight: "finanzas",
+      subtitle: "Únete a cientos de personas que ya han recuperado el equilibrio financiero gracias al apoyo personalizado de Cash360.",
+      benefits: [
+        {
+          title: "Análisis confidencial",
+          description: "Tus datos están protegidos y procesados de forma segura"
+        },
+        {
+          title: "Resultados rápidos",
+          description: "Informe detallado en 48-72h máximo"
+        },
+        {
+          title: "Enfoque cuidadoso",
+          description: "Acompañamiento respetuoso con tus valores"
+        }
+      ],
+      mainTitle: "El comienzo de tu libertad financiera",
+      ctaButton: "Reservar mi llamada",
+      quote: "\"La prosperidad financiera comienza con una relación sana con el dinero. Déjame acompañarte en este camino de transformación.\"",
+      quoteAuthor: "— Pastora Myriam Konan, Fundadora de Cash360"
     }
   },
   
@@ -1044,6 +1312,140 @@ export const translations = {
       privacy: "Política de privacidade",
       terms: "Termos",
       rights: "Todos os direitos reservados"
+    },
+    
+    // About Section
+    about: {
+      title: "Sobre",
+      titleHighlight: "Pastora Myriam Konan",
+      subtitle: "Profissional bancária e guia espiritual, agora ajudo particulares, empreendedores e igrejas a restabelecer a saúde de suas finanças.",
+      description: "Com 10 anos de experiência no setor bancário e uma vocação espiritual profunda, desenvolvi um método único que combina experiência financeira e apoio espiritual para ajudá-lo a recuperar o equilíbrio e a prosperidade.",
+      achievements: [
+        {
+          title: "Experiência bancária",
+          description: "10 anos de experiência no setor bancário"
+        },
+        {
+          title: "Acompanhamento espiritual",
+          description: "Pastora comprometida na igreja local"
+        },
+        {
+          title: "200+ pessoas acompanhadas",
+          description: "Particulares, empreendedores e igrejas"
+        },
+        {
+          title: "Formação contínua",
+          description: "Certificações em gestão financeira"
+        }
+      ],
+      missionTitle: "Minha missão",
+      mission: "\"Ajudar cada pessoa a retomar o controle de suas finanças com sabedoria, integridade e fé, aplicando princípios bíblicos à gestão financeira moderna.\"",
+      ctaButton: "Conhecer Myriam",
+      followMe: "Siga-me em:"
+    },
+    
+    // FAQ Section
+    faq: {
+      badge: "FAQ",
+      title: "Perguntas Frequentes",
+      questions: [
+        {
+          q: "Como o Cash360 pode me ajudar?",
+          a: "O Cash360 ajuda você a entender para onde vai seu dinheiro, identificar suas prioridades e reorganizar suas finanças. Através de uma abordagem simples, humana e espiritual, você recupera equilíbrio, serenidade e liberdade financeira."
+        },
+        {
+          q: "Como funciona a análise financeira?",
+          a: "Após uma primeira troca, você pode nos enviar seus últimos 3 extratos bancários para uma análise completa. Identificamos seus pontos fortes, fraquezas e propomos um plano de ação personalizado."
+        },
+        {
+          q: "A chamada de 15 minutos é gratuita?",
+          a: "Sim, totalmente gratuita e sem compromisso. Esta chamada permite entender melhor sua situação e definir juntos os próximos passos para seu equilíbrio financeiro."
+        },
+        {
+          q: "Minhas informações são confidenciais?",
+          a: "Absolutamente. Todos os seus dados são tratados de maneira estritamente confidencial e segura. Nada é compartilhado com terceiros sem seu acordo explícito."
+        },
+        {
+          q: "Estou na África, posso me beneficiar do acompanhamento Cash360?",
+          a: "Sim, claro 🌍 Onde quer que você esteja no mundo, se tiver acesso à Internet, pode se beneficiar do acompanhamento Cash360 através de nossas chamadas e ferramentas online."
+        },
+        {
+          q: "A quem se destina esta formação?",
+          a: "Esta formação se destina a qualquer pessoa ou organização que deseje melhorar a gestão de suas finanças. Seja você um particular, um casal ou uma igreja, o método Cash360 se adapta à sua realidade."
+        }
+      ]
+    },
+    
+    // Testimonials Section
+    testimonials: {
+      title: "Eles transformaram sua",
+      titleHighlight: "relação com o dinheiro",
+      subtitle: "Descubra os depoimentos daqueles que recuperaram o equilíbrio financeiro graças ao acompanhamento Cash360.",
+      list: [
+        {
+          name: "Rachel K.",
+          role: "Particular",
+          content: "Graças ao Cash360, compreendi meus erros financeiros e recuperei a paz em minha gestão. A abordagem espiritual me ajudou a ver o dinheiro de forma diferente."
+        },
+        {
+          name: "Pastor Jean-Marc L.",
+          role: "Igreja",
+          content: "O acompanhamento de Myriam transformou a gestão financeira de nossa igreja. Aprendemos a gerir nossos recursos com sabedoria e transparência."
+        },
+        {
+          name: "Sarah M.",
+          role: "Empreendedora",
+          content: "Como empreendedora, tinha dificuldade em separar minhas finanças pessoais e profissionais. O Cash360 me deu as ferramentas para retomar o controle."
+        },
+        {
+          name: "David P.",
+          role: "Particular",
+          content: "A análise dos meus extratos bancários revelou despesas desnecessárias. Hoje, economizo 30% a mais por mês graças aos conselhos recebidos."
+        }
+      ],
+      stats: [
+        {
+          value: "200+",
+          label: "Pessoas acompanhadas"
+        },
+        {
+          value: "95%",
+          label: "Satisfação do cliente"
+        },
+        {
+          value: "48h",
+          label: "Tempo de análise"
+        },
+        {
+          value: "10 anos",
+          label: "De experiência"
+        }
+      ]
+    },
+    
+    // CTA Section
+    ctaSection: {
+      title: "Pronto(a) para dar sentido às suas",
+      titleHighlight: "finanças",
+      subtitle: "Junte-se a centenas de pessoas que já recuperaram o equilíbrio financeiro graças ao suporte personalizado da Cash360.",
+      benefits: [
+        {
+          title: "Análise confidencial",
+          description: "Seus dados estão protegidos e processados com segurança"
+        },
+        {
+          title: "Resultados rápidos",
+          description: "Relatório detalhado em 48-72h no máximo"
+        },
+        {
+          title: "Abordagem cuidadosa",
+          description: "Acompanhamento respeitoso aos seus valores"
+        }
+      ],
+      mainTitle: "O início de sua liberdade financeira",
+      ctaButton: "Reservar minha chamada",
+      quote: "\"A prosperidade financeira começa com uma relação saudável com o dinheiro. Deixe-me acompanhá-lo neste caminho de transformação.\"",
+      quoteAuthor: "— Pastora Myriam Konan, Fundadora da Cash360"
     }
   }
 };
