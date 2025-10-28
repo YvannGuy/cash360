@@ -359,6 +359,39 @@ export const translations = {
       ctaButton: "Réserver mon appel",
       quote: "\"La prospérité financière commence par une relation saine avec l'argent. Laissez-moi vous accompagner sur ce chemin de transformation.\"",
       quoteAuthor: "— Pasteur Myriam Konan, Fondatrice de Cash360"
+    },
+    
+    // CTA Box
+    ctaBox: {
+      defaultTitle: "Réserver mon appel",
+      defaultSubtitle: "Appel bienveillant, confidentiel et sans engagement. Première base pour votre équilibre financier.",
+      button: "Je réserve mon appel"
+    },
+    
+    // Section Analyse
+    sectionAnalyse: {
+      title: "Analyse personnalisée de vos relevés bancaires",
+      description: "Découvrez où part votre argent et identifiez les points à améliorer grâce à une analyse claire et confidentielle de vos relevés bancaires.",
+      button: "Envoyer mes relevés",
+      imageAlt: "Analyse financière"
+    },
+    
+    // Live TikTok
+    liveTikTok: {
+      title: "Live TikTok",
+      subtitle: "Conseils financiers en direct tous les lundis à 22h00 (heure de Paris)",
+      liveBadge: "EN DIRECT",
+      eventTitle: "Lundi du Déclic",
+      eventSubtitle: "Conseils financiers personnalisés",
+      imageAlt: "Myriam Konan - Live TikTok",
+      countdownTitle: "Prochain live dans :",
+      days: "Jours",
+      hours: "Heures",
+      minutes: "Minutes",
+      seconds: "Secondes",
+      username: "@ev.myriamkonan",
+      schedule: "Tous les lundis à 22h00 (Paris)",
+      button: "Suivre sur TikTok"
     }
   },
   
@@ -722,6 +755,39 @@ export const translations = {
       ctaButton: "Book my call",
       quote: "\"Financial prosperity begins with a healthy relationship with money. Let me accompany you on this path of transformation.\"",
       quoteAuthor: "— Pastor Myriam Konan, Founder of Cash360"
+    },
+    
+    // CTA Box
+    ctaBox: {
+      defaultTitle: "Book my call",
+      defaultSubtitle: "Caring, confidential and commitment-free call. First step for your financial balance.",
+      button: "I book my call"
+    },
+    
+    // Section Analyse
+    sectionAnalyse: {
+      title: "Personalized analysis of your bank statements",
+      description: "Discover where your money goes and identify areas for improvement through a clear and confidential analysis of your bank statements.",
+      button: "Send my statements",
+      imageAlt: "Financial analysis"
+    },
+    
+    // Live TikTok
+    liveTikTok: {
+      title: "TikTok Live",
+      subtitle: "Live financial advice every Monday at 10:00 PM (Paris time)",
+      liveBadge: "LIVE",
+      eventTitle: "Monday Wake-Up Call",
+      eventSubtitle: "Personalized financial advice",
+      imageAlt: "Myriam Konan - TikTok Live",
+      countdownTitle: "Next live in:",
+      days: "Days",
+      hours: "Hours",
+      minutes: "Minutes",
+      seconds: "Seconds",
+      username: "@ev.myriamkonan",
+      schedule: "Every Monday at 10:00 PM (Paris)",
+      button: "Follow on TikTok"
     }
   },
   
@@ -1084,6 +1150,39 @@ export const translations = {
       ctaButton: "Reservar mi llamada",
       quote: "\"La prosperidad financiera comienza con una relación sana con el dinero. Déjame acompañarte en este camino de transformación.\"",
       quoteAuthor: "— Pastora Myriam Konan, Fundadora de Cash360"
+    },
+    
+    // CTA Box
+    ctaBox: {
+      defaultTitle: "Reservar mi llamada",
+      defaultSubtitle: "Llamada cuidadosa, confidencial y sin compromiso. Primera base para tu equilibrio financiero.",
+      button: "Reservo mi llamada"
+    },
+    
+    // Section Analyse
+    sectionAnalyse: {
+      title: "Análisis personalizado de tus extractos bancarios",
+      description: "Descubre dónde va tu dinero e identifica los puntos a mejorar gracias a un análisis claro y confidencial de tus extractos bancarios.",
+      button: "Enviar mis extractos",
+      imageAlt: "Análisis financiero"
+    },
+    
+    // Live TikTok
+    liveTikTok: {
+      title: "Live TikTok",
+      subtitle: "Consejos financieros en directo todos los lunes a las 22:00 (hora de París)",
+      liveBadge: "EN DIRECTO",
+      eventTitle: "Lunes del Despertar",
+      eventSubtitle: "Consejos financieros personalizados",
+      imageAlt: "Myriam Konan - Live TikTok",
+      countdownTitle: "Próximo live en:",
+      days: "Días",
+      hours: "Horas",
+      minutes: "Minutos",
+      seconds: "Segundos",
+      username: "@ev.myriamkonan",
+      schedule: "Todos los lunes a las 22:00 (París)",
+      button: "Seguir en TikTok"
     }
   },
   
@@ -1446,6 +1545,39 @@ export const translations = {
       ctaButton: "Reservar minha chamada",
       quote: "\"A prosperidade financeira começa com uma relação saudável com o dinheiro. Deixe-me acompanhá-lo neste caminho de transformação.\"",
       quoteAuthor: "— Pastora Myriam Konan, Fundadora da Cash360"
+    },
+    
+    // CTA Box
+    ctaBox: {
+      defaultTitle: "Reservar minha chamada",
+      defaultSubtitle: "Chamada cuidadosa, confidencial e sem compromisso. Primeira base para seu equilíbrio financeiro.",
+      button: "Eu reservo minha chamada"
+    },
+    
+    // Section Analyse
+    sectionAnalyse: {
+      title: "Análise personalizada de seus extratos bancários",
+      description: "Descubra para onde vai seu dinheiro e identifique os pontos a melhorar através de uma análise clara e confidencial de seus extratos bancários.",
+      button: "Enviar meus extratos",
+      imageAlt: "Análise financeira"
+    },
+    
+    // Live TikTok
+    liveTikTok: {
+      title: "Live TikTok",
+      subtitle: "Conselhos financeiros ao vivo todas as segundas-feiras às 22:00 (horário de Paris)",
+      liveBadge: "AO VIVO",
+      eventTitle: "Segunda do Despertar",
+      eventSubtitle: "Conselhos financeiros personalizados",
+      imageAlt: "Myriam Konan - Live TikTok",
+      countdownTitle: "Próximo live em:",
+      days: "Dias",
+      hours: "Horas",
+      minutes: "Minutos",
+      seconds: "Segundos",
+      username: "@ev.myriamkonan",
+      schedule: "Todas as segundas-feiras às 22:00 (Paris)",
+      button: "Seguir no TikTok"
     }
   }
 };

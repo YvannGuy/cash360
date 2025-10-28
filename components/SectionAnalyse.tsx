@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function SectionAnalyse() {
+  const { t } = useLanguage()
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -42,10 +44,10 @@ export default function SectionAnalyse() {
             {/* Left Section - Text */}
             <div className="space-y-4">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
-                Analyse personnalisée de vos relevés bancaires
+                {t.sectionAnalyse.title}
               </h2>
               <p className="text-base text-white/90 leading-relaxed">
-                Découvrez où part votre argent et identifiez les points à améliorer grâce à une analyse claire et confidentielle de vos relevés bancaires.
+                {t.sectionAnalyse.description}
               </p>
               
               {/* CTA Button */}
@@ -54,7 +56,7 @@ export default function SectionAnalyse() {
                   href="/login"
                   className="inline-flex items-center gap-2 rounded-lg bg-[#D4AF37] px-6 py-3 text-[#0B1B2B] font-semibold text-base hover:brightness-95 transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
-                  Envoyer mes relevés
+                  {t.sectionAnalyse.button}
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -67,7 +69,7 @@ export default function SectionAnalyse() {
               <div className="relative w-full max-w-md">
                 <Image
                   src="/images/logo/money1.png"
-                  alt="Analyse financière"
+                  alt={t.sectionAnalyse.imageAlt}
                   width={500}
                   height={400}
                   className="object-contain rounded-2xl"

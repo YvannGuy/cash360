@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function LiveTikTok() {
+  const { t } = useLanguage()
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -54,10 +56,10 @@ export default function LiveTikTok() {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Live TikTok
+            {t.liveTikTok.title}
           </h2>
           <p className="text-lg text-gray-600">
-            Conseils financiers en direct tous les lundis à 22h00 (heure de Paris)
+            {t.liveTikTok.subtitle}
           </p>
         </div>
 
@@ -68,10 +70,10 @@ export default function LiveTikTok() {
             <div className="bg-gradient-to-r from-slate-900 to-blue-900 p-6 text-white text-center">
               <div className="flex items-center justify-center space-x-4 mb-4">
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-semibold">EN DIRECT</span>
+                <span className="text-sm font-semibold">{t.liveTikTok.liveBadge}</span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Lundi du Déclic</h3>
-              <p className="text-blue-100">Conseils financiers personnalisés</p>
+              <h3 className="text-2xl font-bold mb-2">{t.liveTikTok.eventTitle}</h3>
+              <p className="text-blue-100">{t.liveTikTok.eventSubtitle}</p>
             </div>
 
             <div className="p-8">
@@ -81,14 +83,14 @@ export default function LiveTikTok() {
                   <div className="aspect-video bg-gradient-to-br from-blue-100 to-slate-100 rounded-2xl overflow-hidden">
                     <img
                       src="/images/logo/mymy.jpg"
-                      alt="Myriam Konan - Live TikTok"
+                      alt={t.liveTikTok.imageAlt}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   {/* Live Badge */}
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center">
                     <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
-                    EN DIRECT
+                    {t.liveTikTok.liveBadge}
                   </div>
                 </div>
 
@@ -96,23 +98,23 @@ export default function LiveTikTok() {
                 <div className="space-y-6">
                   {/* Countdown */}
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Prochain live dans :</h4>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">{t.liveTikTok.countdownTitle}</h4>
                     <div className="grid grid-cols-4 gap-3">
                       <div className="text-center bg-yellow-50 rounded-xl p-3">
                         <div className="text-xl font-bold text-yellow-600">{timeLeft.days}</div>
-                        <div className="text-xs text-gray-600">Jours</div>
+                        <div className="text-xs text-gray-600">{t.liveTikTok.days}</div>
                       </div>
                       <div className="text-center bg-blue-50 rounded-xl p-3">
                         <div className="text-xl font-bold text-blue-600">{timeLeft.hours}</div>
-                        <div className="text-xs text-gray-600">Heures</div>
+                        <div className="text-xs text-gray-600">{t.liveTikTok.hours}</div>
                       </div>
                       <div className="text-center bg-yellow-50 rounded-xl p-3">
                         <div className="text-xl font-bold text-yellow-600">{timeLeft.minutes}</div>
-                        <div className="text-xs text-gray-600">Minutes</div>
+                        <div className="text-xs text-gray-600">{t.liveTikTok.minutes}</div>
                       </div>
                       <div className="text-center bg-blue-50 rounded-xl p-3">
                         <div className="text-xl font-bold text-blue-600">{timeLeft.seconds}</div>
-                        <div className="text-xs text-gray-600">Secondes</div>
+                        <div className="text-xs text-gray-600">{t.liveTikTok.seconds}</div>
                       </div>
                     </div>
                   </div>
@@ -121,11 +123,11 @@ export default function LiveTikTok() {
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3">
                       <span className="text-yellow-500">📱</span>
-                      <span className="text-gray-700">@ev.myriamkonan</span>
+                      <span className="text-gray-700">{t.liveTikTok.username}</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <span className="text-blue-500">⏰</span>
-                      <span className="text-gray-700">Tous les lundis à 22h00 (Paris)</span>
+                      <span className="text-gray-700">{t.liveTikTok.schedule}</span>
                     </div>
                   </div>
 
@@ -138,7 +140,7 @@ export default function LiveTikTok() {
                       className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       <span className="mr-2">📱</span>
-                      Suivre sur TikTok
+                      {t.liveTikTok.button}
                     </a>
                   </div>
                 </div>

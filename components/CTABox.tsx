@@ -1,13 +1,16 @@
 'use client'
 
+import { useLanguage } from '@/lib/LanguageContext'
+
 interface CTABoxProps {
   title?: string
   subtitle?: string
 }
 
 export default function CTABox({ title, subtitle }: CTABoxProps) {
-  const defaultTitle = title || "Réserver mon appel"
-  const defaultSubtitle = subtitle || "Appel bienveillant, confidentiel et sans engagement. Première base pour votre équilibre financier."
+  const { t } = useLanguage()
+  const defaultTitle = title || t.ctaBox.defaultTitle
+  const defaultSubtitle = subtitle || t.ctaBox.defaultSubtitle
 
   const handleOpenModal = () => {
     const modal = document.getElementById('calendly-modal');
@@ -22,7 +25,7 @@ export default function CTABox({ title, subtitle }: CTABoxProps) {
         onClick={handleOpenModal}
         className="inline-flex items-center px-6 py-3 bg-[#D4AF37] text-[#0B1B2B] font-medium rounded-lg hover:brightness-95 transition-all duration-200"
       >
-        Je réserve mon appel
+        {t.ctaBox.button}
       </button>
     </div>
   )
