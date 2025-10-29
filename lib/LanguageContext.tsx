@@ -90,7 +90,7 @@ const detectLanguage = async (): Promise<Language> => {
       'ao': 'pt', 'mz': 'pt', 'cv': 'pt', 'gw': 'pt', 'st': 'pt',
       
       // Afrique Hispanophone
-      'eh': 'es', 'gq': 'es',
+      'eh': 'es',
       
       // Asie & Océanie Anglophone
       'au': 'en', 'nz': 'en', 'sg': 'en', 'hk': 'en', 'ph': 'en', 'my': 'en', 'in': 'en', 'pk': 'en', 'bd': 'en', 'lk': 'en', 'mm': 'en', 'th': 'en', 'vn': 'en', 'kh': 'en', 'la': 'en', 'id': 'en', 'bn': 'en', 'tl': 'en', 'fj': 'en', 'pg': 'en', 'sb': 'en', 'vu': 'en', 'ws': 'en', 'to': 'en', 'ki': 'en', 'tv': 'en', 'nr': 'en', 'pw': 'en', 'fm': 'en', 'mh': 'en', 'ck': 'en', 'nu': 'en', 'tk': 'en', 'as': 'en', 'gu': 'en', 'mp': 'en', 'vi': 'en',
