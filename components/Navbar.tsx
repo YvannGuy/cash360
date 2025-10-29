@@ -195,8 +195,12 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          {/* Mobile menu button & Language Switch */}
+          <div className="md:hidden flex items-center gap-3">
+            {/* Language Selector */}
+            <LanguageSwitch />
+            
+            {/* Hamburger Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-yellow-600 transition-colors duration-200"

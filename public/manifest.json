@@ -1,0 +1,55 @@
+{
+  "name": "Cash360 - Analyse Financière Personnalisée",
+  "short_name": "Cash360",
+  "description": "Transformez votre relation à l'argent avec Cash360. Analyse financière personnalisée de vos relevés bancaires et formation exclusive.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#EAB308",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/logo/logofinal.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo/logofinal.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "business", "productivity"],
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "Analyse Financière",
+      "short_name": "Analyse",
+      "description": "Accéder à l'analyse financière",
+      "url": "/analyse-financiere",
+      "icons": [
+        {
+          "src": "/images/logo/logofinal.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Mon Dashboard",
+      "short_name": "Dashboard",
+      "description": "Accéder à mon tableau de bord",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/images/logo/logofinal.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
+

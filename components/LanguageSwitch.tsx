@@ -47,6 +47,7 @@ export default function LanguageSwitch() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-all duration-300 text-gray-700"
         aria-label="Changer de langue"
+        type="button"
       >
         <span className="text-xl">{FLAGS[language]}</span>
         <span className="text-sm font-medium hidden sm:inline">
@@ -73,6 +74,7 @@ export default function LanguageSwitch() {
             <button
               key={lang}
               onClick={() => handleLanguageChange(lang)}
+              type="button"
               className={`w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-100 transition-colors ${
                 language === lang ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
               }`}
