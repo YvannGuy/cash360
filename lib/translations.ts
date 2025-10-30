@@ -283,7 +283,7 @@ export const translations = {
           a: "Absolument. Toutes vos données sont traitées de manière strictement confidentielle et sécurisée. Rien n'est partagé avec des tiers sans votre accord explicite."
         },
         {
-          q: "Je suis en Afrique, puis-je bénéficier de l'accompagnement Cash360 ?",
+          q: "Je suis Hors de l'europe",
           a: "Oui, bien sûr 🌍 Où que vous soyez dans le monde, si vous avez un accès à Internet, vous pouvez bénéficier de l'accompagnement Cash360 via nos appels et outils en ligne."
         },
         {
