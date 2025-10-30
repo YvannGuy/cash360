@@ -117,12 +117,12 @@ export default function RootLayout({
         <meta name="referrer" content="origin-when-cross-origin" />
 
         {/* Favicon & Icons */}
-        <link rel="icon" href="/favicon/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-chrome-192x192.png" />
-        <link rel="icon" type="image/png" sizes="512x512" href="/favicon/android-chrome-512x512.png" />
+        <link rel="icon" href="/images/favicons/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/images/favicons/android-chrome-192x192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/images/favicons/android-chrome-512x512.png" />
 
         {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
