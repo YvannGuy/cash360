@@ -117,14 +117,12 @@ export default function RootLayout({
         <meta name="referrer" content="origin-when-cross-origin" />
 
         {/* Favicon & Icons */}
-        <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
-        <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
-        <link
-          rel="apple-touch-icon"
-          href="/apple-touch-icon.png"
-          sizes="180x180"
-        />
-        <link rel="icon" href="/images/logo/logofinal.png" type="image/png" />
+        <link rel="icon" href="/favicon/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-chrome-192x192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/favicon/android-chrome-512x512.png" />
 
         {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
