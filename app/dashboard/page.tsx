@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClientBrowser } from '@/lib/supabase'
-import { analysisService, type AnalysisRecord } from '@/lib/database'
+import { analysisService, type AnalysisRecord, capsulesService } from '@/lib/database'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
@@ -14,6 +14,16 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [analyses, setAnalyses] = useState<AnalysisRecord[]>([])
+  const [activeTab, setActiveTab] = useState<'analyses' | 'capsules'>('analyses')
+  const [availableCapsules] = useState(() => ([
+    { id: 'capsule1', title: "L’éducation financière" },
+    { id: 'capsule2', title: 'Les combats liés à la prospérité' },
+    { id: 'capsule3', title: 'Les lois spirituelles liées à l’argent' },
+    { id: 'capsule4', title: 'La mentalité de Pauvre' },
+    { id: 'capsule5', title: 'Épargne et Investissement' }
+  ]))
+  const [selectedCapsules, setSelectedCapsules] = useState<string[]>([])
+  const [userCapsules, setUserCapsules] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
@@ -67,6 +77,9 @@ export default function DashboardPage() {
         if (Array.isArray(userAnalyses)) {
           setAnalyses(userAnalyses as AnalysisRecord[])
         }
+        // Charger les capsules de l'utilisateur
+        const myCaps = await capsulesService.getUserCapsules().catch(() => [])
+        setUserCapsules(Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : [])
       } catch (e) {
         console.error('Erreur init dashboard:', e)
       } finally {
@@ -153,6 +166,25 @@ export default function DashboardPage() {
         return 'bg-green-100 text-green-800'
       default:
         return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const hasCompletedAnalysisWithPdf = analyses.some(a => a.status === 'terminee' && !!a.pdf_url)
+
+  const toggleCapsule = (id: string) => {
+    setSelectedCapsules(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  const handleAddCapsules = async () => {
+    if (selectedCapsules.length === 0) return
+    const ok = await capsulesService.addUserCapsules(selectedCapsules)
+    if (ok) {
+      const myCaps = await capsulesService.getUserCapsules().catch(() => [])
+      setUserCapsules(Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : [])
+      setSelectedCapsules([])
+      alert('Ajouté à mes formations')
+    } else {
+      alert("Impossible d'ajouter les capsules pour le moment")
     }
   }
 
@@ -316,6 +348,24 @@ export default function DashboardPage() {
             </p>
           </div>
 
+          {/* Onglets Analyses/Capsules (affiché si analyse terminée avec PDF) */}
+          {hasCompletedAnalysisWithPdf && (
+            <div className="mb-4 flex gap-2 border-b border-gray-200">
+              <button
+                className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'analyses' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-600'}`}
+                onClick={() => setActiveTab('analyses')}
+              >
+                Analyses
+              </button>
+              <button
+                className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'capsules' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-600'}`}
+                onClick={() => setActiveTab('capsules')}
+              >
+                Capsules
+              </button>
+            </div>
+          )}
+
           {/* Bouton Nouvelle analyse */}
           <div className="mb-6 sm:mb-8">
             <button
@@ -329,6 +379,40 @@ export default function DashboardPage() {
               <span className="sm:hidden">{t.dashboard.newAnalysisShort}</span>
             </button>
           </div>
+
+          {/* Capsules */}
+          {activeTab === 'capsules' && hasCompletedAnalysisWithPdf && (
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#0B1B2B] mb-4">Capsules disponibles</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {availableCapsules.map((c) => (
+                  <div key={c.id} className="bg-white rounded-lg border p-4 flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedCapsules.includes(c.id)}
+                      onChange={() => toggleCapsule(c.id)}
+                      className="mt-1"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-900">{c.title}</div>
+                      {userCapsules.includes(c.id) && (
+                        <div className="text-xs text-green-700 mt-1">Déjà dans mes formations</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={handleAddCapsules}
+                  disabled={selectedCapsules.length === 0}
+                  className="bg-[#D4AF37] text-[#0B1B2B] px-4 py-2 rounded-md disabled:opacity-50"
+                >
+                  Ajouter à mes formations
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Liste des analyses */}
           {analyses.length === 0 ? (
