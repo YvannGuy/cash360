@@ -29,7 +29,10 @@ export default function UploadDropzone({ onFilesChange, files, error, required =
     droppedFiles.forEach(file => {
       const validation = validateFile(file)
       if (validation.valid) {
-        validFiles.push(file)
+        // Stop si on atteint 3 fichiers
+        if (files.length + validFiles.length < 3) {
+          validFiles.push(file)
+        }
       } else {
         errors.push(`${file.name}: ${validation.error}`)
       }
@@ -112,6 +115,7 @@ export default function UploadDropzone({ onFilesChange, files, error, required =
           <p className="text-xs text-gray-500">
             {t.uploadDropzone?.fileTypes || 'PDF, PNG, JPG (max 10 Mo chacun)'} - {files.length}/3 {t.uploadDropzone?.files || 'fichiers'}
           </p>
+          <p className="text-xs font-semibold text-amber-700">⚠️ Important — exactement 3 fichiers</p>
           {required && <span className="text-red-500 text-xs">*</span>}
         </div>
         

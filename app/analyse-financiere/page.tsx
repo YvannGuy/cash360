@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { clientInfoSchema } from '@/lib/validation'
+import { analysisFormSchema, clientInfoSchema } from '@/lib/validation'
 import Field from '@/components/Field'
 import UploadDropzone from '@/components/UploadDropzone'
 import { createClientBrowser } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
+import LegalModal from '@/components/LegalModal'
 
 interface FormData {
   prenom: string
@@ -32,6 +33,7 @@ export default function AnalyseFinancierePage() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [user, setUser] = useState<any>(null)
   const [mounted, setMounted] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
   
   const [formData, setFormData] = useState<FormData>({
     prenom: '',
@@ -95,30 +97,27 @@ export default function AnalyseFinancierePage() {
     }
   }
 
+  
+
 
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
     
     try {
-      clientInfoSchema.parse({
-        ...formData,
-        message: formData.message || undefined
+      analysisFormSchema.parse({
+        prenom: formData.prenom,
+        nom: formData.nom,
+        email: formData.email,
+        message: formData.message || undefined,
+        modePaiement: formData.modePaiement as 'paypal' | 'virement',
+        consentement: formData.consentement,
+        statements: relevesFiles
       })
     } catch (error: any) {
       error.errors?.forEach((err: any) => {
         newErrors[err.path[0]] = err.message
       })
-    }
-
-    // Validation spécifique pour les fichiers
-    if (relevesFiles.length !== 3) {
-      newErrors.releves = mounted ? t.financialAnalysis.errorRequired : 'Vous devez téléverser exactement 3 relevés'
-    }
-
-    // Validation du mode de paiement
-    if (!formData.modePaiement) {
-      newErrors.modePaiement = mounted ? t.financialAnalysis.errorPayment : 'Veuillez sélectionner un mode de paiement'
     }
 
     setErrors(newErrors)
@@ -151,6 +150,8 @@ export default function AnalyseFinancierePage() {
       relevesFiles.forEach(file => {
         submitFormData.append('releves', file)
       })
+
+      
       
       // Récupérer le token d'authentification
       const { data: { session } } = await supabase.auth.getSession()
@@ -240,8 +241,9 @@ export default function AnalyseFinancierePage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            {t.financialAnalysis.title}
+            Analyse personnalisée de votre situation financière
           </h1>
+          <p className="text-sm text-gray-600">Service d’accompagnement à visée éducative (non soumis à agrément financier).</p>
         </div>
 
         {/* Étapes du processus */}
@@ -279,11 +281,12 @@ export default function AnalyseFinancierePage() {
           </div>
         </div>
 
-        {/* Introduction */}
+        {/* Pourquoi cette analyse ? */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
           <div className="prose max-w-none">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Pourquoi cette analyse ?</h3>
             <p className="text-gray-700 leading-relaxed">
-              {t.financialAnalysis.introduction}
+              Cette étude vous aide à comprendre vos habitudes de dépenses, à identifier des pistes d’amélioration et à poser les bases d’une gestion financière plus claire et sereine. Le contenu et les recommandations sont pédagogiques et adaptés à votre situation.
             </p>
           </div>
         </div>
@@ -340,7 +343,8 @@ export default function AnalyseFinancierePage() {
 
           {/* Mode de paiement */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t.financialAnalysis.paymentMethod}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-1">Mode de paiement</h2>
+            <p className="text-xs text-gray-600 mb-4">Régler 39,99 €</p>
             
             <div className="space-y-4">
               <div className="flex items-center">
@@ -468,8 +472,15 @@ export default function AnalyseFinancierePage() {
                 onChange={handleInputChange}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
               />
-              <label htmlFor="consentement" className="ml-3 text-sm text-gray-700">
-                {t.financialAnalysis.consent} <span className="text-red-500">*</span>
+              <label htmlFor="consentement" className="ml-3 text-sm text-gray-700 leading-relaxed">
+                J’accepte que mes données soient traitées par Cash360 aux seules fins d’une analyse pédagogique de ma situation financière.
+                <br />
+                Mes fichiers sont stockés de manière privée et supprimés au plus tard 6 mois après l’analyse.
+                <br />
+                Je peux exercer mes droits (accès, rectification, suppression) en écrivant à <a className="text-blue-600 underline" href="mailto:cash@cash360.finance">cash@cash360.finance</a>.
+                <br />
+                J’ai pris connaissance de la <button type="button" onClick={() => setShowPrivacy(true)} className="text-blue-600 underline">politique de confidentialité (RGPD)</button>.
+                <span className="text-red-500"> *</span>
               </label>
             </div>
             {errors.consentement && (
@@ -507,6 +518,8 @@ export default function AnalyseFinancierePage() {
         </form>
         </div>
       </div>
+      {/* Modal politique de confidentialité */}
+      <LegalModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} type="privacy" />
     </div>
   )
 }

@@ -139,10 +139,10 @@ function SuccesContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <a 
-                  href="mailto:contact@cash360.finance" 
+                  href="mailto:cash@cash360.finance" 
                   className="text-blue-600 hover:text-blue-800 font-medium"
                 >
-                  contact@cash360.finance
+                  cash@cash360.finance
                 </a>
               </div>
               {ticket && (
@@ -162,7 +162,7 @@ function SuccesContent() {
                 </div>
                 <div className="flex justify-between">
                   <span>{t.success.amount}</span>
-                  <span className="font-medium">59,99 €</span>
+                  <span className="font-medium">39,99 €</span>
                 </div>
                 {ticket && (
                   <div className="flex justify-between">
@@ -194,6 +194,15 @@ function SuccesContent() {
           <div className="text-sm text-gray-500">
             <p>{t.success.trackText}</p>
           </div>
+        </div>
+
+        {/* Transparence & confidentialité */}
+        <div className="mt-10 text-sm text-gray-600 text-center">
+          <h3 className="text-base font-semibold text-gray-900 mb-2">Transparence & confidentialité</h3>
+          <p className="max-w-3xl mx-auto">
+            Cash360 est un service d’éducation financière. Nous n’exerçons aucune activité bancaire, comptable ou d’investissement.
+            Les recommandations fournies ont une finalité pédagogique et ne constituent pas un conseil en investissement au sens réglementaire.
+          </p>
         </div>
       </div>
     </div>

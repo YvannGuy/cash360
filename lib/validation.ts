@@ -30,8 +30,23 @@ export const uploadSchema = z.object({
   virementJustificatif: z.instanceof(File).optional(),
 })
 
+// Schéma global pour la page d'analyse (front)
+export const analysisFormSchema = z.object({
+  prenom: z.string().min(2).max(50),
+  nom: z.string().min(2).max(50),
+  email: z.string().email(),
+  message: z.string().max(500).optional(),
+  modePaiement: paymentMethodSchema,
+  consentement: z.literal(true, { errorMap: () => ({ message: 'Vous devez accepter le traitement de vos données' }) }),
+  statements: z.array(z.instanceof(File))
+    .length(3, 'Vous devez téléverser exactement 3 relevés')
+    .refine(files => files.every(f => ALLOWED_FILE_TYPES.includes(f.type)), 'Seuls les fichiers PDF, PNG et JPG sont autorisés')
+    .refine(files => files.every(f => f.size <= MAX_FILE_SIZE), 'Chaque fichier ne peut pas dépasser 10 Mo'),
+})
+
 export type ClientInfo = z.infer<typeof clientInfoSchema>
 export type UploadData = z.infer<typeof uploadSchema>
+export type AnalysisForm = z.infer<typeof analysisFormSchema>
 
 // Validation côté serveur pour les fichiers
 export function validateFile(file: File): { valid: boolean; error?: string } {
