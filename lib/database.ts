@@ -243,3 +243,118 @@ CREATE TRIGGER update_analyses_updated_at BEFORE UPDATE ON analyses
 `;
 
 export const analysisService = new AnalysisService()
+
+// ---------- Capsules (Formations) ----------
+
+export interface UserCapsuleRecord {
+  id: string
+  user_id: string
+  capsule_id: string
+  created_at: string
+}
+
+export class CapsulesService {
+  private supabase = createClientBrowser()
+
+  async getUserCapsules(): Promise<UserCapsuleRecord[]> {
+    try {
+      const { data: { user } } = await this.supabase.auth.getUser()
+      if (!user) throw new Error('Utilisateur non authentifié')
+
+      const { data, error } = await this.supabase
+        .from('user_capsules')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      // Fallback localStorage si la table n'existe pas encore
+      try {
+        const raw = localStorage.getItem('cash360-user-capsules')
+        return raw ? JSON.parse(raw) : []
+      } catch {
+        return []
+      }
+    }
+  }
+
+  async addUserCapsules(capsuleIds: string[]): Promise<boolean> {
+    try {
+      const { data: { user } } = await this.supabase.auth.getUser()
+      if (!user) throw new Error('Utilisateur non authentifié')
+
+      const rows = capsuleIds.map(id => ({ user_id: user.id, capsule_id: id }))
+      const { error } = await this.supabase
+        .from('user_capsules')
+        .insert(rows)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      // Fallback localStorage
+      try {
+        const raw = localStorage.getItem('cash360-user-capsules')
+        const existing: UserCapsuleRecord[] = raw ? JSON.parse(raw) : []
+        const now = new Date().toISOString()
+        const additions: UserCapsuleRecord[] = capsuleIds.map(id => ({
+          id: `${id}-${now}`,
+          user_id: 'local',
+          capsule_id: id,
+          created_at: now
+        }))
+        localStorage.setItem('cash360-user-capsules', JSON.stringify([...existing, ...additions]))
+        return true
+      } catch {
+        return false
+      }
+    }
+  }
+
+  async removeUserCapsule(capsuleId: string): Promise<boolean> {
+    try {
+      const { data: { user } } = await this.supabase.auth.getUser()
+      if (!user) throw new Error('Utilisateur non authentifié')
+
+      const { error } = await this.supabase
+        .from('user_capsules')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('capsule_id', capsuleId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      // Fallback localStorage
+      try {
+        const raw = localStorage.getItem('cash360-user-capsules')
+        const existing: UserCapsuleRecord[] = raw ? JSON.parse(raw) : []
+        const filtered = existing.filter(r => r.capsule_id !== capsuleId)
+        localStorage.setItem('cash360-user-capsules', JSON.stringify(filtered))
+        return true
+      } catch {
+        return false
+      }
+    }
+  }
+}
+
+export const capsulesService = new CapsulesService()
+
+export const SQL_CREATE_USER_CAPSULES = `
+CREATE TABLE IF NOT EXISTS user_capsules (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  capsule_id TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE user_capsules ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users manage their capsules"
+  ON user_capsules
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+`;

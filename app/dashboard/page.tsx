@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClientBrowser } from '@/lib/supabase'
-import { analysisService, type AnalysisRecord } from '@/lib/database'
+import { analysisService, type AnalysisRecord, capsulesService } from '@/lib/database'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
@@ -14,6 +14,41 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [analyses, setAnalyses] = useState<AnalysisRecord[]>([])
+  const [activeTab, setActiveTab] = useState<'analyses' | 'capsules' | 'formations'>('analyses')
+  const [availableCapsules] = useState(() => ([
+    {
+      id: 'capsule1',
+      title: "L’éducation financière",
+      img: 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=1600&auto=format&fit=crop',
+      blurb: "Tout ce qu’il faut savoir sur l’argent et la gestion."
+    },
+    {
+      id: 'capsule2',
+      title: 'Les combats liés à la prospérité',
+      img: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop',
+      blurb: 'Identifier et vaincre les résistances à la prospérité.'
+    },
+    {
+      id: 'capsule3',
+      title: 'Les lois spirituelles liées à l’argent',
+      img: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop',
+      blurb: 'Principes et lois qui gouvernent la prospérité.'
+    },
+    {
+      id: 'capsule4',
+      title: 'La mentalité de Pauvre',
+      img: 'https://images.unsplash.com/photo-1503440779633-1b47a2b4b067?q=80&w=1600&auto=format&fit=crop',
+      blurb: 'Briser les limites intérieures et changer de mindset.'
+    },
+    {
+      id: 'capsule5',
+      title: 'Épargne et Investissement',
+      img: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=1600&auto=format&fit=crop',
+      blurb: 'Faire fructifier ton argent et préparer l’avenir.'
+    }
+  ]))
+  const [selectedCapsules, setSelectedCapsules] = useState<string[]>([])
+  const [userCapsules, setUserCapsules] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
@@ -67,6 +102,9 @@ export default function DashboardPage() {
         if (Array.isArray(userAnalyses)) {
           setAnalyses(userAnalyses as AnalysisRecord[])
         }
+        // Charger capsules utilisateur
+        const myCaps = await capsulesService.getUserCapsules().catch(() => [])
+        setUserCapsules(Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : [])
       } catch (e) {
         console.error('Erreur init dashboard:', e)
       } finally {
@@ -120,6 +158,25 @@ export default function DashboardPage() {
 
 
 
+
+  const hasCompletedAnalysisWithPdf = analyses.some(a => a.status === 'terminee' && !!a.pdf_url)
+
+  const toggleCapsule = (id: string) => {
+    setSelectedCapsules(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  const handleAddCapsules = async () => {
+    if (selectedCapsules.length === 0) return
+    const ok = await capsulesService.addUserCapsules(selectedCapsules)
+    if (ok) {
+      const myCaps = await capsulesService.getUserCapsules().catch(() => [])
+      setUserCapsules(Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : [])
+      setSelectedCapsules([])
+      alert('Ajouté à mes formations')
+    } else {
+      alert("Impossible d'ajouter les capsules pour le moment")
+    }
+  }
 
   const handleWhatsAppClick = () => {
     setShowWhatsAppPopup(true)
@@ -316,6 +373,30 @@ export default function DashboardPage() {
             </p>
           </div>
 
+          {/* Onglets Analyses/Capsules (après analyse terminée + PDF) */}
+          {false && hasCompletedAnalysisWithPdf && (
+            <div className="mb-4 flex gap-2 border-b border-gray-200">
+              <button
+                className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'analyses' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-600'}`}
+                onClick={() => setActiveTab('analyses')}
+              >
+                Analyses
+              </button>
+              <button
+                className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'capsules' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-600'}`}
+                onClick={() => setActiveTab('capsules')}
+              >
+                Capsules
+              </button>
+              <button
+                className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'formations' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-600'}`}
+                onClick={() => setActiveTab('formations')}
+              >
+                Mes formations
+              </button>
+            </div>
+          )}
+
           {/* Bouton Nouvelle analyse */}
           <div className="mb-6 sm:mb-8">
             <button
@@ -329,6 +410,111 @@ export default function DashboardPage() {
               <span className="sm:hidden">{t.dashboard.newAnalysisShort}</span>
             </button>
           </div>
+
+          {/* Capsules */}
+          {false && activeTab === 'capsules' && hasCompletedAnalysisWithPdf && (
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#0B1B2B] mb-4">Capsules disponibles</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {availableCapsules.map((c) => {
+                  const added = userCapsules.includes(c.id)
+                  const selected = selectedCapsules.includes(c.id)
+                  return (
+                    <div key={c.id} className="bg-white rounded-lg border p-3 flex gap-3 items-center">
+                      <div className="w-20 h-16 rounded overflow-hidden flex-shrink-0">
+                        <img src={c.img} alt={c.title} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">{c.title}</div>
+                        <div className="text-xs text-gray-600 line-clamp-2">{c.blurb}</div>
+                        {added && <div className="text-xs text-green-700 mt-1">Déjà dans mes formations</div>}
+                      </div>
+                      <div className="flex flex-col gap-2 items-end">
+                        {!added && (
+                          <label className="text-xs text-gray-700 inline-flex items-center gap-2">
+                            <input type="checkbox" checked={selected} onChange={() => toggleCapsule(c.id)} />
+                            Sélectionner
+                          </label>
+                        )}
+                        {added && (
+                          <button
+                            onClick={async () => {
+                              const ok = await capsulesService.removeUserCapsule(c.id)
+                              if (ok) {
+                                const myCaps = await capsulesService.getUserCapsules().catch(() => [])
+                                setUserCapsules(Array.isArray(myCaps) ? myCaps.map((x: any) => x.capsule_id) : [])
+                              }
+                            }}
+                            className="text-xs px-3 py-1 rounded-md border border-red-300 text-red-600 hover:bg-red-50"
+                          >
+                            Retirer
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={handleAddCapsules}
+                  disabled={selectedCapsules.length === 0}
+                  className="bg-[#D4AF37] text-[#0B1B2B] px-4 py-2 rounded-md disabled:opacity-50"
+                >
+                  Ajouter à mes formations
+                </button>
+                {selectedCapsules.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCapsules([])}
+                    className="px-3 py-2 rounded-md border text-gray-600 hover:bg-gray-50"
+                  >
+                    Vider la sélection
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Mes formations */}
+          {false && activeTab === 'formations' && hasCompletedAnalysisWithPdf && (
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#0B1B2B] mb-4">Mes formations</h2>
+              {userCapsules.length === 0 ? (
+                <div className="bg-white border rounded-lg p-6 text-gray-600">Aucune formation ajoutée pour l’instant.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {availableCapsules
+                    .filter(c => userCapsules.includes(c.id))
+                    .map(c => (
+                      <div key={c.id} className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                        <div className="h-40 w-full overflow-hidden">
+                          <img src={c.img} alt={c.title} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="p-4">
+                          <div className="text-lg font-semibold text-gray-900">{c.title}</div>
+                          <p className="text-sm text-gray-600 mt-1">{c.blurb}</p>
+                          <div className="mt-3 flex gap-2">
+                            <button className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Accéder</button>
+                            <button
+                              onClick={async () => {
+                                const ok = await capsulesService.removeUserCapsule(c.id)
+                                if (ok) {
+                                  const myCaps = await capsulesService.getUserCapsules().catch(() => [])
+                                  setUserCapsules(Array.isArray(myCaps) ? myCaps.map((x: any) => x.capsule_id) : [])
+                                }
+                              }}
+                              className="px-3 py-2 text-sm rounded-md border border-red-300 text-red-600 hover:bg-red-50"
+                            >
+                              Retirer
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Liste des analyses */}
           {analyses.length === 0 ? (
