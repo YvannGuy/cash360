@@ -372,6 +372,59 @@ export const translations = {
       button: "Je réserve mon appel"
     },
     
+    // Simulation Page
+    simulation: {
+      back: "Retour à l'accueil",
+      title: "Testez votre équilibre financier en 60 secondes 🕒",
+      description: "Voyez en un instant où part votre argent et quel pourcentage vous pouvez épargner chaque mois.",
+      localNote: "Calcul local sur votre appareil. Vos données ne sont ni stockées ni transmises.",
+      formTitle: "Vos informations financières",
+      monthlyIncome: "Revenus mensuels",
+      monthlyIncomeTip: "Tout l'argent reçu chaque mois (salaire, aides, dons…).",
+      fixedExpenses: "Dépenses fixes",
+      fixedExpensesTip: "Dépenses qui changent peu : loyer, crédits, assurances, internet, dîme, abonnements…",
+      variableExpenses: "Dépenses variables",
+      variableExpensesTip: "Dépenses qui varient : courses, transport, restaurants, vêtements, petits plaisirs…",
+      placeholders: { revenus: "2000", fixes: "1200", variables: "800", email: "votre@email.com" },
+      calculate: "Calculer mon équilibre",
+      gateTitle: "Votre email pour recevoir vos résultats",
+      consent: "J'accepte que mes données soient utilisées pour me contacter concernant cette simulation et les services Cash360.",
+      submit: "Voir mes résultats",
+      submitting: "Envoi...",
+      cancel: "Annuler",
+      alerts: {
+        enterIncome: "Veuillez saisir vos revenus mensuels",
+        enterExpenses: "Veuillez saisir vos dépenses",
+        emailConsent: "Veuillez saisir votre email et accepter le traitement de vos données",
+        error: "Une erreur est survenue. Veuillez réessayer."
+      },
+      results: {
+        savings: "Épargne mensuelle",
+        fixedCharges: "Charges fixes",
+        variableCharges: "Dépenses variables"
+      },
+      scores: {
+        sain: {
+          title: "Bravo ! Vos finances sont plutôt bien équilibrées",
+          message: "Il vous reste une marge chaque mois. Pour avancer vers une vraie liberté financière, transformons cette base en stratégie : épargne planifiée, priorités claires, projets.",
+          cta: "Prenez 15 minutes pour identifier comment faire fructifier ce bon équilibre.",
+          emoji: "✅"
+        },
+        ameliorer: {
+          title: "Votre budget tient, mais il commence à être tendu",
+          message: "Avec quelques ajustements simples (abonnements, variables, priorités), vous pouvez libérer une vraie marge dès ce mois-ci.",
+          cta: "En 15 minutes, identifions 2 à 3 leviers immédiats pour respirer financièrement.",
+          emoji: "🟡"
+        },
+        desequilibre: {
+          title: "Votre budget est actuellement trop serré",
+          message: "Ce n'est pas une fatalité : avec une méthode pas à pas, vous pouvez reprendre le contrôle et retrouver la paix financière.",
+          cta: "En 15 minutes, clarifions l'origine du déséquilibre et définissons les premières actions concrètes.",
+          emoji: "🔴"
+        }
+      }
+    },
+    
     // Section Analyse
     sectionAnalyse: {
       title: "Analyse personnalisée de vos relevés bancaires",
@@ -944,6 +997,59 @@ export const translations = {
       defaultTitle: "Book my call",
       defaultSubtitle: "Caring, confidential and commitment-free call. First step for your financial balance.",
       button: "I book my call"
+    },
+    
+    // Simulation Page
+    simulation: {
+      back: "Back to home",
+      title: "Test your financial balance in 60 seconds 🕒",
+      description: "See at a glance where your money goes and what percentage you can save each month.",
+      localNote: "Local calculation on your device. Your data is neither stored nor transmitted.",
+      formTitle: "Your financial information",
+      monthlyIncome: "Monthly income",
+      monthlyIncomeTip: "All money received each month (salary, aids, gifts…).",
+      fixedExpenses: "Fixed expenses",
+      fixedExpensesTip: "Expenses that change little: rent, loans, insurance, internet, tithe, subscriptions…",
+      variableExpenses: "Variable expenses",
+      variableExpensesTip: "Expenses that vary: groceries, transport, restaurants, clothes, small pleasures…",
+      placeholders: { revenus: "2000", fixes: "1200", variables: "800", email: "your@email.com" },
+      calculate: "Calculate my balance",
+      gateTitle: "Your email to receive your results",
+      consent: "I agree that my data may be used to contact me regarding this simulation and Cash360 services.",
+      submit: "See my results",
+      submitting: "Sending...",
+      cancel: "Cancel",
+      alerts: {
+        enterIncome: "Please enter your monthly income",
+        enterExpenses: "Please enter your expenses",
+        emailConsent: "Please enter your email and accept data processing",
+        error: "An error occurred. Please try again."
+      },
+      results: {
+        savings: "Monthly savings",
+        fixedCharges: "Fixed charges",
+        variableCharges: "Variable expenses"
+      },
+      scores: {
+        sain: {
+          title: "Great! Your finances are fairly well balanced",
+          message: "You have leftover each month. To move toward real financial freedom, let's turn this base into a strategy: planned savings, clear priorities, projects.",
+          cta: "Take 15 minutes to identify how to make this good balance grow.",
+          emoji: "✅"
+        },
+        ameliorer: {
+          title: "Your budget holds, but it's getting tight",
+          message: "With a few simple adjustments (subscriptions, variables, priorities), you can free up real margin this month.",
+          cta: "In 15 minutes, let's identify 2 to 3 immediate levers to breathe financially.",
+          emoji: "🟡"
+        },
+        desequilibre: {
+          title: "Your budget is currently too tight",
+          message: "It's not a fatality: with a step-by-step method, you can regain control and find financial peace.",
+          cta: "In 15 minutes, let's clarify the origin of the imbalance and define the first concrete actions.",
+          emoji: "🔴"
+        }
+      }
     },
     
     // Section Analyse
@@ -1519,6 +1625,59 @@ export const translations = {
       button: "Reservo mi llamada"
     },
     
+    // Simulation Page
+    simulation: {
+      back: "Volver al inicio",
+      title: "Prueba tu equilibrio financiero en 60 segundos 🕒",
+      description: "Ve en un instante a dónde va tu dinero y qué porcentaje puedes ahorrar cada mes.",
+      localNote: "Cálculo local en tu dispositivo. Tus datos no se almacenan ni se transmiten.",
+      formTitle: "Tu información financiera",
+      monthlyIncome: "Ingresos mensuales",
+      monthlyIncomeTip: "Todo el dinero recibido cada mes (salario, ayudas, donaciones…).",
+      fixedExpenses: "Gastos fijos",
+      fixedExpensesTip: "Gastos que cambian poco: alquiler, créditos, seguros, internet, diezmo, suscripciones…",
+      variableExpenses: "Gastos variables",
+      variableExpensesTip: "Gastos que varían: compras, transporte, restaurantes, ropa, pequeños gustos…",
+      placeholders: { revenus: "2000", fixes: "1200", variables: "800", email: "tu@email.com" },
+      calculate: "Calcular mi equilibrio",
+      gateTitle: "Tu email para recibir tus resultados",
+      consent: "Acepto que mis datos sean utilizados para contactarme sobre esta simulación y los servicios de Cash360.",
+      submit: "Ver mis resultados",
+      submitting: "Enviando...",
+      cancel: "Cancelar",
+      alerts: {
+        enterIncome: "Por favor, ingresa tus ingresos mensuales",
+        enterExpenses: "Por favor, ingresa tus gastos",
+        emailConsent: "Ingresa tu email y acepta el tratamiento de datos",
+        error: "Ocurrió un error. Inténtalo de nuevo."
+      },
+      results: {
+        savings: "Ahorro mensual",
+        fixedCharges: "Cargos fijos",
+        variableCharges: "Gastos variables"
+      },
+      scores: {
+        sain: {
+          title: "¡Bravo! Tus finanzas están bastante equilibradas",
+          message: "Te queda un margen cada mes. Para avanzar hacia una verdadera libertad financiera, convirtamos esta base en una estrategia: ahorro planificado, prioridades claras, proyectos.",
+          cta: "Toma 15 minutos para identificar cómo hacer crecer este buen equilibrio.",
+          emoji: "✅"
+        },
+        ameliorer: {
+          title: "Tu presupuesto se mantiene, pero comienza a estar ajustado",
+          message: "Con algunos ajustes simples (suscripciones, variables, prioridades), puedes liberar un margen real desde este mes.",
+          cta: "En 15 minutos, identifiquemos 2 o 3 palancas inmediatas para respirar financieramente.",
+          emoji: "🟡"
+        },
+        desequilibre: {
+          title: "Tu presupuesto está actualmente demasiado ajustado",
+          message: "No es una fatalidad: con un método paso a paso, puedes retomar el control y recuperar la paz financiera.",
+          cta: "En 15 minutos, aclaremos el origen del desequilibrio y definamos las primeras acciones concretas.",
+          emoji: "🔴"
+        }
+      }
+    },
+    
     // Section Analyse
     sectionAnalyse: {
       title: "Análisis personalizado de tus extractos bancarios",
@@ -2090,6 +2249,59 @@ export const translations = {
       defaultTitle: "Reservar minha chamada",
       defaultSubtitle: "Chamada cuidadosa, confidencial e sem compromisso. Primeira base para seu equilíbrio financeiro.",
       button: "Eu reservo minha chamada"
+    },
+    
+    // Simulation Page
+    simulation: {
+      back: "Voltar ao início",
+      title: "Teste seu equilíbrio financeiro em 60 segundos 🕒",
+      description: "Veja num instante para onde vai seu dinheiro e qual porcentagem você pode economizar a cada mês.",
+      localNote: "Cálculo local no seu dispositivo. Seus dados não são armazenados nem transmitidos.",
+      formTitle: "Suas informações financeiras",
+      monthlyIncome: "Renda mensal",
+      monthlyIncomeTip: "Todo o dinheiro recebido a cada mês (salário, auxílios, doações…).",
+      fixedExpenses: "Despesas fixas",
+      fixedExpensesTip: "Despesas que mudam pouco: aluguel, créditos, seguros, internet, dízimo, assinaturas…",
+      variableExpenses: "Despesas variáveis",
+      variableExpensesTip: "Despesas que variam: compras, transporte, restaurantes, roupas, pequenos prazeres…",
+      placeholders: { revenus: "2000", fixes: "1200", variables: "800", email: "seu@email.com" },
+      calculate: "Calcular meu equilíbrio",
+      gateTitle: "Seu e-mail para receber seus resultados",
+      consent: "Concordo que meus dados sejam usados para me contatar sobre esta simulação e os serviços da Cash360.",
+      submit: "Ver meus resultados",
+      submitting: "Enviando...",
+      cancel: "Cancelar",
+      alerts: {
+        enterIncome: "Informe sua renda mensal",
+        enterExpenses: "Informe suas despesas",
+        emailConsent: "Informe seu e-mail e aceite o tratamento de dados",
+        error: "Ocorreu um erro. Tente novamente."
+      },
+      results: {
+        savings: "Poupança mensal",
+        fixedCharges: "Despesas fixas",
+        variableCharges: "Despesas variáveis"
+      },
+      scores: {
+        sain: {
+          title: "Parabéns! Suas finanças estão bem equilibradas",
+          message: "Sobra uma margem todo mês. Para avançar rumo à verdadeira liberdade financeira, vamos transformar essa base em estratégia: poupança planejada, prioridades claras, projetos.",
+          cta: "Reserve 15 minutos para identificar como fazer frutificar esse bom equilíbrio.",
+          emoji: "✅"
+        },
+        ameliorer: {
+          title: "Seu orçamento se mantém, mas está começando a apertar",
+          message: "Com alguns ajustes simples (assinaturas, variáveis, prioridades), você pode liberar uma margem real já neste mês.",
+          cta: "Em 15 minutos, identifiquemos 2 a 3 alavancas imediatas para respirar financeiramente.",
+          emoji: "🟡"
+        },
+        desequilibre: {
+          title: "Seu orçamento está atualmente muito apertado",
+          message: "Não é uma fatalidade: com um método passo a passo, você pode retomar o controle e recuperar a paz financeira.",
+          cta: "Em 15 minutos, vamos esclarecer a origem do desequilíbrio e definir as primeiras ações concretas.",
+          emoji: "🔴"
+        }
+      }
     },
     
     // Section Analyse
