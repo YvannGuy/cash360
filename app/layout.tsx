@@ -96,6 +96,12 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
+        {/* Font Awesome */}
+        <script dangerouslySetInnerHTML={{
+          __html: `window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};`
+        }} />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossOrigin="anonymous" referrerPolicy="no-referrer" defer />
+        
         {/* Viewport & Mobile Optimization */}
         <meta
           name="viewport"
