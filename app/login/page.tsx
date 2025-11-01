@@ -17,15 +17,19 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [mounted, setMounted] = useState(false)
+  const [supabase, setSupabase] = useState<any>(null)
 
-  const supabase = createClientBrowser()
   const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
+    // Initialiser Supabase côté client uniquement
+    setSupabase(createClientBrowser())
   }, [])
 
   useEffect(() => {
+    if (!supabase) return
+    
     // Vérifier si l'utilisateur est déjà connecté
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -34,10 +38,13 @@ export default function LoginPage() {
       }
     }
     checkUser()
-  }, [supabase.auth, router])
+  }, [supabase, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!supabase) return
+    
     setLoading(true)
     setError('')
     setMessage('')
@@ -72,6 +79,8 @@ export default function LoginPage() {
   }
 
   const handlePasswordReset = async () => {
+    if (!supabase) return
+    
     if (!email) {
       setError(t.login.errorEnterEmail)
       return
