@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
-import Footer from '@/components/Footer'
 
 export default function AdminMigrationsPage() {
   const router = useRouter()
@@ -127,7 +126,6 @@ export default function AdminMigrationsPage() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </div>
   )

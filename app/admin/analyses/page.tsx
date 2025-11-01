@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
-import Footer from '@/components/Footer'
 import AdminPdfUploadModal from '@/components/AdminPdfUploadModal'
 
 interface AdminSession {
@@ -435,7 +434,6 @@ export default function AdminAnalysesPage() {
         </main>
 
         {/* Footer */}
-        <Footer />
 
         {/* Modal d'upload PDF */}
         {showPdfModal && selectedAnalysisId && (

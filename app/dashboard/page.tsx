@@ -8,7 +8,6 @@ import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCart } from '@/lib/CartContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
-import Footer from '@/components/Footer'
 import LegalModal from '@/components/LegalModal'
 
 export default function DashboardPage() {
@@ -947,9 +946,6 @@ export default function DashboardPage() {
           </svg>
         </button>
       </div>
-
-      {/* Footer */}
-      <Footer />
 
       {/* Legal Modal */}
       <LegalModal 

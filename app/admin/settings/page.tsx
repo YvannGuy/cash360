@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
-import Footer from '@/components/Footer'
 
 interface AdminSession {
   isAdmin: boolean
@@ -289,7 +288,6 @@ export default function AdminSettingsPage() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </div>
   )
