@@ -16,8 +16,7 @@ export default function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const bannerRef = useRef<HTMLDivElement>(null)
   const [bannerHeight, setBannerHeight] = useState(36)
-
-  const supabase = createClientBrowser()
+  const [supabase, setSupabase] = useState<any>(null)
 
   // Fonction pour extraire les initiales de l'email
   const getInitials = (email: string | undefined): string => {
@@ -50,6 +49,13 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
+    // Initialiser Supabase côté client uniquement
+    setSupabase(createClientBrowser())
+  }, [])
+
+  useEffect(() => {
+    if (!supabase) return
+    
     // Vérifier l'état d'authentification
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -61,14 +67,14 @@ export default function Navbar() {
 
     // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event: any, session: any) => {
         setUser(session?.user ?? null)
         setLoading(false)
       }
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [supabase])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -85,6 +91,7 @@ export default function Navbar() {
   }, [showUserMenu])
 
   const handleSignOut = async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
     setUser(null)
   }

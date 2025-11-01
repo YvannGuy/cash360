@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClientBrowser } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import Features from '@/components/Features'

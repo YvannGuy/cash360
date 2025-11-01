@@ -16,8 +16,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [supabase, setSupabase] = useState<any>(null)
 
-  const supabase = createClientBrowser()
+  useEffect(() => {
+    // Initialiser Supabase côté client uniquement
+    setSupabase(createClientBrowser())
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
@@ -33,6 +37,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!supabase) return
+    
     setLoading(true)
     setError('')
     setMessage('')
