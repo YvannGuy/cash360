@@ -524,6 +524,30 @@ export const translations = {
         analyses: "analyses",
         previous: "Précédent",
         next: "Suivant"
+      },
+      // New translations for new design
+      welcomeGreeting: "Bonjour, 👋",
+      welcomeMessage: "Bienvenue dans votre espace Cash360. Suivez vos analyses, vos progrès et vos prochaines étapes.",
+      pathCompleted: "Parcours complété",
+      suggestedStep: "Étape suggérée : Lancez votre première analyse",
+      myAnalyses: "Vos analyses financières",
+      seeAll: "Voir tout",
+      noAnalysis: "Aucune analyse pour le moment",
+      noAnalysisDescription: "Commencez par lancer votre première analyse pour obtenir un diagnostic personnalisé.",
+      doFirstAnalysis: "Faire une première analyse",
+      continueProgress: "Continuez votre progression",
+      continueProgressSubtitle: "Des contenus ciblés pour avancer étape par étape.",
+      free: "Gratuit",
+      discover: "Découvrir",
+      accessCapsulesFormations: "Accéder aux Capsules & Formations >",
+      nextCall: "Votre prochain appel",
+      noAppointment: "Aucun rendez-vous à venir",
+      noAppointmentDescription: "Réservez un appel avec nos experts pour discuter de votre situation.",
+      bookCall: "Réserver un appel",
+      capsuleTitles: {
+        pillars: "Les 7 piliers d'une gestion saine",
+        optimization: "Optimisation fiscale avancée",
+        retirement: "Planification de retraite"
       }
     },
 
@@ -1149,6 +1173,30 @@ export const translations = {
         analyses: "analyses",
         previous: "Previous",
         next: "Next"
+      },
+      // New translations for new design
+      welcomeGreeting: "Bonjour, 👋",
+      welcomeMessage: "Bienvenue dans votre espace Cash360. Suivez vos analyses, vos progrès et vos prochaines étapes.",
+      pathCompleted: "Parcours complété",
+      suggestedStep: "Étape suggérée : Lancez votre première analyse",
+      myAnalyses: "Vos analyses financières",
+      seeAll: "Voir tout",
+      noAnalysis: "Aucune analyse pour le moment",
+      noAnalysisDescription: "Commencez par lancer votre première analyse pour obtenir un diagnostic personnalisé.",
+      doFirstAnalysis: "Faire une première analyse",
+      continueProgress: "Continuez votre progression",
+      continueProgressSubtitle: "Des contenus ciblés pour avancer étape par étape.",
+      free: "Gratuit",
+      discover: "Découvrir",
+      accessCapsulesFormations: "Accéder aux Capsules & Formations >",
+      nextCall: "Votre prochain appel",
+      noAppointment: "Aucun rendez-vous à venir",
+      noAppointmentDescription: "Réservez un appel avec nos experts pour discuter de votre situation.",
+      bookCall: "Réserver un appel",
+      capsuleTitles: {
+        pillars: "Les 7 piliers d'une gestion saine",
+        optimization: "Optimisation fiscale avancée",
+        retirement: "Planification de retraite"
       }
     },
 

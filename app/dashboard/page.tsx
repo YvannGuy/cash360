@@ -6,53 +6,113 @@ import { createClientBrowser } from '@/lib/supabase'
 import { analysisService, type AnalysisRecord, capsulesService } from '@/lib/database'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
+import { useCart } from '@/lib/CartContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
+import Footer from '@/components/Footer'
+import LegalModal from '@/components/LegalModal'
 
 export default function DashboardPage() {
   const { t } = useLanguage()
   const router = useRouter()
+  const { cartItems, addToCart, removeFromCart, getSubtotal } = useCart()
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [analyses, setAnalyses] = useState<AnalysisRecord[]>([])
-  const [activeTab, setActiveTab] = useState<'analyses' | 'capsules' | 'formations'>('analyses')
+  const [activeTab, setActiveTab] = useState<'analyses' | 'boutique' | 'formations'>('analyses')
   const [availableCapsules] = useState(() => ([
     {
       id: 'capsule1',
-      title: "L’éducation financière",
-      img: 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=1600&auto=format&fit=crop',
-      blurb: "Tout ce qu’il faut savoir sur l’argent et la gestion."
+      title: "L'éducation financière",
+      img: '/images/logo/capsule1.jpg',
+      blurb: "Tout ce qu'il faut savoir sur l'argent et la gestion."
     },
     {
       id: 'capsule2',
       title: 'Les combats liés à la prospérité',
-      img: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop',
+      img: '/images/logo/capsule2.jpg',
       blurb: 'Identifier et vaincre les résistances à la prospérité.'
     },
     {
       id: 'capsule3',
-      title: 'Les lois spirituelles liées à l’argent',
-      img: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop',
+      title: "Les lois spirituelles liées à l'argent",
+      img: '/images/logo/capsule3.jpg',
       blurb: 'Principes et lois qui gouvernent la prospérité.'
     },
     {
       id: 'capsule4',
       title: 'La mentalité de Pauvre',
-      img: 'https://images.unsplash.com/photo-1503440779633-1b47a2b4b067?q=80&w=1600&auto=format&fit=crop',
+      img: '/images/logo/capsule4.jpg',
       blurb: 'Briser les limites intérieures et changer de mindset.'
     },
     {
       id: 'capsule5',
       title: 'Épargne et Investissement',
-      img: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=1600&auto=format&fit=crop',
-      blurb: 'Faire fructifier ton argent et préparer l’avenir.'
+      img: '/images/logo/capsule5.jpg',
+      blurb: "Faire fructifier ton argent et préparer l'avenir."
     }
   ]))
+  
+  // Capsules pour la boutique avec prix
+  const boutiqueCapsules = [
+    {
+      id: 'capsule1',
+      title: "L'Éducation financière",
+      img: '/images/logo/capsule1.jpg',
+      blurb: "Apprenez à maîtriser votre budget, comprendre vos dépenses et poser les fondations d'une stabilité durable.",
+      price: 350,
+      isPack: false
+    },
+    {
+      id: 'capsule2',
+      title: 'La Mentalité de la pauvreté',
+      img: '/images/logo/capsule2.jpg',
+      blurb: "Identifiez et brisez les blocages mentaux qui sabotent votre relation avec l'argent.",
+      price: 350,
+      isPack: false
+    },
+    {
+      id: 'capsule3',
+      title: "Les Lois spirituelles liées à l'argent",
+      img: '/images/logo/capsule3.jpg',
+      blurb: 'Découvrez les principes divins qui gouvernent la prospérité et la bénédiction financière.',
+      price: 350,
+      isPack: false
+    },
+    {
+      id: 'capsule4',
+      title: 'Les Combats liés à la prospérité',
+      img: '/images/logo/capsule4.jpg',
+      blurb: 'Apprenez à reconnaître et vaincre les résistances spirituelles à votre épanouissement.',
+      price: 350,
+      isPack: false
+    },
+    {
+      id: 'capsule5',
+      title: 'Épargne & Investissement',
+      img: '/images/logo/capsule5.jpg',
+      blurb: 'Apprenez à épargner intelligemment et à faire fructifier vos ressources avec sagesse.',
+      price: 350,
+      isPack: false
+    },
+    {
+      id: 'pack',
+      title: 'Pack complet Cash360',
+      img: '/images/pack.png',
+      blurb: "Accédez à l'ensemble des 5 capsules pour une transformation complète.",
+      price: 1500,
+      originalPrice: 1750,
+      isPack: true
+    }
+  ]
   const [selectedCapsules, setSelectedCapsules] = useState<string[]>([])
   const [userCapsules, setUserCapsules] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [legalModalOpen, setLegalModalOpen] = useState(false)
+  const [legalModalType, setLegalModalType] = useState<'privacy' | 'legal' | 'terms'>('privacy')
+  const [showCartDropdown, setShowCartDropdown] = useState(false)
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
@@ -69,6 +129,20 @@ export default function DashboardPage() {
       return (parts[0][0] + parts[1][0]).toUpperCase()
     }
     return localPart.substring(0, 2).toUpperCase()
+  }
+
+  // Fonction pour extraire un prénom depuis l'email
+  const getFirstNameFromEmail = (email: string | undefined): string => {
+    if (!email) return 'bienvenue'
+    const localPart = email.split('@')[0] // Partie avant @
+    const parts = localPart.split('.') // Séparer par les points
+    // Prendre le premier mot (avant le point) comme prénom
+    if (parts.length >= 1 && parts[0].length > 0) {
+      const firstName = parts[0]
+      // Capitaliser la première lettre
+      return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
+    }
+    return localPart.substring(0, 1).toUpperCase() + localPart.substring(1, 2)
   }
 
   // Calculs de pagination
@@ -130,11 +204,30 @@ export default function DashboardPage() {
           setShowWhatsAppPopup(false)
         }
       }
+      
+      if (showCartDropdown) {
+        const target = event.target as Element
+        if (!target.closest('.cart-container')) {
+          setShowCartDropdown(false)
+        }
+      }
+    }
+
+    // Gérer l'ouverture des modals légaux
+    const handleLegalModal = (event: CustomEvent) => {
+      const type = event.detail.type as 'privacy' | 'legal' | 'terms'
+      setLegalModalType(type)
+      setLegalModalOpen(true)
     }
 
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showUserMenu, showWhatsAppPopup])
+    window.addEventListener('openLegalModal', handleLegalModal as EventListener)
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('openLegalModal', handleLegalModal as EventListener)
+    }
+  }, [showUserMenu, showWhatsAppPopup, showCartDropdown])
 
   const loadAnalyses = async () => {
     try {
@@ -185,6 +278,11 @@ export default function DashboardPage() {
   const handleWhatsAppConfirm = () => {
     window.open('https://wa.me/33756848734', '_blank')
     setShowWhatsAppPopup(false)
+  }
+
+  const handleViewCart = () => {
+    setShowCartDropdown(false)
+    router.push('/cart')
   }
 
   const getStatusLabel = (status: string) => {
@@ -315,6 +413,109 @@ export default function DashboardPage() {
             <div className="flex items-center gap-1 sm:gap-4 mr-2 sm:mr-20">
               {user && (
                 <div className="flex items-center gap-1 sm:gap-3">
+                  {/* Icône Panier */}
+                  <div className="relative cart-container">
+                    <button
+                      onClick={() => setShowCartDropdown(!showCartDropdown)}
+                      className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      {cartItems.length > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-[#FEBE02] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                          {cartItems.length}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Dropdown du panier */}
+                    {showCartDropdown && (
+                      <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[10000] animate-fadeIn">
+                        {/* Header */}
+                        <div className="px-4 py-3 border-b border-gray-200">
+                          <h3 className="font-bold text-[#012F4E]" style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}>
+                            Mon panier
+                          </h3>
+                        </div>
+
+                        {/* Liste des articles */}
+                        <div className="max-h-64 overflow-y-auto">
+                          {cartItems.length === 0 ? (
+                            <div className="px-4 py-8 text-center text-gray-500">
+                              Votre panier est vide
+                            </div>
+                          ) : (
+                            <div className="px-4 py-2">
+                              {cartItems.map((item) => (
+                                <div key={item.id} className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-b-0">
+                                  {/* Image miniature */}
+                                  <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
+                                    <Image
+                                      src={item.img}
+                                      alt={item.title}
+                                      width={48}
+                                      height={48}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  
+                                  {/* Infos */}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                                    <p className="text-sm text-gray-600">Qté: {item.quantity}</p>
+                                    <p className="text-sm font-bold text-[#012F4E]">{(item.price * item.quantity).toFixed(2)} €</p>
+                                  </div>
+
+                                  {/* Bouton supprimer */}
+                                  <button
+                                    onClick={() => removeFromCart(item.id)}
+                                    className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
+                                  >
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Footer avec sous-total et boutons */}
+                        {cartItems.length > 0 && (
+                          <div className="px-4 py-3 border-t border-gray-200 space-y-3">
+                            {/* Sous-total */}
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-600">Sous-total :</span>
+                              <span className="text-base font-bold text-[#012F4E]" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                                {getSubtotal().toFixed(2)} €
+                              </span>
+                            </div>
+
+                            {/* Bouton "Voir le panier" */}
+                            <button
+                              onClick={handleViewCart}
+                              className="w-full px-4 py-2 bg-[#00A1C6] text-white rounded-lg font-medium hover:bg-[#FEBE02] transition-colors"
+                              style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
+                            >
+                              Voir le panier
+                            </button>
+
+                            {/* Lien "Continuer vos achats" */}
+                            <button
+                              onClick={() => setShowCartDropdown(false)}
+                              className="w-full text-sm text-[#012F4E] hover:underline transition-colors"
+                              style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
+                            >
+                              Continuer vos achats
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   <LanguageSwitch />
                   <div className="relative user-menu-container z-[9999]">
                     <button
@@ -361,381 +562,330 @@ export default function DashboardPage() {
       </header>
 
       {/* Contenu principal */}
-      <div className="py-4 sm:py-8 pb-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header du tableau de bord */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-              {t.dashboard.title}
+      <div className="py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* En-tête d'accueil */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Bonjour, {getFirstNameFromEmail(user?.email)} 👋
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
-              {t.dashboard.subtitle}
+            <p className="text-gray-600">
+              Découvrez votre tableau de bord et gérez toutes vos activités en un seul endroit.
             </p>
           </div>
 
-          {/* Onglets Analyses/Capsules (après analyse terminée + PDF) */}
-          {false && hasCompletedAnalysisWithPdf && (
-            <div className="mb-4 flex gap-2 border-b border-gray-200">
-              <button
-                className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'analyses' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-600'}`}
-                onClick={() => setActiveTab('analyses')}
-              >
-                Analyses
-              </button>
-              <button
-                className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'capsules' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-600'}`}
-                onClick={() => setActiveTab('capsules')}
-              >
-                Capsules
-              </button>
-              <button
-                className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'formations' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-600'}`}
-                onClick={() => setActiveTab('formations')}
-              >
-                Mes formations
-              </button>
-            </div>
-          )}
-
-          {/* Bouton Nouvelle analyse */}
-          <div className="mb-6 sm:mb-8">
+          {/* Onglets de navigation */}
+          <div className="mb-8 flex gap-2 border-b border-gray-200">
             <button
-              onClick={handleNewAnalysis}
-              className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={() => setActiveTab('analyses')}
+              className={`px-6 py-3 font-medium transition-all ${
+                activeTab === 'analyses'
+                  ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span className="hidden sm:inline">{t.dashboard.newAnalysis}</span>
-              <span className="sm:hidden">{t.dashboard.newAnalysisShort}</span>
+              Mes Analyses
+            </button>
+            <button
+              onClick={() => setActiveTab('boutique')}
+              className={`px-6 py-3 font-medium transition-all ${
+                activeTab === 'boutique'
+                  ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Boutique
+            </button>
+            <button
+              onClick={() => setActiveTab('formations')}
+              className={`px-6 py-3 font-medium transition-all ${
+                activeTab === 'formations'
+                  ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Mes Formations
             </button>
           </div>
 
-          {/* Capsules */}
-          {false && activeTab === 'capsules' && hasCompletedAnalysisWithPdf && (
-            <div className="mb-8">
-              <h2 className="text-xl sm:text-2xl font-semibold text-[#0B1B2B] mb-4">Capsules disponibles</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {availableCapsules.map((c) => {
-                  const added = userCapsules.includes(c.id)
-                  const selected = selectedCapsules.includes(c.id)
-                  return (
-                    <div key={c.id} className="bg-white rounded-lg border p-3 flex gap-3 items-center">
-                      <div className="w-20 h-16 rounded overflow-hidden flex-shrink-0">
-                        <img src={c.img} alt={c.title} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">{c.title}</div>
-                        <div className="text-xs text-gray-600 line-clamp-2">{c.blurb}</div>
-                        {added && <div className="text-xs text-green-700 mt-1">Déjà dans mes formations</div>}
-                      </div>
-                      <div className="flex flex-col gap-2 items-end">
-                        {!added && (
-                          <label className="text-xs text-gray-700 inline-flex items-center gap-2">
-                            <input type="checkbox" checked={selected} onChange={() => toggleCapsule(c.id)} />
-                            Sélectionner
-                          </label>
-                        )}
-                        {added && (
-                          <button
-                            onClick={async () => {
-                              const ok = await capsulesService.removeUserCapsule(c.id)
-                              if (ok) {
-                                const myCaps = await capsulesService.getUserCapsules().catch(() => [])
-                                setUserCapsules(Array.isArray(myCaps) ? myCaps.map((x: any) => x.capsule_id) : [])
-                              }
-                            }}
-                            className="text-xs px-3 py-1 rounded-md border border-red-300 text-red-600 hover:bg-red-50"
-                          >
-                            Retirer
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-              <div className="mt-4 flex gap-2">
-                <button
-                  onClick={handleAddCapsules}
-                  disabled={selectedCapsules.length === 0}
-                  className="bg-[#D4AF37] text-[#0B1B2B] px-4 py-2 rounded-md disabled:opacity-50"
-                >
-                  Ajouter à mes formations
-                </button>
-                {selectedCapsules.length > 0 && (
-                  <button
-                    onClick={() => setSelectedCapsules([])}
-                    className="px-3 py-2 rounded-md border text-gray-600 hover:bg-gray-50"
-                  >
-                    Vider la sélection
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Mes formations */}
-          {false && activeTab === 'formations' && hasCompletedAnalysisWithPdf && (
-            <div className="mb-8">
-              <h2 className="text-xl sm:text-2xl font-semibold text-[#0B1B2B] mb-4">Mes formations</h2>
-              {userCapsules.length === 0 ? (
-                <div className="bg-white border rounded-lg p-6 text-gray-600">Aucune formation ajoutée pour l’instant.</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {availableCapsules
-                    .filter(c => userCapsules.includes(c.id))
-                    .map(c => (
-                      <div key={c.id} className="bg-white border rounded-xl overflow-hidden shadow-sm">
-                        <div className="h-40 w-full overflow-hidden">
-                          <img src={c.img} alt={c.title} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="p-4">
-                          <div className="text-lg font-semibold text-gray-900">{c.title}</div>
-                          <p className="text-sm text-gray-600 mt-1">{c.blurb}</p>
-                          <div className="mt-3 flex gap-2">
-                            <button className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Accéder</button>
-                            <button
-                              onClick={async () => {
-                                const ok = await capsulesService.removeUserCapsule(c.id)
-                                if (ok) {
-                                  const myCaps = await capsulesService.getUserCapsules().catch(() => [])
-                                  setUserCapsules(Array.isArray(myCaps) ? myCaps.map((x: any) => x.capsule_id) : [])
-                                }
-                              }}
-                              className="px-3 py-2 text-sm rounded-md border border-red-300 text-red-600 hover:bg-red-50"
-                            >
-                              Retirer
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                  ))}
+          {/* Contenu de l'onglet "Mes Analyses" */}
+          {activeTab === 'analyses' && (
+            <div className="space-y-6">
+              {/* Titre et description de la section */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-              )}
-            </div>
-          )}
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Mes Analyses</h2>
+                  <p className="text-gray-600">Retrouvez ici toutes vos analyses financières réalisées avec Cash360.</p>
+                </div>
+              </div>
 
-          {/* Liste des analyses */}
-          {analyses.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4">
-                <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {t.dashboard.noAnalysisTitle}
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {t.dashboard.noAnalysisText}
-              </p>
-              
-              <div className="space-y-3">
-                <button
-                  onClick={handleNewAnalysis}
-                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  {t.dashboard.createFirstAnalysis}
-                </button>
-                
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 sm:space-y-6">
-              {currentAnalyses.map((analysis) => (
-                <div key={analysis.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                  {/* Header de l'analyse */}
-                  <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                      <div className="flex items-center space-x-2 sm:space-x-4">
-                        <div>
-                          <h3 className="text-base sm:text-lg font-medium text-gray-900">
-                            {t.dashboard.analysisNumber}{analysis.ticket}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-gray-600">
-                            {t.dashboard.createdOn} {new Date(analysis.created_at).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2 sm:space-x-4">
-                        <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(analysis.status)}`}>
-                          {getStatusLabel(analysis.status)}
-                        </span>
-                      </div>
-                    </div>
+              {/* Carte "Faire une nouvelle analyse" */}
+              <div className="bg-yellow-400 rounded-2xl p-8 mb-8">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-16 h-16 rounded-full bg-white/30 flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
                   </div>
-
-                  {/* Contenu de l'analyse */}
-                  <div className="px-4 sm:px-6 py-3 sm:py-4">
-                    {/* Barre de progression */}
-                    <div className="mb-3 sm:mb-4">
-                      <div className="flex items-center justify-between mb-1 sm:mb-2">
-                        <span className="text-xs sm:text-sm font-medium text-gray-700">
-                          {t.dashboard.progressLabel}
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Faire une nouvelle analyse</h3>
+                  <p className="text-gray-700 mb-6 max-w-md">
+                    Téléversez vos relevés et recevez votre diagnostic sous 48h.
+                  </p>
+                  <button
+                    onClick={handleNewAnalysis}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg"
+                  >
+                    Lancer une nouvelle analyse
+                  </button>
+                </div>
+              </div>
+            
+            {/* Liste des analyses */}
+            {analyses.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {analyses.map((analysis) => (
+                  <div key={analysis.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow p-6">
+                    {/* En-tête de la carte */}
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Analyse du {new Date(analysis.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className={`w-3 h-3 rounded-full ${analysis.status === 'terminee' ? 'bg-green-500' : 'bg-orange-500'}`}></div>
+                        <span className="text-sm font-medium text-gray-700">
+                          {analysis.status === 'terminee' ? 'Terminée' : 'En cours'}
                         </span>
-                        <span className="text-xs sm:text-sm text-gray-600">
-                          {analysis.status === 'terminee' ? '100%' : '70%'}
-                        </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 sm:h-3 rounded-full transition-all duration-500 ease-out"
-                          style={{ width: analysis.status === 'terminee' ? '100%' : '70%' }}
-                        ></div>
-                      </div>
+                      <p className="text-sm text-gray-600">
+                        {analysis.status === 'terminee' 
+                          ? 'Analyse de vos 3 relevés bancaires – rapport disponible.'
+                          : 'Traitement en cours de vos relevés bancaires.'
+                        }
+                      </p>
                     </div>
-
-                    {/* Étapes de l'analyse */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
-                      <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-blue-50 border border-blue-200">
-                        <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold bg-blue-600 text-white">
-                          ✓
-                        </div>
-                        <div>
-                          <p className="text-xs sm:text-sm font-medium text-gray-900">{t.dashboard.steps.reception}</p>
-                          <p className="text-xs text-gray-600">{t.dashboard.steps.receptionDesc}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-blue-50 border border-blue-200">
-                        <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold bg-blue-600 text-white">
-                          ✓
-                        </div>
-                        <div>
-                          <p className="text-xs sm:text-sm font-medium text-gray-900">{t.dashboard.steps.analysis}</p>
-                          <p className="text-xs text-gray-600">{t.dashboard.steps.analysisDesc}</p>
-                        </div>
-                      </div>
-
-                      <div className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg ${analysis.status === 'terminee' ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
-                        <div className={`flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${analysis.status === 'terminee' ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'}`}>
-                          {analysis.status === 'terminee' ? '✓' : '3'}
-                        </div>
-                        <div>
-                          <p className="text-xs sm:text-sm font-medium text-gray-900">{t.dashboard.steps.report}</p>
-                          <p className="text-xs text-gray-600">{t.dashboard.steps.reportDesc}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Informations détaillées */}
-                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                      <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">{t.dashboard.details}</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
-                        <div>
-                          <span className="text-gray-600">{t.dashboard.client} :</span>
-                          <span className="ml-2 font-medium">{analysis.client_name}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">{t.dashboard.emailLabel} :</span>
-                          <span className="ml-2 font-medium">{analysis.client_email}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">{t.dashboard.lastUpdate} :</span>
-                          <span className="ml-2 font-medium">{new Date(analysis.updated_at).toLocaleDateString('fr-FR')}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">{t.dashboard.statusLabel} :</span>
-                          <span className="ml-2 font-medium">{getStatusLabel(analysis.status)}</span>
-                        </div>
-                      </div>
-
-                      {/* Section terminée */}
-                      {analysis.status === 'terminee' && (
-                        <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
-                          {/* Message de succès */}
-                          <div className="flex items-center space-x-3">
-                            <div className="flex-shrink-0">
-                              <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h5 className="text-sm font-medium text-gray-900">
-                                {t.dashboard.completedTitle}
-                              </h5>
-                              <p className="text-xs text-gray-600">
-                                {t.dashboard.completedText}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Boutons d'action */}
-                          <div className="flex flex-col sm:flex-row gap-3">
-                            {/* Bouton Télécharger PDF */}
-                            {analysis.pdf_url && (
-                              <button
-                                onClick={() => {
-                                  window.open(analysis.pdf_url, '_blank')
-                                }}
-                                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                              >
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                {t.dashboard.downloadPdf}
-                              </button>
-                            )}
-
-                            {/* Bouton Je m'inscris */}
-                            <a
-                              href="/login"
-                              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                            >
-                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                              {t.dashboard.bookAppointment}
-                            </a>
-
-                          </div>
-                        </div>
+                    
+                    {/* Boutons d'action */}
+                    <div className="flex gap-3">
+                      {analysis.status === 'terminee' && analysis.pdf_url ? (
+                        <>
+                          <button
+                            onClick={() => window.open(analysis.pdf_url, '_blank')}
+                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Télécharger PDF
+                          </button>
+                          <button
+                            onClick={handleNewAnalysis}
+                            className="flex-1 px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                          >
+                            Refaire une analyse
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            disabled
+                            className="flex-1 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            En traitement
+                          </button>
+                          <button
+                            onClick={handleNewAnalysis}
+                            className="flex-1 px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                          >
+                            Refaire une analyse
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
             </div>
           )}
 
-          {/* Pagination */}
-          {analyses.length > analysesPerPage && (
-            <div className="mt-8 flex justify-center">
-              <div className="flex items-center space-x-2">
-                {/* Bouton Précédent */}
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {t.dashboard.pagination.previous}
-                </button>
-
-                {/* Numéros de page */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 text-sm font-medium rounded-md ${
-                      currentPage === page
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-
-                {/* Bouton Suivant */}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {t.dashboard.pagination.next}
-                </button>
+          {/* Contenu de l'onglet "Boutique" */}
+          {activeTab === 'boutique' && (
+            <div className="space-y-6">
+              {/* Titre et description de la section */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Boutique</h2>
+                  <p className="text-gray-600">Découvrez les 6 capsules exclusives Cash360 pour transformer votre vie financière et spirituelle.</p>
+                </div>
               </div>
+
+              {/* Grille des capsules */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {boutiqueCapsules.map((capsule) => (
+                  <div key={capsule.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                    {/* Image */}
+                    <div className="relative h-48 w-full overflow-hidden">
+                      <Image
+                        src={capsule.img}
+                        alt={capsule.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
+                    {/* Contenu */}
+                    <div className="p-4 flex flex-col flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{capsule.title}</h3>
+                      <p className="text-sm text-gray-600 mb-4 flex-1">{capsule.blurb}</p>
+
+                      {/* Prix */}
+                      <div className="mb-4">
+                        {capsule.isPack && capsule.originalPrice ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold text-blue-600">{capsule.price.toFixed(2)} €</span>
+                            <span className="text-sm text-gray-400 line-through">{capsule.originalPrice.toFixed(2)} €</span>
+                            <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-semibold">-15%</span>
+                          </div>
+                        ) : (
+                          <span className="text-lg font-bold text-blue-600">{capsule.price.toFixed(2)} €</span>
+                        )}
+                      </div>
+
+                      {/* Bouton d'achat */}
+                      <button
+                        onClick={() => {
+                          addToCart({
+                            id: capsule.id,
+                            title: capsule.title,
+                            img: capsule.img,
+                            price: capsule.price
+                          })
+                          setShowCartDropdown(true)
+                        }}
+                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                      >
+                        {capsule.isPack ? 'Acheter le pack' : 'Acheter'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Contenu de l'onglet "Mes Formations" */}
+          {activeTab === 'formations' && (
+            <div className="space-y-6">
+              {/* Titre et description de la section */}
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Mes Formations</h2>
+                </div>
+                <p className="text-gray-600">Accédez à vos formations à venir ou passées et rejoignez-les en un clic.</p>
+              </div>
+
+              {userCapsules.length === 0 ? (
+                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                  <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-lg bg-gray-100 mb-6">
+                    <svg className="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucune formation pour le moment</h3>
+                  <p className="text-gray-600">Explorez la boutique pour découvrir nos formations disponibles.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {availableCapsules
+                    .filter(c => userCapsules.includes(c.id))
+                    .map((c, index) => (
+                      <div key={c.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                        <div className="p-6">
+                          <div className="flex items-start gap-4">
+                            {/* Thumbnail */}
+                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                              <Image
+                                src={c.img}
+                                alt={c.title}
+                                width={96}
+                                height={96}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-bold text-gray-900 mb-2">{c.title}</h3>
+                              
+                              {/* Session info */}
+                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {index === 0 && <span>Prochaine session : Dimanche 16 mars 2025, à 19h00 (heure de Paris)</span>}
+                                {index === 1 && <span>Prochaine session : Samedi 22 mars 2025, à 15h00 (heure de Paris)</span>}
+                                {index > 1 && <span>Session terminée : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>}
+                              </div>
+
+                              {/* Status badge */}
+                              <div className="flex items-center gap-3">
+                                {index === 0 && (
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">En attente</span>
+                                )}
+                                {index === 1 && (
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">En cours</span>
+                                )}
+                                {index > 1 && (
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Terminée ✔</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Action button */}
+                            <div className="flex-shrink-0">
+                              {index > 1 ? (
+                                <button
+                                  disabled
+                                  className="px-6 py-2 bg-gray-300 text-white rounded-lg font-medium cursor-not-allowed"
+                                >
+                                  Terminée
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    // TODO: Implementer la logique de participation
+                                    console.log(`Participation: ${c.title}`)
+                                  }}
+                                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                >
+                                  Participer
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -792,6 +942,16 @@ export default function DashboardPage() {
           </svg>
         </button>
       </div>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Legal Modal */}
+      <LegalModal 
+        isOpen={legalModalOpen} 
+        onClose={() => setLegalModalOpen(false)} 
+        type={legalModalType} 
+      />
     </div>
   )
 }
