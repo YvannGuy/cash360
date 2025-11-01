@@ -12,7 +12,7 @@ import LegalModal from '@/components/LegalModal'
 export default function CartPage() {
   const { t } = useLanguage()
   const router = useRouter()
-  const { cartItems, updateQuantity, removeItem, getSubtotal } = useCart()
+  const { cartItems, updateQuantity, removeFromCart, getSubtotal } = useCart()
   
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [showLegalModal, setShowLegalModal] = useState(false)
@@ -147,7 +147,7 @@ export default function CartPage() {
                             
                             {/* Delete Button */}
                             <button
-                              onClick={() => removeItem(item.id)}
+                              onClick={() => removeFromCart(item.id)}
                               className="p-2 hover:bg-red-50 rounded transition-colors"
                             >
                               <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

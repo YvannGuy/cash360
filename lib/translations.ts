@@ -1175,28 +1175,28 @@ export const translations = {
         next: "Next"
       },
       // New translations for new design
-      welcomeGreeting: "Bonjour, 👋",
-      welcomeMessage: "Bienvenue dans votre espace Cash360. Suivez vos analyses, vos progrès et vos prochaines étapes.",
-      pathCompleted: "Parcours complété",
-      suggestedStep: "Étape suggérée : Lancez votre première analyse",
-      myAnalyses: "Vos analyses financières",
-      seeAll: "Voir tout",
-      noAnalysis: "Aucune analyse pour le moment",
-      noAnalysisDescription: "Commencez par lancer votre première analyse pour obtenir un diagnostic personnalisé.",
-      doFirstAnalysis: "Faire une première analyse",
-      continueProgress: "Continuez votre progression",
-      continueProgressSubtitle: "Des contenus ciblés pour avancer étape par étape.",
-      free: "Gratuit",
-      discover: "Découvrir",
-      accessCapsulesFormations: "Accéder aux Capsules & Formations >",
-      nextCall: "Votre prochain appel",
-      noAppointment: "Aucun rendez-vous à venir",
-      noAppointmentDescription: "Réservez un appel avec nos experts pour discuter de votre situation.",
-      bookCall: "Réserver un appel",
+      welcomeGreeting: "Hello, 👋",
+      welcomeMessage: "Welcome to your Cash360 space. Track your analyses, your progress and your next steps.",
+      pathCompleted: "Path completed",
+      suggestedStep: "Suggested step: Launch your first analysis",
+      myAnalyses: "Your financial analyses",
+      seeAll: "See all",
+      noAnalysis: "No analysis at the moment",
+      noAnalysisDescription: "Start by launching your first analysis to get a personalized diagnosis.",
+      doFirstAnalysis: "Do a first analysis",
+      continueProgress: "Continue your progress",
+      continueProgressSubtitle: "Targeted content to advance step by step.",
+      free: "Free",
+      discover: "Discover",
+      accessCapsulesFormations: "Access Capsules & Training >",
+      nextCall: "Your next call",
+      noAppointment: "No upcoming appointments",
+      noAppointmentDescription: "Book a call with our experts to discuss your situation.",
+      bookCall: "Book a call",
       capsuleTitles: {
-        pillars: "Les 7 piliers d'une gestion saine",
-        optimization: "Optimisation fiscale avancée",
-        retirement: "Planification de retraite"
+        pillars: "The 7 pillars of healthy management",
+        optimization: "Advanced tax optimization",
+        retirement: "Retirement planning"
       }
     },
 
@@ -1821,6 +1821,30 @@ export const translations = {
         analyses: "análisis",
         previous: "Anterior",
         next: "Siguiente"
+      },
+      // New translations for new design
+      welcomeGreeting: "Hola, 👋",
+      welcomeMessage: "Bienvenido a tu espacio Cash360. Sigue tus análisis, tu progreso y tus próximos pasos.",
+      pathCompleted: "Ruta completada",
+      suggestedStep: "Paso sugerido: Lanza tu primer análisis",
+      myAnalyses: "Tus análisis financieros",
+      seeAll: "Ver todo",
+      noAnalysis: "Ningún análisis en este momento",
+      noAnalysisDescription: "Comienza lanzando tu primer análisis para obtener un diagnóstico personalizado.",
+      doFirstAnalysis: "Hacer un primer análisis",
+      continueProgress: "Continúa tu progreso",
+      continueProgressSubtitle: "Contenido dirigido para avanzar paso a paso.",
+      free: "Gratis",
+      discover: "Descubrir",
+      accessCapsulesFormations: "Acceder a Cápsulas y Formación >",
+      nextCall: "Tu próxima llamada",
+      noAppointment: "Sin citas próximas",
+      noAppointmentDescription: "Reserva una llamada con nuestros expertos para discutir tu situación.",
+      bookCall: "Reservar una llamada",
+      capsuleTitles: {
+        pillars: "Los 7 pilares de una gestión sana",
+        optimization: "Optimización fiscal avanzada",
+        retirement: "Planificación de jubilación"
       }
     },
 
@@ -2445,6 +2469,30 @@ export const translations = {
         analyses: "análises",
         previous: "Anterior",
         next: "Próximo"
+      },
+      // New translations for new design
+      welcomeGreeting: "Olá, 👋",
+      welcomeMessage: "Bem-vindo ao seu espaço Cash360. Acompanhe suas análises, seu progresso e seus próximos passos.",
+      pathCompleted: "Caminho concluído",
+      suggestedStep: "Passo sugerido: Lance sua primeira análise",
+      myAnalyses: "Suas análises financeiras",
+      seeAll: "Ver tudo",
+      noAnalysis: "Nenhuma análise no momento",
+      noAnalysisDescription: "Comece lançando sua primeira análise para obter um diagnóstico personalizado.",
+      doFirstAnalysis: "Fazer uma primeira análise",
+      continueProgress: "Continue seu progresso",
+      continueProgressSubtitle: "Conteúdo direcionado para avançar passo a passo.",
+      free: "Grátis",
+      discover: "Descobrir",
+      accessCapsulesFormations: "Acessar Cápsulas e Formação >",
+      nextCall: "Sua próxima chamada",
+      noAppointment: "Sem compromissos próximos",
+      noAppointmentDescription: "Reserve uma chamada com nossos especialistas para discutir sua situação.",
+      bookCall: "Reservar uma chamada",
+      capsuleTitles: {
+        pillars: "Os 7 pilares de uma gestão saudável",
+        optimization: "Otimização fiscal avançada",
+        retirement: "Planejamento de aposentadoria"
       }
     },
 
