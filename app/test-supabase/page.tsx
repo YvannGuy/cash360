@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClientBrowser } from '@/lib/supabase'
 
 export default function TestSupabasePage() {
@@ -9,10 +9,16 @@ export default function TestSupabasePage() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [supabase, setSupabase] = useState<any>(null)
 
-  const supabase = createClientBrowser()
+  useEffect(() => {
+    // Initialiser Supabase côté client uniquement
+    setSupabase(createClientBrowser())
+  }, [])
 
   const testSignUp = async () => {
+    if (!supabase) return
+    
     setLoading(true)
     setError('')
     setMessage('')
@@ -40,6 +46,8 @@ export default function TestSupabasePage() {
   }
 
   const testSignIn = async () => {
+    if (!supabase) return
+    
     setLoading(true)
     setError('')
     setMessage('')
