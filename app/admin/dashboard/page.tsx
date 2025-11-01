@@ -332,7 +332,9 @@ export default function AdminDashboardPage() {
             <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-users text-[#00A1C6] text-xl"></i>
+                  <svg className="w-6 h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                  </svg>
                 </div>
                 <span className="text-green-500 text-sm font-medium">+12%</span>
               </div>
@@ -343,7 +345,9 @@ export default function AdminDashboardPage() {
             <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-chart-line text-[#00A1C6] text-xl"></i>
+                  <svg className="w-6 h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                  </svg>
                 </div>
                 <span className="text-green-500 text-sm font-medium">+8%</span>
               </div>
@@ -354,7 +358,9 @@ export default function AdminDashboardPage() {
             <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-euro-sign text-[#00A1C6] text-xl"></i>
+                  <svg className="w-6 h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267zM10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"/>
+                  </svg>
                 </div>
                 <span className="text-green-500 text-sm font-medium">+15%</span>
               </div>
@@ -365,7 +371,9 @@ export default function AdminDashboardPage() {
             <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-graduation-cap text-[#00A1C6] text-xl"></i>
+                  <svg className="w-6 h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                  </svg>
                 </div>
                 <span className="text-red-500 text-sm font-medium">-3%</span>
               </div>
@@ -406,7 +414,10 @@ export default function AdminDashboardPage() {
                           </span>
                         </td>
                         <td className="py-3">
-                          <i className="fas fa-eye text-[#00A1C6] cursor-pointer hover:text-[#012F4E]"></i>
+                          <svg className="w-5 h-5 text-[#00A1C6] cursor-pointer hover:text-[#012F4E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                          </svg>
                         </td>
                       </tr>
                     ))}
@@ -467,7 +478,9 @@ export default function AdminDashboardPage() {
             <h3 className="text-xl font-bold text-[#012F4E] mb-6">Évolution hebdomadaire</h3>
             <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
               <div className="text-center">
-                <i className="fas fa-chart-area text-4xl text-gray-400 mb-4"></i>
+                <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                </svg>
                 <p className="text-gray-600">Graphique d'évolution</p>
                 <p className="text-sm text-gray-500">Analyses / Ventes de capsules (7-30j)</p>
               </div>
