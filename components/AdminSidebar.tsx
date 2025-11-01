@@ -76,7 +76,7 @@ export default function AdminSidebar({ activeTab = 'overview' }: AdminSidebarPro
   }
 
   return (
-    <div className="w-64 bg-white shadow-sm border-r border-gray-200 fixed h-full z-10">
+    <div className="w-64 bg-white shadow-sm border-r border-gray-200 fixed h-full z-[100]">
       <div className="p-6">
         <div className="flex items-center space-x-3 mb-8">
           <div className="w-8 h-8 bg-[#012F4E] rounded-lg flex items-center justify-center">
