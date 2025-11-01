@@ -13,13 +13,7 @@ export async function GET(request: NextRequest) {
     // Récupérer toutes les capsules achetées
     const { data: capsules, error } = await supabaseAdmin!
       .from('user_capsules')
-      .select(`
-        *,
-        user:user_id (
-          id,
-          email
-        )
-      `)
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -33,11 +27,20 @@ export async function GET(request: NextRequest) {
     // Récupérer les informations utilisateurs depuis auth.users
     const enrichedCapsules = await Promise.all(
       (capsules || []).map(async (capsule: any) => {
-        const { data: authUser } = await supabaseAdmin!.auth.admin.getUserById(capsule.user_id)
-        return {
-          ...capsule,
-          user_email: authUser?.user?.email || capsule.user?.email || 'Unknown',
-          user_name: authUser?.user?.email?.split('@')[0] || 'Unknown User'
+        try {
+          const { data: authUser } = await supabaseAdmin!.auth.admin.getUserById(capsule.user_id)
+          return {
+            ...capsule,
+            user_email: authUser?.user?.email || 'Unknown',
+            user_name: authUser?.user?.email?.split('@')[0] || 'Unknown User'
+          }
+        } catch (err) {
+          // Si l'utilisateur n'existe plus, on garde l'enregistrement avec des valeurs par défaut
+          return {
+            ...capsule,
+            user_email: 'Unknown',
+            user_name: 'Unknown User'
+          }
         }
       })
     )
