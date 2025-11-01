@@ -17,6 +17,8 @@ export default function AdminDashboardPage() {
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [analyses, setAnalyses] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
+  const [payments, setPayments] = useState<any[]>([])
+  const [formations, setFormations] = useState<any[]>([])
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
@@ -44,6 +46,8 @@ export default function AdminDashboardPage() {
     if (adminSession?.isAdmin) {
       loadAllAnalyses()
       loadAllUsers()
+      loadPayments()
+      loadFormations()
     }
   }, [adminSession])
 
@@ -88,6 +92,32 @@ export default function AdminDashboardPage() {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs:', error)
+    }
+  }
+
+  const loadPayments = async () => {
+    try {
+      const response = await fetch('/api/admin/paiements')
+      const data = await response.json()
+      
+      if (data.success) {
+        setPayments(data.payments || [])
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des paiements:', error)
+    }
+  }
+
+  const loadFormations = async () => {
+    try {
+      const response = await fetch('/api/admin/formations')
+      const data = await response.json()
+      
+      if (data.success) {
+        setFormations(data.formations || [])
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des formations:', error)
     }
   }
 
@@ -242,6 +272,15 @@ export default function AdminDashboardPage() {
   const pendingAnalyses = analyses.filter(a => a.status === 'en_cours' || a.status === 'en_analyse').length
   const revenuesThisMonth = 0 // TODO: calculer depuis les paiements
   const capsulesThisMonth = 0 // TODO: calculer depuis les capsules
+
+  // Calculer les alertes dynamiquement
+  const pendingAnalysesCount = analyses.filter(a => a.status === 'en_cours' || a.status === 'en_analyse').length
+  const failedPayments = payments.filter(p => p.status === 'failed')
+  const todayFormations = formations.filter(f => {
+    const formationDate = new Date(f.date_scheduled)
+    const today = new Date()
+    return formationDate.toDateString() === today.toDateString()
+  })
 
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
@@ -429,45 +468,41 @@ export default function AdminDashboardPage() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-xl font-bold text-[#012F4E] mb-6">Alertes & tâches</h3>
               <div className="space-y-4">
-                <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-orange-800">3 analyses en attente de validation</h4>
-                      <p className="text-sm text-orange-600 mt-1">Nécessite votre attention</p>
+                {pendingAnalysesCount > 0 && (
+                  <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-orange-800">{pendingAnalysesCount} {pendingAnalysesCount === 1 ? 'analyse' : 'analyses'} en attente de validation</h4>
+                        <p className="text-sm text-orange-600 mt-1">Nécessite votre attention</p>
+                      </div>
+                      <button onClick={() => router.push('/admin/analyses')} className="text-orange-600 hover:text-orange-800 text-sm font-medium">Voir</button>
                     </div>
-                    <button className="text-orange-600 hover:text-orange-800 text-sm font-medium">Voir</button>
                   </div>
-                </div>
+                )}
 
-                <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-red-800">2 paiements à vérifier (Stripe)</h4>
-                      <p className="text-sm text-red-600 mt-1">Échec de transaction détecté</p>
+                {failedPayments.length > 0 && (
+                  <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-red-800">{failedPayments.length} {failedPayments.length === 1 ? 'paiement' : 'paiements'} à vérifier</h4>
+                        <p className="text-sm text-red-600 mt-1">Échec de transaction détecté</p>
+                      </div>
+                      <button onClick={() => router.push('/admin/paiements')} className="text-red-600 hover:text-red-800 text-sm font-medium">Gérer</button>
                     </div>
-                    <button className="text-red-600 hover:text-red-800 text-sm font-medium">Gérer</button>
                   </div>
-                </div>
+                )}
 
-                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-blue-800">1 session de formation aujourd'hui 19h</h4>
-                      <p className="text-sm text-blue-600 mt-1">Formation &quot;Analyse financière avancée&quot;</p>
+                {todayFormations.map(formation => (
+                  <div key={formation.id} className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-blue-800">Session de formation aujourd'hui {formation.time}</h4>
+                        <p className="text-sm text-blue-600 mt-1">Formation &quot;{formation.session_name || formation.title}&quot;</p>
+                      </div>
+                      <button onClick={() => router.push('/admin/formations')} className="text-blue-600 hover:text-blue-800 text-sm font-medium">Voir</button>
                     </div>
-                    <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">Voir</button>
                   </div>
-                </div>
-
-                <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-green-800">Sauvegarde système complétée</h4>
-                      <p className="text-sm text-green-600 mt-1">Dernière sauvegarde : il y a 2h</p>
-                    </div>
-                    <button className="text-green-600 hover:text-green-800 text-sm font-medium">Détails</button>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
