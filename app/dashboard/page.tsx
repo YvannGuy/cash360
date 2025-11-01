@@ -118,7 +118,7 @@ export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const analysesPerPage = 2
   
-  const supabase = createClientBrowser()
+  const [supabase, setSupabase] = useState<any>(null)
 
   // Fonction pour extraire les initiales de l'email
   const getInitials = (email: string | undefined): string => {
@@ -157,9 +157,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setMounted(true)
+    // Initialiser Supabase côté client uniquement
+    setSupabase(createClientBrowser())
   }, [])
 
   useEffect(() => {
+    if (!supabase) return
+    
     const init = async () => {
       try {
         const [userResult, userAnalyses] = await Promise.all([
@@ -187,7 +191,7 @@ export default function DashboardPage() {
     }
 
     init()
-  }, [supabase.auth, router])
+  }, [supabase, router])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -240,6 +244,7 @@ export default function DashboardPage() {
   }
 
   const handleSignOut = async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
     router.push('/')
   }
