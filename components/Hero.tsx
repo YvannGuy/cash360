@@ -24,7 +24,7 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-40 pb-16">
         <div className="max-w-4xl mx-auto text-center">
           {/* Main Content */}
           <div>
@@ -74,15 +74,12 @@ export default function Hero() {
                 {t.hero.ctaPrimary}
               </a>
               
-              <button
-                onClick={() => {
-                  const modal = document.getElementById('calendly-modal');
-                  if (modal) modal.style.display = 'block';
-                }}
+              <a
+                href="#cta"
                 className="inline-flex items-center px-8 py-3.5 border border-white/50 text-white text-base font-medium rounded-lg hover:bg-white/10 transition-all duration-200"
               >
-                {t.hero.ctaSecondary}
-              </button>
+                {t.nav.nosFormations}
+              </a>
             </div>
 
           </div>

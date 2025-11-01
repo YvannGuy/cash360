@@ -4,10 +4,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Tooltip, fmtEUR } from '@/components/Helpers'
 import CTABox from '@/components/CTABox'
+import LanguageSwitch from '@/components/LanguageSwitch'
+import { useLanguage } from '@/lib/LanguageContext'
 
 type ScoreCategory = 'sain' | 'ameliorer' | 'desequilibre'
 
 export default function SimulationPage() {
+  const { t } = useLanguage()
+  
   // États pour le formulaire
   const [revenus, setRevenus] = useState<string>('')
   const [fixes, setFixes] = useState<string>('')
@@ -34,12 +38,12 @@ export default function SimulationPage() {
     const variablesNum = parseFloat(variables)
     
     if (!revenusNum || revenusNum <= 0) {
-      alert('Veuillez saisir vos revenus mensuels')
+      alert(t.simulation.errorIncome)
       return
     }
     
     if (!fixesNum || fixesNum < 0 || !variablesNum || variablesNum < 0) {
-      alert('Veuillez saisir vos dépenses')
+      alert(t.simulation.errorExpenses)
       return
     }
     
@@ -51,7 +55,7 @@ export default function SimulationPage() {
     e.preventDefault()
     
     if (!email || !consent) {
-      alert('Veuillez saisir votre email et accepter le traitement de vos données')
+      alert(t.simulation.errorEmail)
       return
     }
     
@@ -75,7 +79,7 @@ export default function SimulationPage() {
       })
       
       if (!response.ok) {
-        throw new Error('Erreur lors de l\'enregistrement')
+        throw new Error(t.simulation.errorSubmit)
       }
       
       // Calculer les résultats
@@ -105,7 +109,7 @@ export default function SimulationPage() {
       setShowEmailGate(false)
     } catch (error) {
       console.error(error)
-      alert('Une erreur est survenue. Veuillez réessayer.')
+      alert(t.simulation.errorSubmit)
     } finally {
       setIsLoading(false)
     }
@@ -115,26 +119,23 @@ export default function SimulationPage() {
     switch (score) {
       case 'sain':
         return {
-          title: 'Bravo ! Vos finances sont plutôt bien équilibrées',
-          message:
-            'Il vous reste une marge chaque mois. Pour avancer vers une vraie liberté financière, transformons cette base en stratégie : épargne planifiée, priorités claires, projets.',
-          ctaText: 'Prenez 15 minutes pour identifier comment faire fructifier ce bon équilibre.',
+          title: t.simulation.results.healthy.title,
+          message: t.simulation.results.healthy.message,
+          ctaText: t.simulation.results.healthy.ctaText,
           emoji: '✅',
         }
       case 'ameliorer':
         return {
-          title: 'Votre budget tient, mais il commence à être tendu',
-          message:
-            'Avec quelques ajustements simples (abonnements, variables, priorités), vous pouvez libérer une vraie marge dès ce mois-ci.',
-          ctaText: 'En 15 minutes, identifions 2 à 3 leviers immédiats pour respirer financièrement.',
+          title: t.simulation.results.improve.title,
+          message: t.simulation.results.improve.message,
+          ctaText: t.simulation.results.improve.ctaText,
           emoji: '🟡',
         }
       case 'desequilibre':
         return {
-          title: 'Votre budget est actuellement trop serré',
-          message:
-            "Ce n'est pas une fatalité : avec une méthode pas à pas, vous pouvez reprendre le contrôle et retrouver la paix financière.",
-          ctaText: 'En 15 minutes, clarifions l\'origine du déséquilibre et définissons les premières actions concrètes.',
+          title: t.simulation.results.unbalanced.title,
+          message: t.simulation.results.unbalanced.message,
+          ctaText: t.simulation.results.unbalanced.ctaText,
           emoji: '🔴',
         }
     }
@@ -145,8 +146,8 @@ export default function SimulationPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          {/* Bouton retour */}
-          <div className="mb-6">
+          {/* Bouton retour et Language Switch */}
+          <div className="mb-6 flex items-center justify-between">
             <Link
               href="/"
               className="inline-flex items-center text-gray-600 hover:text-[#0B1B2B] transition-colors"
@@ -154,20 +155,21 @@ export default function SimulationPage() {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Retour à l'accueil
+              {t.simulation.backToHome}
             </Link>
+            <LanguageSwitch />
           </div>
 
           {/* Titre et description centrés */}
           <div className="text-center">
             <h1 className="text-3xl font-bold text-[#0B1B2B]">
-              Testez votre équilibre financier en 60 secondes 🕒
+              {t.simulation.title}
             </h1>
             <p className="text-gray-600 mt-2 max-w-2xl mx-auto">
-              Voyez en un instant où part votre argent et quel pourcentage vous pouvez épargner chaque mois.
+              {t.simulation.subtitle}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Calcul local sur votre appareil. Vos données ne sont ni stockées ni transmises.
+              {t.simulation.privacyNote}
             </p>
           </div>
         </div>
@@ -180,7 +182,7 @@ export default function SimulationPage() {
             {/* Formulaire */}
             <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                Vos informations financières
+                {t.simulation.formTitle}
               </h2>
 
               <div className="space-y-6">
@@ -190,8 +192,8 @@ export default function SimulationPage() {
                     htmlFor="revenus"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Revenus mensuels{' '}
-                    <Tooltip content="Tout l'argent reçu chaque mois (salaire, aides, dons…).">
+                    {t.simulation.monthlyIncome}{' '}
+                    <Tooltip content={t.simulation.monthlyIncomeTooltip}>
                       <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-xs cursor-help">
                         ?
                       </span>
@@ -214,8 +216,8 @@ export default function SimulationPage() {
                     htmlFor="fixes"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Dépenses fixes{' '}
-                    <Tooltip content="Dépenses qui changent peu : loyer, crédits, assurances, internet, dîme, abonnements…">
+                    {t.simulation.fixedExpenses}{' '}
+                    <Tooltip content={t.simulation.fixedExpensesTooltip}>
                       <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-xs cursor-help">
                         ?
                       </span>
@@ -238,8 +240,8 @@ export default function SimulationPage() {
                     htmlFor="variables"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Dépenses variables{' '}
-                    <Tooltip content="Dépenses qui varient : courses, transport, restaurants, vêtements, petits plaisirs…">
+                    {t.simulation.variableExpenses}{' '}
+                    <Tooltip content={t.simulation.variableExpensesTooltip}>
                       <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-xs cursor-help">
                         ?
                       </span>
@@ -261,7 +263,7 @@ export default function SimulationPage() {
                 onClick={handleCalculate}
                 className="mt-8 w-full bg-[#D4AF37] text-[#0B1B2B] py-3 rounded-lg font-medium hover:brightness-95 transition-all duration-200"
               >
-                Calculer mon équilibre
+                {t.simulation.calculateButton}
               </button>
             </div>
 
@@ -269,7 +271,7 @@ export default function SimulationPage() {
             {showEmailGate && (
               <div className="bg-white rounded-xl shadow-lg p-8">
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  Votre email pour recevoir vos résultats
+                  {t.simulation.emailGateTitle}
                 </h3>
                 <form onSubmit={handleEmailSubmit}>
                   <div className="mb-4">
@@ -277,7 +279,7 @@ export default function SimulationPage() {
                       htmlFor="email"
                       className="block text-sm font-medium text-gray-700 mb-2"
                     >
-                      Email
+                      {t.simulation.emailLabel}
                     </label>
                     <input
                       type="email"
@@ -285,7 +287,7 @@ export default function SimulationPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="votre@email.com"
+                      placeholder={t.simulation.emailPlaceholder}
                       required
                     />
                   </div>
@@ -300,8 +302,7 @@ export default function SimulationPage() {
                         required
                       />
                       <span className="text-sm text-gray-700">
-                        J'accepte que mes données soient utilisées pour me contacter concernant cette
-                        simulation et les services Cash360.
+                        {t.simulation.consentText}
                       </span>
                     </label>
                   </div>
@@ -312,14 +313,14 @@ export default function SimulationPage() {
                       disabled={isLoading}
                       className="flex-1 bg-[#D4AF37] text-[#0B1B2B] py-3 rounded-lg font-medium hover:brightness-95 transition-all duration-200 disabled:opacity-50"
                     >
-                      {isLoading ? 'Envoi...' : 'Voir mes résultats'}
+                      {isLoading ? t.simulation.submitting : t.simulation.submitButton}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowEmailGate(false)}
                       className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200"
                     >
-                      Annuler
+                      {t.simulation.cancelButton}
                     </button>
                   </div>
                 </form>
@@ -351,17 +352,17 @@ export default function SimulationPage() {
               {/* Statistiques */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600">Épargne mensuelle</div>
+                  <div className="text-sm text-gray-600">{t.simulation.stats.monthlySavings}</div>
                   <div className="text-2xl font-bold text-blue-900">{fmtEUR(epargne)}</div>
                   <div className="text-sm text-blue-700">{epargnePercent.toFixed(1)}%</div>
                 </div>
                 <div className="bg-purple-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600">Charges fixes</div>
+                  <div className="text-sm text-gray-600">{t.simulation.stats.fixedCharges}</div>
                   <div className="text-2xl font-bold text-purple-900">{fmtEUR(parseFloat(fixes))}</div>
                   <div className="text-sm text-purple-700">{fixesPercent.toFixed(1)}%</div>
                 </div>
                 <div className="bg-yellow-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600">Dépenses variables</div>
+                  <div className="text-sm text-gray-600">{t.simulation.stats.variableExpenses}</div>
                   <div className="text-2xl font-bold text-yellow-900">{fmtEUR(parseFloat(variables))}</div>
                   <div className="text-sm text-yellow-700">{((parseFloat(variables) / parseFloat(revenus)) * 100).toFixed(1)}%</div>
                 </div>

@@ -39,15 +39,12 @@ export default function Footer() {
                 </div>
                 <div className="flex items-center space-x-3">
                   <span className="w-5 h-5 text-yellow-400">📅</span>
-                  <button
-                    onClick={() => {
-                      const modal = document.getElementById('calendly-modal');
-                      if (modal) modal.style.display = 'block';
-                    }}
+                  <a
+                    href="/login"
                     className="text-gray-300 hover:text-yellow-400 transition-colors duration-200"
                   >
                     {t.footer.bookCall}
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

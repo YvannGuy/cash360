@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
+import Image from 'next/image'
+import Link from 'next/link'
 
 export default function CTASection() {
   const { t } = useLanguage()
@@ -29,7 +31,66 @@ export default function CTASection() {
     }
   }, [])
 
-  const benefitsIcons = ["🛡️", "⏰", "❤️"]
+  const capsules = [
+    {
+      id: 1,
+      image: '/images/logo/capsule1.jpg',
+      title: "L'éducation financière",
+      content: [
+        "Tout ce qu'il faut savoir sur l'argent",
+        "Les bases de la gestion financière",
+        "Deviens maître de tes finances, pas esclave de tes dépenses"
+      ]
+    },
+    {
+      id: 2,
+      image: '/images/logo/capsule2.jpg',
+      title: "Les combats liés à la prospérité",
+      content: [
+        "Démasquer les forces qui combattent la prospérité",
+        "Briser les blocages spirituels et psychologiques pour entrer dans l'abondance",
+        "Triompher des résistances invisibles à la prospérité"
+      ]
+    },
+    {
+      id: 3,
+      image: '/images/logo/capsule3.jpg',
+      title: "Les lois spirituelles liées à l'argent",
+      content: [
+        "L'anatomie financière : Comprendre les portes du corps qui influencent la prospérité",
+        "les 3 niveaux de l'argent",
+        "les principes éternels qui gouvernent la prospérité selon Dieu"
+      ]
+    },
+    {
+      id: 4,
+      image: '/images/logo/capsule4.jpg',
+      title: "La mentalité de Pauvre",
+      content: [
+        "Briser les limites intérieures",
+        "Mon entourage, mon influence, ma richesse",
+        "pourquoi le diable veut que les chrétiens restent pauvres"
+      ]
+    },
+    {
+      id: 5,
+      image: '/images/logo/capsule5.jpg',
+      title: "Épargne et Investissement",
+      content: [
+        "Trouver l'épargne qui te correspond",
+        "Comment faire fructifier ton argent",
+        "Comment garder ton épargne et te préparer pour l'avenir"
+      ]
+    },
+    {
+      id: 6,
+      image: '/images/pack.png',
+      title: "Pack complet des capsules",
+      content: [
+        "Retrouvez l'ensemble des capsules et bénéficiez de -15%"
+      ]
+    }
+  ]
 
   return (
     <section id="cta" className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
@@ -41,9 +102,9 @@ export default function CTASection() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`text-center mb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
               {t.ctaSection.title}{' '}
               <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
@@ -57,57 +118,59 @@ export default function CTASection() {
             </p>
           </div>
 
-          {/* Benefits */}
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 transition-all duration-1000 delay-300 ${
+          {/* Cards Horizontal Scroll */}
+          <div className={`transition-all duration-1000 delay-300 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
-            {t.ctaSection.benefits.map((benefit, index) => (
-              <div
-                key={index}
-                className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/15 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-              >
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300">
-                  <span className="text-white text-xl">{benefitsIcons[index]}</span>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {benefit.title}
-                </h3>
-                <p className="text-gray-300 text-sm">
-                  {benefit.description}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Main CTA */}
-          <div className={`transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-3xl p-8 sm:p-12 text-gray-900 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2">
-              <div className="max-w-2xl mx-auto">
-                <h3 className="text-2xl sm:text-3xl font-bold mb-4">
-                  {t.ctaSection.mainTitle}
-                </h3>
-                
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-                  <button
-                    onClick={() => {
-                      const modal = document.getElementById('calendly-modal');
-                      if (modal) modal.style.display = 'block';
-                    }}
-                    className="group inline-flex items-center px-8 py-4 bg-white text-gray-900 font-bold text-lg rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            <div className="overflow-x-auto pb-6 scrollbar-hide">
+              <div className="flex gap-6 min-w-max">
+                {capsules.map((capsule) => (
+                  <div
+                    key={capsule.id}
+                    className="flex-shrink-0 w-80 bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group flex flex-col"
                   >
-                    <span className="w-5 h-5 mr-2">📅</span>
-                    {t.ctaSection.ctaButton}
-                    <span className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
-                  </button>
-                </div>
+                    {/* Image */}
+                    <div className="relative h-48 w-full overflow-hidden">
+                      <Image
+                        src={capsule.image}
+                        alt={capsule.title}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                    </div>
 
+                    {/* Content */}
+                    <div className="p-6 flex flex-col flex-grow">
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">
+                        {capsule.title}
+                      </h3>
+                      
+                      <ul className="space-y-2 mb-6 flex-grow">
+                        {capsule.content.map((item, index) => (
+                          <li key={index} className="text-sm text-gray-600 flex items-start">
+                            <span className="text-yellow-500 mr-2 mt-1">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* Button */}
+                      <Link
+                        href="/login"
+                        className="block w-full text-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg mt-auto"
+                      >
+                        Je m'inscris
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
           {/* Final Message */}
-          <div className={`mt-12 transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`mt-12 text-center transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
               {t.ctaSection.quote}
             </p>

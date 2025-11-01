@@ -6,7 +6,8 @@ export const translations = {
       about: "À propos",
       analysis: "Analyse personnalisée",
       login: "Connexion",
-      bookCall: "Réserver un appel",
+      bookCall: "Je m'inscris",
+      nosFormations: "Nos formations",
       myAccount: "Mon compte",
       signOut: "Se déconnecter"
     },
@@ -25,9 +26,9 @@ export const translations = {
       subtitle: "Analyse personnalisée + accompagnement spirituel et pratique pour retrouver",
       subtitleHighlight: "équilibre et liberté financière",
       videoDescription: "Faites le point en 60 secondes : découvrez votre équilibre financier et passez à l'action.",
-      ctaPrimary: "Commencer la simulation",
-      ctaSecondary: "Réserver mon appel",
-      cta: "Commencer la simulation"
+      ctaPrimary: "Tester ma situation financière",
+      ctaSecondary: "Je m'inscris",
+      cta: "Tester ma situation financière"
     },
     
     // Signup Form
@@ -165,7 +166,7 @@ export const translations = {
       ],
       ctaTitle: "Prêt(e) à transformer votre relation à l'argent ?",
       ctaSubtitle: "Rejoignez les centaines de personnes qui ont déjà retrouvé l'équilibre financier",
-      ctaButton: "Commencer maintenant"
+      ctaButton: "Je m'inscris"
     },
     
     // Steps Section
@@ -204,14 +205,14 @@ export const translations = {
       ],
       ctaTitle: "Prêt(e) à commencer votre transformation financière ?",
       ctaSubtitle: "Rejoignez les centaines de personnes qui ont déjà retrouvé l'équilibre",
-      ctaButton: "Réserver mon appel"
+      ctaButton: "Je m'inscris"
     },
     
     // Footer
     footer: {
       description: "Reprenez le contrôle de vos finances avec méthode et sérénité. Une approche unique alliant expertise financière et accompagnement spirituel.",
       contact: "cash@cash360.finance",
-      bookCall: "Réserver un appel",
+      bookCall: "Je m'inscris",
       navigation: "Navigation",
       home: "Accueil",
       whyCash360: "Pourquoi Cash360",
@@ -344,7 +345,7 @@ export const translations = {
     ctaSection: {
       title: "Prêt(e) à redonner un sens à vos",
       titleHighlight: "finances",
-      subtitle: "Rejoignez les centaines de personnes qui ont déjà retrouvé l'équilibre financier grâce à l'accompagnement personnalisé de Cash360.",
+      subtitle: "Rejoignez les milliers de personnes qui ont déjà retrouvé l'équilibre financier grâce à l'accompagnement personnalisé de Cash360.",
       benefits: [
         {
           title: "Analyse confidentielle",
@@ -360,16 +361,16 @@ export const translations = {
         }
       ],
       mainTitle: "Le début de votre liberté financière",
-      ctaButton: "Réserver mon appel",
+      ctaButton: "Je m'inscris",
       quote: "\"La prospérité financière commence par une relation saine avec l'argent. Laissez-moi vous accompagner sur ce chemin de transformation.\"",
       quoteAuthor: "— Pasteur Myriam Konan, Fondatrice de Cash360"
     },
     
     // CTA Box
     ctaBox: {
-      defaultTitle: "Réserver mon appel",
+      defaultTitle: "Je m'inscris",
       defaultSubtitle: "Appel bienveillant, confidentiel et sans engagement. Première base pour votre équilibre financier.",
-      button: "Je réserve mon appel"
+      button: "Je m'inscris"
     },
     
     // Section Analyse
@@ -422,6 +423,55 @@ export const translations = {
       messageResetSent: "Lien de réinitialisation envoyé par email"
     },
 
+    // Simulation Page
+    simulation: {
+      backToHome: "Retour à l'accueil",
+      title: "Testez votre équilibre financier en 60 secondes 🕒",
+      subtitle: "Voyez en un instant où part votre argent et quel pourcentage vous pouvez épargner chaque mois.",
+      privacyNote: "Calcul local sur votre appareil. Vos données ne sont ni stockées ni transmises.",
+      formTitle: "Vos informations financières",
+      monthlyIncome: "Revenus mensuels",
+      monthlyIncomeTooltip: "Tout l'argent reçu chaque mois (salaire, aides, dons…).",
+      fixedExpenses: "Dépenses fixes",
+      fixedExpensesTooltip: "Dépenses qui changent peu : loyer, crédits, assurances, internet, dîme, abonnements…",
+      variableExpenses: "Dépenses variables",
+      variableExpensesTooltip: "Dépenses qui varient : courses, transport, restaurants, vêtements, petits plaisirs…",
+      calculateButton: "Calculer mon équilibre",
+      emailGateTitle: "Votre email pour recevoir vos résultats",
+      emailLabel: "Email",
+      emailPlaceholder: "votre@email.com",
+      consentText: "J'accepte que mes données soient utilisées pour me contacter concernant cette simulation et les services Cash360.",
+      submitButton: "Voir mes résultats",
+      submitting: "Envoi...",
+      cancelButton: "Annuler",
+      errorIncome: "Veuillez saisir vos revenus mensuels",
+      errorExpenses: "Veuillez saisir vos dépenses",
+      errorEmail: "Veuillez saisir votre email et accepter le traitement de vos données",
+      errorSubmit: "Une erreur est survenue. Veuillez réessayer.",
+      results: {
+        healthy: {
+          title: "Bravo ! Vos finances sont plutôt bien équilibrées",
+          message: "Il vous reste une marge chaque mois. Pour avancer vers une vraie liberté financière, transformons cette base en stratégie : épargne planifiée, priorités claires, projets.",
+          ctaText: "Prenez 15 minutes pour identifier comment faire fructifier ce bon équilibre."
+        },
+        improve: {
+          title: "Votre budget tient, mais il commence à être tendu",
+          message: "Avec quelques ajustements simples (abonnements, variables, priorités), vous pouvez libérer une vraie marge dès ce mois-ci.",
+          ctaText: "En 15 minutes, identifions 2 à 3 leviers immédiats pour respirer financièrement."
+        },
+        unbalanced: {
+          title: "Votre budget est actuellement trop serré",
+          message: "Ce n'est pas une fatalité : avec une méthode pas à pas, vous pouvez reprendre le contrôle et retrouver la paix financière.",
+          ctaText: "En 15 minutes, clarifions l'origine du déséquilibre et définissons les premières actions concrètes."
+        }
+      },
+      stats: {
+        monthlySavings: "Épargne mensuelle",
+        fixedCharges: "Charges fixes",
+        variableExpenses: "Dépenses variables"
+      }
+    },
+
     // Dashboard Page
     dashboard: {
       title: "Tableau de bord - Mes analyses",
@@ -459,7 +509,7 @@ export const translations = {
       completedTitle: "Analyse terminée - Prêt pour le RDV",
       completedText: "Votre analyse est terminée, prenez rendez-vous pour la présentation",
       downloadPdf: "Télécharger le PDF",
-      bookAppointment: "Prendre RDV",
+      bookAppointment: "Je m'inscris",
       contactWhatsApp: "Contacter par WhatsApp",
       whatsAppPopup: {
         title: "Contacter l'équipe Cash360",
@@ -580,7 +630,8 @@ export const translations = {
       about: "About",
       analysis: "Personalized analysis",
       login: "Login",
-      bookCall: "Book a call",
+      bookCall: "Sign up",
+      nosFormations: "Our trainings",
       myAccount: "My account",
       signOut: "Sign out"
     },
@@ -599,9 +650,9 @@ export const translations = {
       subtitle: "Personalized analysis + spiritual and practical support to regain",
       subtitleHighlight: "balance and financial freedom",
       videoDescription: "Take stock in 60 seconds: discover your financial balance and take action.",
-      ctaPrimary: "Start the simulation",
-      ctaSecondary: "Book my call",
-      cta: "Start the simulation"
+      ctaPrimary: "Test my financial situation",
+      ctaSecondary: "Sign up",
+      cta: "Test my financial situation"
     },
     
     // Signup Form
@@ -739,7 +790,7 @@ export const translations = {
       ],
       ctaTitle: "Ready to transform your relationship with money?",
       ctaSubtitle: "Join hundreds of people who have already regained financial balance",
-      ctaButton: "Start now"
+      ctaButton: "Sign up"
     },
     
     // Steps Section
@@ -778,14 +829,15 @@ export const translations = {
       ],
       ctaTitle: "Ready to start your financial transformation?",
       ctaSubtitle: "Join hundreds of people who have already regained balance",
-      ctaButton: "Book my call"
+      ctaButton: "Sign up"
     },
     
     // Footer
     footer: {
       description: "Take control of your finances with method and serenity. A unique approach combining financial expertise and spiritual support.",
       contact: "cash@cash360.finance",
-      bookCall: "Book a call",
+      bookCall: "Sign up",
+      nosFormations: "Our trainings",
       navigation: "Navigation",
       home: "Home",
       whyCash360: "Why Cash360",
@@ -934,16 +986,16 @@ export const translations = {
         }
       ],
       mainTitle: "The beginning of your financial freedom",
-      ctaButton: "Book my call",
+      ctaButton: "Sign up",
       quote: "\"Financial prosperity begins with a healthy relationship with money. Let me accompany you on this path of transformation.\"",
       quoteAuthor: "— Pastor Myriam Konan, Founder of Cash360"
     },
     
     // CTA Box
     ctaBox: {
-      defaultTitle: "Book my call",
+      defaultTitle: "Sign up",
       defaultSubtitle: "Caring, confidential and commitment-free call. First step for your financial balance.",
-      button: "I book my call"
+      button: "Sign up"
     },
     
     // Section Analyse
@@ -996,6 +1048,55 @@ export const translations = {
       messageResetSent: "Reset link sent by email"
     },
 
+    // Simulation Page
+    simulation: {
+      backToHome: "Back to home",
+      title: "Test your financial balance in 60 seconds 🕒",
+      subtitle: "See at a glance where your money goes and what percentage you can save each month.",
+      privacyNote: "Local calculation on your device. Your data is neither stored nor transmitted.",
+      formTitle: "Your financial information",
+      monthlyIncome: "Monthly income",
+      monthlyIncomeTooltip: "All money received each month (salary, benefits, donations…).",
+      fixedExpenses: "Fixed expenses",
+      fixedExpensesTooltip: "Expenses that change little: rent, loans, insurance, internet, tithe, subscriptions…",
+      variableExpenses: "Variable expenses",
+      variableExpensesTooltip: "Expenses that vary: groceries, transport, restaurants, clothing, small pleasures…",
+      calculateButton: "Calculate my balance",
+      emailGateTitle: "Your email to receive your results",
+      emailLabel: "Email",
+      emailPlaceholder: "your@email.com",
+      consentText: "I accept that my data will be used to contact me regarding this simulation and Cash360 services.",
+      submitButton: "View my results",
+      submitting: "Sending...",
+      cancelButton: "Cancel",
+      errorIncome: "Please enter your monthly income",
+      errorExpenses: "Please enter your expenses",
+      errorEmail: "Please enter your email and accept the processing of your data",
+      errorSubmit: "An error occurred. Please try again.",
+      results: {
+        healthy: {
+          title: "Congratulations! Your finances are fairly well balanced",
+          message: "You have a margin left each month. To move towards true financial freedom, let's transform this base into a strategy: planned savings, clear priorities, projects.",
+          ctaText: "Take 15 minutes to identify how to make this good balance grow."
+        },
+        improve: {
+          title: "Your budget holds, but it's starting to get tight",
+          message: "With a few simple adjustments (subscriptions, variables, priorities), you can free up real margin this month.",
+          ctaText: "In 15 minutes, let's identify 2 to 3 immediate levers to breathe financially."
+        },
+        unbalanced: {
+          title: "Your budget is currently too tight",
+          message: "It's not inevitable: with a step-by-step method, you can regain control and find financial peace.",
+          ctaText: "In 15 minutes, let's clarify the origin of the imbalance and define the first concrete actions."
+        }
+      },
+      stats: {
+        monthlySavings: "Monthly savings",
+        fixedCharges: "Fixed charges",
+        variableExpenses: "Variable expenses"
+      }
+    },
+
     // Dashboard Page
     dashboard: {
       title: "Dashboard - My Analyses",
@@ -1033,7 +1134,7 @@ export const translations = {
       completedTitle: "Analysis completed - Ready for appointment",
       completedText: "Your analysis is complete, schedule an appointment for the presentation",
       downloadPdf: "Download PDF",
-      bookAppointment: "Book appointment",
+      bookAppointment: "Sign up",
       contactWhatsApp: "Contact via WhatsApp",
       whatsAppPopup: {
         title: "Contact Cash360 team",
@@ -1154,7 +1255,8 @@ export const translations = {
       about: "Acerca de",
       analysis: "Análisis personalizado",
       login: "Iniciar sesión",
-      bookCall: "Reservar una llamada",
+      bookCall: "Inscribirse",
+      nosFormations: "Nuestras formaciones",
       myAccount: "Mi cuenta",
       signOut: "Cerrar sesión"
     },
@@ -1173,9 +1275,9 @@ export const translations = {
       subtitle: "Análisis personalizado + acompañamiento espiritual y práctico para recuperar",
       subtitleHighlight: "equilibrio y libertad financiera",
       videoDescription: "Haz un balance en 60 segundos: descubre tu equilibrio financiero y pasa a la acción.",
-      ctaPrimary: "Comenzar la simulación",
-      ctaSecondary: "Reservar mi llamada",
-      cta: "Comenzar la simulación"
+      ctaPrimary: "Probar mi situación financiera",
+      ctaSecondary: "Inscribirse",
+      cta: "Probar mi situación financiera"
     },
     
     // Signup Form
@@ -1351,14 +1453,15 @@ export const translations = {
       ],
       ctaTitle: "¿Listo(a) para comenzar tu transformación financiera?",
       ctaSubtitle: "Únete a cientos de personas que ya han recuperado el equilibrio",
-      ctaButton: "Reservar mi llamada"
+      ctaButton: "Inscribirse"
     },
     
     // Footer
     footer: {
       description: "Toma el control de tus finanzas con método y serenidad. Un enfoque único que combina experiencia financiera y apoyo espiritual.",
       contact: "cash@cash360.finance",
-      bookCall: "Reservar una llamada",
+      bookCall: "Inscribirse",
+      nosFormations: "Nuestras formaciones",
       navigation: "Navegación",
       home: "Inicio",
       whyCash360: "Por qué Cash360",
@@ -1507,16 +1610,16 @@ export const translations = {
         }
       ],
       mainTitle: "El comienzo de tu libertad financiera",
-      ctaButton: "Reservar mi llamada",
+      ctaButton: "Inscribirse",
       quote: "\"La prosperidad financiera comienza con una relación sana con el dinero. Déjame acompañarte en este camino de transformación.\"",
       quoteAuthor: "— Pastora Myriam Konan, Fundadora de Cash360"
     },
     
     // CTA Box
     ctaBox: {
-      defaultTitle: "Reservar mi llamada",
+      defaultTitle: "Inscribirse",
       defaultSubtitle: "Llamada cuidadosa, confidencial y sin compromiso. Primera base para tu equilibrio financiero.",
-      button: "Reservo mi llamada"
+      button: "Inscribirse"
     },
     
     // Section Analyse
@@ -1569,6 +1672,55 @@ export const translations = {
       messageResetSent: "Enlace de restablecimiento enviado por correo"
     },
 
+    // Simulation Page
+    simulation: {
+      backToHome: "Volver al inicio",
+      title: "Prueba tu equilibrio financiero en 60 segundos 🕒",
+      subtitle: "Ve en un instante dónde va tu dinero y qué porcentaje puedes ahorrar cada mes.",
+      privacyNote: "Cálculo local en tu dispositivo. Tus datos no se almacenan ni se transmiten.",
+      formTitle: "Tu información financiera",
+      monthlyIncome: "Ingresos mensuales",
+      monthlyIncomeTooltip: "Todo el dinero recibido cada mes (salario, ayudas, donaciones…).",
+      fixedExpenses: "Gastos fijos",
+      fixedExpensesTooltip: "Gastos que cambian poco: alquiler, créditos, seguros, internet, diezmo, suscripciones…",
+      variableExpenses: "Gastos variables",
+      variableExpensesTooltip: "Gastos que varían: compras, transporte, restaurantes, ropa, pequeños placeres…",
+      calculateButton: "Calcular mi equilibrio",
+      emailGateTitle: "Tu correo para recibir tus resultados",
+      emailLabel: "Correo electrónico",
+      emailPlaceholder: "tu@email.com",
+      consentText: "Acepto que mis datos sean utilizados para contactarme con respecto a esta simulación y los servicios Cash360.",
+      submitButton: "Ver mis resultados",
+      submitting: "Enviando...",
+      cancelButton: "Cancelar",
+      errorIncome: "Por favor ingresa tus ingresos mensuales",
+      errorExpenses: "Por favor ingresa tus gastos",
+      errorEmail: "Por favor ingresa tu correo electrónico y acepta el procesamiento de tus datos",
+      errorSubmit: "Ocurrió un error. Por favor intenta de nuevo.",
+      results: {
+        healthy: {
+          title: "¡Felicitaciones! Tus finanzas están bastante bien equilibradas",
+          message: "Te queda un margen cada mes. Para avanzar hacia una verdadera libertad financiera, transformemos esta base en estrategia: ahorro planificado, prioridades claras, proyectos.",
+          ctaText: "Toma 15 minutos para identificar cómo hacer crecer este buen equilibrio."
+        },
+        improve: {
+          title: "Tu presupuesto funciona, pero comienza a estar ajustado",
+          message: "Con algunos ajustes simples (suscripciones, variables, prioridades), puedes liberar un margen real este mes.",
+          ctaText: "En 15 minutos, identifiquemos de 2 a 3 palancas inmediatas para respirar financieramente."
+        },
+        unbalanced: {
+          title: "Tu presupuesto está actualmente demasiado ajustado",
+          message: "No es inevitable: con un método paso a paso, puedes recuperar el control y encontrar la paz financiera.",
+          ctaText: "En 15 minutos, aclaremos el origen del desequilibrio y definamos las primeras acciones concretas."
+        }
+      },
+      stats: {
+        monthlySavings: "Ahorro mensual",
+        fixedCharges: "Cargas fijas",
+        variableExpenses: "Gastos variables"
+      }
+    },
+
     // Dashboard Page
     dashboard: {
       title: "Panel de control - Mis análisis",
@@ -1606,7 +1758,7 @@ export const translations = {
       completedTitle: "Análisis completado - Listo para cita",
       completedText: "Tu análisis está completo, agenda una cita para la presentación",
       downloadPdf: "Descargar PDF",
-      bookAppointment: "Reservar cita",
+      bookAppointment: "Inscribirse",
       contactWhatsApp: "Contactar por WhatsApp",
       whatsAppPopup: {
         title: "Contactar al equipo Cash360",
@@ -1727,7 +1879,8 @@ export const translations = {
       about: "Sobre",
       analysis: "Análise personalizada",
       login: "Entrar",
-      bookCall: "Reservar uma chamada",
+      bookCall: "Inscrever-se",
+      nosFormations: "Nossas formações",
       myAccount: "Minha conta",
       signOut: "Sair"
     },
@@ -1746,9 +1899,9 @@ export const translations = {
       subtitle: "Análise personalizada + acompanhamento espiritual e prático para recuperar",
       subtitleHighlight: "equilíbrio e liberdade financeira",
       videoDescription: "Faça um balanço em 60 segundos: descubra seu equilíbrio financeiro e passe à ação.",
-      ctaPrimary: "Começar a simulação",
-      ctaSecondary: "Reservar minha chamada",
-      cta: "Começar a simulação"
+      ctaPrimary: "Testar minha situação financeira",
+      ctaSecondary: "Inscrever-se",
+      cta: "Testar minha situação financeira"
     },
     
     // Signup Form
@@ -1924,14 +2077,15 @@ export const translations = {
       ],
       ctaTitle: "Pronto(a) para começar sua transformação financeira?",
       ctaSubtitle: "Junte-se a centenas de pessoas que já recuperaram o equilíbrio",
-      ctaButton: "Reservar minha chamada"
+      ctaButton: "Inscrever-se"
     },
     
     // Footer
     footer: {
       description: "Assuma o controle de suas finanças com método e serenidade. Uma abordagem única que combina experiência financeira e apoio espiritual.",
       contact: "cash@cash360.finance",
-      bookCall: "Reservar uma chamada",
+      bookCall: "Inscrever-se",
+      nosFormations: "Nossas formações",
       navigation: "Navegação",
       home: "Início",
       whyCash360: "Por que Cash360",
@@ -2080,14 +2234,14 @@ export const translations = {
         }
       ],
       mainTitle: "O início de sua liberdade financeira",
-      ctaButton: "Reservar minha chamada",
+      ctaButton: "Inscrever-se",
       quote: "\"A prosperidade financeira começa com uma relação saudável com o dinheiro. Deixe-me acompanhá-lo neste caminho de transformação.\"",
       quoteAuthor: "— Pastora Myriam Konan, Fundadora da Cash360"
     },
     
     // CTA Box
     ctaBox: {
-      defaultTitle: "Reservar minha chamada",
+      defaultTitle: "Inscrever-se",
       defaultSubtitle: "Chamada cuidadosa, confidencial e sem compromisso. Primeira base para seu equilíbrio financeiro.",
       button: "Eu reservo minha chamada"
     },
@@ -2142,6 +2296,55 @@ export const translations = {
       messageResetSent: "Link de redefinição enviado por e-mail"
     },
 
+    // Simulation Page
+    simulation: {
+      backToHome: "Voltar ao início",
+      title: "Teste seu equilíbrio financeiro em 60 segundos 🕒",
+      subtitle: "Veja em um instante para onde vai seu dinheiro e qual porcentagem você pode economizar a cada mês.",
+      privacyNote: "Cálculo local no seu dispositivo. Seus dados não são armazenados nem transmitidos.",
+      formTitle: "Suas informações financeiras",
+      monthlyIncome: "Renda mensal",
+      monthlyIncomeTooltip: "Todo o dinheiro recebido a cada mês (salário, benefícios, doações…).",
+      fixedExpenses: "Despesas fixas",
+      fixedExpensesTooltip: "Despesas que mudam pouco: aluguel, empréstimos, seguros, internet, dízimo, assinaturas…",
+      variableExpenses: "Despesas variáveis",
+      variableExpensesTooltip: "Despesas que variam: compras, transporte, restaurantes, roupas, pequenos prazeres…",
+      calculateButton: "Calcular meu equilíbrio",
+      emailGateTitle: "Seu e-mail para receber seus resultados",
+      emailLabel: "E-mail",
+      emailPlaceholder: "seu@email.com",
+      consentText: "Aceito que meus dados sejam usados para me contatar sobre esta simulação e os serviços Cash360.",
+      submitButton: "Ver meus resultados",
+      submitting: "Enviando...",
+      cancelButton: "Cancelar",
+      errorIncome: "Por favor, insira sua renda mensal",
+      errorExpenses: "Por favor, insira suas despesas",
+      errorEmail: "Por favor, insira seu e-mail e aceite o processamento de seus dados",
+      errorSubmit: "Ocorreu um erro. Por favor, tente novamente.",
+      results: {
+        healthy: {
+          title: "Parabéns! Suas finanças estão bastante bem equilibradas",
+          message: "Sobra uma margem a cada mês. Para avançar em direção à verdadeira liberdade financeira, transformemos esta base em estratégia: economia planejada, prioridades claras, projetos.",
+          ctaText: "Tome 15 minutos para identificar como fazer este bom equilíbrio crescer."
+        },
+        improve: {
+          title: "Seu orçamento funciona, mas está começando a ficar apertado",
+          message: "Com alguns ajustes simples (assinaturas, variáveis, prioridades), você pode liberar uma margem real neste mês.",
+          ctaText: "Em 15 minutos, identifiquemos de 2 a 3 alavancas imediatas para respirar financeiramente."
+        },
+        unbalanced: {
+          title: "Seu orçamento está atualmente muito apertado",
+          message: "Não é inevitável: com um método passo a passo, você pode recuperar o controle e encontrar a paz financeira.",
+          ctaText: "Em 15 minutos, esclareçamos a origem do desequilíbrio e definamos as primeiras ações concretas."
+        }
+      },
+      stats: {
+        monthlySavings: "Economia mensal",
+        fixedCharges: "Cargas fixas",
+        variableExpenses: "Despesas variáveis"
+      }
+    },
+
     // Dashboard Page
     dashboard: {
       title: "Painel de controle - Minhas análises",
@@ -2179,7 +2382,7 @@ export const translations = {
       completedTitle: "Análise concluída - Pronto para agendamento",
       completedText: "Sua análise está completa, agende uma consulta para a apresentação",
       downloadPdf: "Baixar PDF",
-      bookAppointment: "Agendar consulta",
+      bookAppointment: "Inscrever-se",
       contactWhatsApp: "Contatar via WhatsApp",
       whatsAppPopup: {
         title: "Contatar equipe Cash360",
