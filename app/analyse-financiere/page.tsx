@@ -44,7 +44,7 @@ export default function AnalyseFinancierePage() {
     consentement: false
   })
 
-  const supabase = createClientBrowser()
+  const [supabase, setSupabase] = useState<any>(null)
 
   // Fonction pour extraire les initiales de l'email
   const getInitials = (email: string | undefined): string => {
@@ -59,9 +59,13 @@ export default function AnalyseFinancierePage() {
 
   useEffect(() => {
     setMounted(true)
+    // Initialiser Supabase côté client uniquement
+    setSupabase(createClientBrowser())
   }, [])
 
   useEffect(() => {
+    if (!supabase) return
+    
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -77,9 +81,10 @@ export default function AnalyseFinancierePage() {
     }
 
     checkUser()
-  }, [supabase.auth, router])
+  }, [supabase, router])
 
   const handleSignOut = async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
     router.push('/')
   }
@@ -126,6 +131,8 @@ export default function AnalyseFinancierePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!supabase) return
     
     if (!validateForm()) {
       return
