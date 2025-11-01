@@ -26,7 +26,14 @@ export interface AnalysisFile {
 }
 
 export class AnalysisService {
-  private supabase = createClientBrowser()
+  private _supabase: ReturnType<typeof createClientBrowser> | null = null
+
+  private get supabase() {
+    if (!this._supabase) {
+      this._supabase = createClientBrowser()
+    }
+    return this._supabase
+  }
 
   async createAnalysis(data: {
     ticket: string
@@ -254,7 +261,14 @@ export interface UserCapsuleRecord {
 }
 
 export class CapsulesService {
-  private supabase = createClientBrowser()
+  private _supabase: ReturnType<typeof createClientBrowser> | null = null
+
+  private get supabase() {
+    if (!this._supabase) {
+      this._supabase = createClientBrowser()
+    }
+    return this._supabase
+  }
 
   async getUserCapsules(): Promise<UserCapsuleRecord[]> {
     try {
