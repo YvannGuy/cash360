@@ -124,6 +124,12 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const getInitials = (email?: string) => {
+    if (!email) return 'A'
+    const parts = email.split('@')[0]
+    return parts.substring(0, 2).toUpperCase()
+  }
+
   const handleUpdateStatus = async (analysisId: string, newStatus: string, newProgress: number) => {
     try {
       const response = await fetch('/api/admin/analyses', {
@@ -245,58 +251,70 @@ export default function AdminDashboardPage() {
 
       {/* Main Content */}
       <div className="flex-1 ml-64">
-        {/* Header - à conserver tel quel */}
-        <header className="bg-[#012F4E] text-white px-6 py-4 flex items-center justify-between shadow-sm">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-lg font-bold">Cash360 Admin</h1>
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-white/10 text-white placeholder-white/70 px-4 py-2 rounded-lg border border-white/20 focus:outline-none focus:border-[#00A1C6] w-80"
-              />
-              <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70"></i>
-            </div>
-            
-            <div className="relative">
-              <i className="fas fa-bell text-xl cursor-pointer hover:text-[#00A1C6]"></i>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-            </div>
-            
-            <div className="relative admin-menu-container">
-              <div className="flex items-center space-x-2 cursor-pointer hover:bg-white/10 px-3 py-2 rounded-lg">
-                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" alt="Admin" className="w-8 h-8 rounded-full" />
-                <span className="font-medium">Admin</span>
-                <i className="fas fa-chevron-down text-sm"></i>
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200 relative z-[9998]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
+                <button
+                  onClick={() => router.push('/')}
+                  className="cursor-pointer"
+                >
+                  <Image
+                    src="/images/logo/logofinal.png"
+                    alt="Cash360"
+                    width={540}
+                    height={540}
+                    className="h-16 sm:h-32 md:h-42 w-auto hover:opacity-80 transition-opacity duration-200"
+                  />
+                </button>
               </div>
               
-              {showAdminMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
-                  <button
-                    onClick={() => {
-                      router.push('/admin/dashboard')
-                      setShowAdminMenu(false)
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Mon compte
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleSignOut()
-                      setShowAdminMenu(false)
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    Se déconnecter
-                  </button>
-                </div>
-              )}
+              {/* Informations de connexion */}
+              <div className="flex items-center gap-1 sm:gap-4 mr-2 sm:mr-20">
+                {adminSession && (
+                  <div className="flex items-center gap-1 sm:gap-3">
+                    <div className="relative admin-menu-container z-[9999]">
+                      <button
+                        onClick={() => setShowAdminMenu(!showAdminMenu)}
+                        className="flex items-center space-x-1 sm:space-x-2 bg-gray-50 px-2 sm:px-3 py-1 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                      >
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-xs sm:text-sm font-medium text-gray-700">
+                          {getInitials(adminSession.email)}
+                        </span>
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      
+                      {showAdminMenu && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
+                          <button
+                            onClick={() => {
+                              router.push('/admin/dashboard')
+                              setShowAdminMenu(false)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Mon compte
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleSignOut()
+                              setShowAdminMenu(false)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                          >
+                            Se déconnecter
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>
