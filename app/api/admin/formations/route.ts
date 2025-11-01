@@ -10,56 +10,67 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Pour l'instant, générons des données de démo en attendant la vraie table
-    // TODO: remplacer par une vraie table 'formations' ou 'training_sessions' dans Supabase
-    
-    const demoFormations = [
-      {
-        id: '1',
-        title: "L'éducation financière",
-        capsule_id: 'education-financiere',
-        capsule_number: 1,
-        date: '2025-11-05',
-        time: '19:30',
-        inscrits: 18,
-        zoom_link: 'https://zoom.us/j/123456789',
-        status: 'en_ligne'
-      },
-      {
-        id: '2',
-        title: 'La mentalité de pauvreté',
-        capsule_id: 'mentalite-pauvrete',
-        capsule_number: 2,
-        date: '2025-11-08',
-        time: '20:00',
-        inscrits: 24,
-        zoom_link: 'https://zoom.us/j/987654321',
-        status: 'a_venir'
-      },
-      {
-        id: '3',
-        title: 'Épargne & investissement',
-        capsule_id: 'epargne-investissement',
-        capsule_number: 3,
-        date: '2025-11-11',
-        time: '18:00',
-        inscrits: 12,
-        zoom_link: 'https://zoom.us/j/456789123',
-        status: 'termine'
-      }
-    ]
+    // Récupérer les formations depuis la base de données
+    const { data: formations, error: formationsError } = await supabaseAdmin!
+      .from('formations')
+      .select('*')
+      .order('date_scheduled', { ascending: false })
+
+    if (formationsError) {
+      console.error('Erreur lors de la récupération des formations:', formationsError)
+      return NextResponse.json(
+        { error: formationsError.message },
+        { status: 500 }
+      )
+    }
+
+    // Adapter le format des données
+    const adaptedFormations = (formations || []).map((formation: any) => ({
+      id: formation.id,
+      title: formation.session_name,
+      capsule_id: formation.capsule_id,
+      capsule_number: formation.capsule_number || 0,
+      date: formation.date_scheduled,
+      time: formation.time_scheduled,
+      inscrits: formation.inscrits || 0,
+      zoom_link: formation.zoom_link,
+      status: formation.status
+    }))
+
+    // Compter les inscriptions pour chaque formation
+    const formationIds = adaptedFormations.map(f => f.id)
+    const { data: registrations } = await supabaseAdmin!
+      .from('formation_registrations')
+      .select('formation_id')
+      .in('formation_id', formationIds)
+
+    // Compter les inscriptions par formation
+    const inscriptionsByFormation = (registrations || []).reduce((acc: any, reg) => {
+      acc[reg.formation_id] = (acc[reg.formation_id] || 0) + 1
+      return acc
+    }, {})
+
+    // Ajouter les comptes d'inscriptions
+    const formationsWithCounts = adaptedFormations.map(f => ({
+      ...f,
+      inscrits: inscriptionsByFormation[f.id] || 0
+    }))
 
     // Calculer les statistiques
+    const now = new Date()
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+
     const stats = {
-      sessionsThisMonth: 12,
-      totalRegistered: 248,
-      participationRate: 78,
-      sessionsThisWeek: 3
+      sessionsThisMonth: formationsWithCounts.filter(f => new Date(f.date) >= firstDayOfMonth).length,
+      totalRegistered: Object.values(inscriptionsByFormation).reduce((sum: any, count) => sum + count, 0),
+      participationRate: 0, // TODO: calculer depuis les données de présence
+      sessionsThisWeek: formationsWithCounts.filter(f => new Date(f.date) >= oneWeekAgo).length
     }
 
     return NextResponse.json({
       success: true,
-      formations: demoFormations,
+      formations: formationsWithCounts,
       stats
     })
 

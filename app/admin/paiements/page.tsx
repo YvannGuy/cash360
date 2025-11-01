@@ -17,6 +17,13 @@ export default function AdminPaiementsPage() {
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [payments, setPayments] = useState<any[]>([])
+  const [stats, setStats] = useState<any>({
+    monthlyRevenue: 0,
+    cumulativeRevenue: 0,
+    transactions: 0,
+    failureRate: 0,
+    averageBasket: 0
+  })
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -75,6 +82,13 @@ export default function AdminPaiementsPage() {
       const data = await response.json()
       if (data.success) {
         setPayments(data.payments || [])
+        setStats(data.stats || {
+          monthlyRevenue: 0,
+          cumulativeRevenue: 0,
+          transactions: 0,
+          failureRate: 0,
+          averageBasket: 0
+        })
       }
     } catch (error) {
       console.error('Erreur lors du chargement des paiements:', error)
@@ -82,14 +96,15 @@ export default function AdminPaiementsPage() {
   }
 
   const handleExportCSV = () => {
-    const headers = ['Utilisateur', 'Type', 'Montant', 'Statut', 'Méthode', 'Date']
+    const headers = ['Utilisateur', 'Email', 'Type', 'Montant', 'Statut', 'Méthode', 'Date']
     const rows = payments.map((payment: any) => [
       payment.user_name || '',
-      payment.type || '',
+      payment.user_email || '',
+      payment.type_label || payment.payment_type || '',
       `${payment.amount || 0}€`,
       payment.status || '',
       payment.method || '',
-      payment.date || ''
+      payment.created_at ? new Date(payment.created_at).toLocaleDateString('fr-FR') : ''
     ])
     
     const csvContent = [
@@ -113,15 +128,14 @@ export default function AdminPaiementsPage() {
   const handleGenerateMonthlyReport = () => {
     const now = new Date()
     const month = now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
-    const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
     
     const monthlyPayments = payments.filter((payment: any) => {
-      const paymentDate = new Date(payment.date)
-      return paymentDate >= firstDay && paymentDate <= lastMonth
+      const paymentDate = new Date(payment.created_at)
+      return paymentDate >= firstDay
     })
     
-    const totalAmount = monthlyPayments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0)
+    const totalAmount = monthlyPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount || 0), 0)
     const totalTransactions = monthlyPayments.length
     
     const report = {
@@ -240,7 +254,7 @@ export default function AdminPaiementsPage() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">€12,450</h3>
+              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">€{stats.monthlyRevenue.toFixed(2)}</h3>
               <p className="text-gray-600 text-sm">Revenu mensuel</p>
             </div>
 
@@ -252,7 +266,7 @@ export default function AdminPaiementsPage() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">€89,320</h3>
+              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">€{stats.cumulativeRevenue.toFixed(2)}</h3>
               <p className="text-gray-600 text-sm">Revenu cumulé</p>
             </div>
 
@@ -264,7 +278,7 @@ export default function AdminPaiementsPage() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">1,247</h3>
+              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">{stats.transactions}</h3>
               <p className="text-gray-600 text-sm">Transactions</p>
             </div>
 
@@ -276,7 +290,7 @@ export default function AdminPaiementsPage() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">2.3%</h3>
+              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">{stats.failureRate.toFixed(1)}%</h3>
               <p className="text-gray-600 text-sm">Taux d'échec</p>
             </div>
 
@@ -288,7 +302,7 @@ export default function AdminPaiementsPage() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">€67.50</h3>
+              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">€{stats.averageBasket.toFixed(2)}</h3>
               <p className="text-gray-600 text-sm">Panier moyen</p>
             </div>
           </div>
