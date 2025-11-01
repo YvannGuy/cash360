@@ -270,17 +270,9 @@ export default function AdminAnalysesPage() {
         {/* Main Content */}
         <main className="p-6">
           {/* Page Title */}
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-[#012F4E] mb-2">Analyses financières</h1>
-              <p className="text-gray-600">Suivez les demandes d'analyse, téléversez les rapports PDF et assurez la qualité des suivis utilisateurs.</p>
-            </div>
-            <button className="bg-[#00A1C6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#0089a3] transition-colors flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Nouvelle analyse
-            </button>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-[#012F4E] mb-2">Analyses financières</h1>
+            <p className="text-gray-600">Suivez les demandes d'analyse, téléversez les rapports PDF et assurez la qualité des suivis utilisateurs.</p>
           </div>
 
           {/* Search and Filters */}

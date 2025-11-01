@@ -269,14 +269,9 @@ export default function AdminUsersPage() {
         {/* Main Content */}
         <main className="p-6">
           {/* Page Title */}
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-[#012F4E] mb-2">Utilisateurs</h1>
-              <p className="text-gray-600">Gérez les comptes utilisateurs, leurs analyses et leurs relevés bancaires.</p>
-            </div>
-            <button className="bg-[#00A1C6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#0089a3] transition-colors">
-              + Ajouter un utilisateur
-            </button>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-[#012F4E] mb-2">Utilisateurs</h1>
+            <p className="text-gray-600">Gérez les comptes utilisateurs, leurs analyses et leurs relevés bancaires.</p>
           </div>
 
           {/* Search and Filters */}
