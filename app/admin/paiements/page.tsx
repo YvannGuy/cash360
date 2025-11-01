@@ -16,6 +16,7 @@ export default function AdminPaiementsPage() {
   const [loading, setLoading] = useState(true)
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [showAdminMenu, setShowAdminMenu] = useState(false)
+  const [payments, setPayments] = useState<any[]>([])
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -60,6 +61,88 @@ export default function AdminPaiementsPage() {
       return (parts[0][0] + parts[1][0]).toUpperCase()
     }
     return email.substring(0, 2).toUpperCase()
+  }
+
+  useEffect(() => {
+    if (adminSession?.isAdmin) {
+      loadPayments()
+    }
+  }, [adminSession])
+
+  const loadPayments = async () => {
+    try {
+      const response = await fetch('/api/admin/paiements')
+      const data = await response.json()
+      if (data.success) {
+        setPayments(data.payments || [])
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des paiements:', error)
+    }
+  }
+
+  const handleExportCSV = () => {
+    const headers = ['Utilisateur', 'Type', 'Montant', 'Statut', 'Méthode', 'Date']
+    const rows = payments.map((payment: any) => [
+      payment.user_name || '',
+      payment.type || '',
+      `${payment.amount || 0}€`,
+      payment.status || '',
+      payment.method || '',
+      payment.date || ''
+    ])
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `paiements_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleGenerateMonthlyReport = () => {
+    const now = new Date()
+    const month = now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+    const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    
+    const monthlyPayments = payments.filter((payment: any) => {
+      const paymentDate = new Date(payment.date)
+      return paymentDate >= firstDay && paymentDate <= lastMonth
+    })
+    
+    const totalAmount = monthlyPayments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0)
+    const totalTransactions = monthlyPayments.length
+    
+    const report = {
+      month,
+      totalAmount,
+      totalTransactions,
+      payments: monthlyPayments
+    }
+    
+    const jsonContent = JSON.stringify(report, null, 2)
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `rapport_mensuel_${month}.json`)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   if (loading) {
@@ -118,19 +201,28 @@ export default function AdminPaiementsPage() {
               <p className="text-gray-600">Suivez et gérez toutes les transactions effectuées sur Cash380 (analyses, capsules, formations).</p>
             </div>
             <div className="flex gap-3">
-              <button className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors flex items-center gap-2">
+              <button 
+                onClick={loadPayments}
+                className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors flex items-center gap-2"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Actualiser
               </button>
-              <button className="bg-white text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-300">
+              <button 
+                onClick={handleExportCSV}
+                className="bg-white text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-300"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 Exporter CSV
               </button>
-              <button className="bg-[#FEBE02] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e6a802] transition-colors flex items-center gap-2">
+              <button 
+                onClick={handleGenerateMonthlyReport}
+                className="bg-[#FEBE02] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e6a802] transition-colors flex items-center gap-2"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>

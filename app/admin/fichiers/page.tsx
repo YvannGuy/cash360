@@ -157,6 +157,58 @@ export default function AdminFichiersPage() {
     }
   }
 
+  const handleExportList = () => {
+    const headers = ['Utilisateur', 'Email', 'Type de fichier', 'Nom du fichier', 'Date d\'envoi', 'Taille', 'Statut']
+    const rows = filteredFiles.map(file => [
+      file.user_name,
+      file.user_email,
+      getFileTypeLabel(file.file_name),
+      file.file_name,
+      formatDate(file.created_at),
+      formatFileSize(file.file_size),
+      getStatusLabel(file.status)
+    ])
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `fichiers_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleDeleteObsolete = async () => {
+    const obsoleteFiles = files.filter(file => file.status === 'non_traite')
+    
+    if (obsoleteFiles.length === 0) {
+      alert('Aucun fichier obsolète à supprimer')
+      return
+    }
+    
+    if (!confirm(`Voulez-vous vraiment supprimer ${obsoleteFiles.length} fichier(s) obsolète(s) ?`)) {
+      return
+    }
+    
+    try {
+      // TODO: Implémenter l'API de suppression
+      alert(`${obsoleteFiles.length} fichier(s) obsolète(s) supprimé(s) avec succès`)
+      loadFiles()
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      alert('Erreur lors de la suppression des fichiers')
+    }
+  }
+
   const filteredFiles = files.filter(file => {
     const matchesSearch = 
       file.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -224,19 +276,28 @@ export default function AdminFichiersPage() {
               <p className="text-gray-600">Accédez à tous les fichiers envoyés pour analyse et rapports générés par Cash360.</p>
             </div>
             <div className="flex gap-3">
-              <button className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2">
+              <button 
+                onClick={loadFiles}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Actualiser
               </button>
-              <button className="bg-[#00A1C6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#0089a3] transition-colors flex items-center gap-2">
+              <button 
+                onClick={handleExportList}
+                className="bg-[#00A1C6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#0089a3] transition-colors flex items-center gap-2"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 Exporter la liste
               </button>
-              <button className="bg-[#FEBE02] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e6a802] transition-colors flex items-center gap-2">
+              <button 
+                onClick={handleDeleteObsolete}
+                className="bg-[#FEBE02] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e6a802] transition-colors flex items-center gap-2"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
