@@ -128,6 +128,33 @@ export default function AdminCapsulesPage() {
     return CAPSULE_INFO[capsuleId]?.title || capsuleId
   }
 
+  const handleExportCSV = () => {
+    const headers = ['Utilisateur', 'Email', 'Capsule', 'Date d\'achat']
+    const rows = capsules.map(capsule => [
+      capsule.user_name,
+      capsule.user_email,
+      getCapsuleTitle(capsule.capsule_id),
+      formatDate(capsule.created_at)
+    ])
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `capsules_achetees_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   const filteredCapsules = capsules.filter(capsule => {
     const matchesSearch = 
       capsule.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -245,7 +272,10 @@ export default function AdminCapsulesPage() {
               </svg>
               Actualiser
             </button>
-            <button className="bg-[#FEBE02] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e6a802] transition-colors flex items-center gap-2">
+            <button 
+              onClick={handleExportCSV}
+              className="bg-[#FEBE02] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e6a802] transition-colors flex items-center gap-2"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
