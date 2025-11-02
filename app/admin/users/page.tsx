@@ -157,6 +157,42 @@ export default function AdminUsersPage() {
     }
   }
 
+  const handleViewUser = (user: User) => {
+    // TODO: Implémenter la vue détaillée de l'utilisateur
+    console.log('Voir utilisateur:', user)
+  }
+
+  const handleViewFiles = (user: User) => {
+    // TODO: Implémenter la vue des fichiers de l'utilisateur
+    router.push(`/admin/fichiers?user=${user.email}`)
+  }
+
+  const handleDeleteUser = async (user: User) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${user.email} ?`)) {
+      return
+    }
+    
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        // Recharger les utilisateurs
+        const loadResponse = await fetch('/api/admin/users')
+        const loadData = await loadResponse.json()
+        if (loadData.success) {
+          setUsers(loadData.users || [])
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+    }
+  }
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -380,18 +416,18 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center space-x-3">
-                            <button className="text-gray-400 hover:text-[#00A1C6] transition-colors">
+                            <button onClick={() => handleViewUser(user)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Voir détails">
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                               </svg>
                             </button>
-                            <button className="text-gray-400 hover:text-[#00A1C6] transition-colors">
+                            <button onClick={() => handleViewFiles(user)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Voir fichiers">
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
                               </svg>
                             </button>
-                            <button className="text-gray-400 hover:text-red-500 transition-colors">
+                            <button onClick={() => handleDeleteUser(user)} className="text-gray-400 hover:text-red-500 transition-colors" title="Supprimer">
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>

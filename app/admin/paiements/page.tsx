@@ -158,6 +158,11 @@ export default function AdminPaiementsPage() {
     document.body.removeChild(link)
   }
 
+  const handleViewPayment = (payment: any) => {
+    // TODO: Implémenter la vue détaillée du paiement
+    console.log('Voir paiement:', payment)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -413,7 +418,7 @@ export default function AdminPaiementsPage() {
                             {payment.created_at ? new Date(payment.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : payment.date || 'N/A'}
                           </td>
                           <td className="py-4 px-6">
-                            <button className="text-[#00A1C6] hover:text-[#0089a3] transition-colors">
+                            <button onClick={() => handleViewPayment(payment)} className="text-[#00A1C6] hover:text-[#0089a3] transition-colors" title="Voir détails">
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
