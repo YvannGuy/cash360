@@ -50,9 +50,8 @@ export default function CartPage() {
       if (response.ok && data.success) {
         // Vider le panier
         clearCart()
-        // Rediriger vers le dashboard
-        alert('Paiement effectué avec succès ! Vos capsules sont maintenant disponibles dans Mes Formations.')
-        router.push('/dashboard')
+        // Rediriger vers le dashboard avec message de succès
+        router.push('/dashboard?payment=success')
       } else {
         alert(`Erreur: ${data.error || 'Erreur lors du paiement'}`)
       }
