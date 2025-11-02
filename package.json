@@ -10,6 +10,7 @@
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^8.2.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.39.0",
@@ -20,6 +21,7 @@
     "react": "^18",
     "react-dom": "^18",
     "resend": "^6.0.3",
+    "stripe": "^19.2.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

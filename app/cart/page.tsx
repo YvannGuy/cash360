@@ -36,7 +36,8 @@ export default function CartPage() {
     setIsProcessing(true)
 
     try {
-      const response = await fetch('/api/checkout', {
+      // Créer une session Stripe Checkout
+      const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -47,18 +48,16 @@ export default function CartPage() {
 
       const data = await response.json()
 
-      if (response.ok && data.success) {
-        // Vider le panier
-        clearCart()
-        // Rediriger vers le dashboard avec message de succès
-        router.push('/dashboard?payment=success')
+      if (response.ok && data.url) {
+        // Rediriger vers Stripe Checkout
+        window.location.href = data.url
       } else {
-        alert(`Erreur: ${data.error || 'Erreur lors du paiement'}`)
+        alert(`Erreur: ${data.error || 'Erreur lors de la création de la session de paiement'}`)
+        setIsProcessing(false)
       }
     } catch (error) {
       console.error('Erreur checkout:', error)
       alert('Erreur lors du traitement du paiement')
-    } finally {
       setIsProcessing(false)
     }
   }
