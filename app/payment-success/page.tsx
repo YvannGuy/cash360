@@ -73,9 +73,14 @@ function PaymentSuccessContent() {
   }, [sessionId, supabase])
 
   useEffect(() => {
-    // Attendre 3 secondes puis rediriger vers le dashboard
+    // Attendre 3 secondes puis rediriger selon la source
     const timer = setTimeout(() => {
-      router.push('/dashboard?payment=success')
+      const source = sessionStorage.getItem('stripe_checkout_source')
+      if (source === 'analysis') {
+        router.push('/analyse-financiere')
+      } else {
+        router.push('/dashboard?payment=success')
+      }
     }, 3000)
 
     return () => clearTimeout(timer)

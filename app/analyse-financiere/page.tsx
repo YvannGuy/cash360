@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { analysisFormSchema, clientInfoSchema } from '@/lib/validation'
+import { analysisFormSchema } from '@/lib/validation'
 import Field from '@/components/Field'
 import UploadDropzone from '@/components/UploadDropzone'
 import { createClientBrowser } from '@/lib/supabase'
@@ -45,6 +45,7 @@ export default function AnalyseFinancierePage() {
   })
 
   const [supabase, setSupabase] = useState<any>(null)
+  const [hasPaid, setHasPaid] = useState(false)
 
   // Fonction pour extraire les initiales de l'email
   const getInitials = (email: string | undefined): string => {
@@ -77,6 +78,21 @@ export default function AnalyseFinancierePage() {
         ...prev,
         email: user.email || ''
       }))
+      
+      // Vérifier si l'utilisateur a déjà payé
+      const { data: payment } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('product_id', 'analyse-financiere')
+        .eq('status', 'success')
+        .order('created_at', { ascending: false })
+        .limit(1)
+      
+      if (payment && payment.length > 0) {
+        setHasPaid(true)
+      }
+      
       setLoading(false)
     }
 
@@ -129,10 +145,52 @@ export default function AnalyseFinancierePage() {
     return Object.keys(newErrors).length === 0
   }
 
+  const handlePayment = async () => {
+    if (!supabase) return
+
+    setIsSubmitting(true)
+    
+    try {
+      // Créer une session Stripe Checkout
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: [{ id: 'analyse-financiere', quantity: 1 }],
+          total: 39.00,
+          source: 'analysis' // Indiquer que c'est pour l'analyse
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.url) {
+        // Sauvegarder dans sessionStorage pour le retour
+        sessionStorage.setItem('stripe_checkout_items', JSON.stringify([{ id: 'analyse-financiere', quantity: 1 }]))
+        sessionStorage.setItem('stripe_checkout_source', 'analysis')
+        // Rediriger vers Stripe Checkout
+        window.location.href = data.url
+      } else {
+        alert(`Erreur: ${data.error || 'Erreur lors de la création de la session de paiement'}`)
+        setIsSubmitting(false)
+      }
+    } catch (error) {
+      console.error('Erreur checkout:', error)
+      alert('Erreur lors du traitement du paiement')
+      setIsSubmitting(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!supabase) return
+    
+    // Vérifier que le paiement a été effectué
+    if (!hasPaid) {
+      setErrors({ submit: 'Vous devez effectuer le paiement avant de soumettre vos relevés.' })
+      return
+    }
     
     if (!validateForm()) {
       return
@@ -351,71 +409,47 @@ export default function AnalyseFinancierePage() {
           {/* Mode de paiement */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-1">Mode de paiement</h2>
-            <p className="text-xs text-gray-600 mb-4">Régler 39,99 €</p>
+            <p className="text-xs text-gray-600 mb-4">Régler 39,00 €</p>
             
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <input
-                  id="paypal"
-                  name="modePaiement"
-                  type="radio"
-                  value="paypal"
-                  checked={formData.modePaiement === 'paypal'}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                />
-                <label htmlFor="paypal" className="ml-3 text-sm font-medium text-gray-700">
-                  PayPal
-                </label>
-              </div>
-              
-              {formData.modePaiement === 'paypal' && (
-                <div className="ml-7 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-800 mb-3">
-                    {t.financialAnalysis.paypalInstructions}
-                  </p>
-                  <a
-                    href="https://paypal.me/mbde510"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.068-.405c-.78-4.09-3.356-5.76-7.13-5.76H5.998c-.524 0-.968.382-1.05.9L2.47 20.597h4.606l1.12-7.106c.082-.518.526-.9 1.05-.9h2.19c4.298 0 7.664-1.747 8.647-6.797.03-.149.054-.294.077-.437.292-1.867-.002-3.137-1.012-4.287z"/>
-                    </svg>
-                    {t.financialAnalysis.payWithPaypal}
-                  </a>
+            {hasPaid ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-green-800 font-medium">Paiement effectué</span>
                 </div>
-              )}
-              
-              <div className="flex items-center">
-                <input
-                  id="virement"
-                  name="modePaiement"
-                  type="radio"
-                  value="virement"
-                  checked={formData.modePaiement === 'virement'}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                />
-                <label htmlFor="virement" className="ml-3 text-sm font-medium text-gray-700">
-                  {t.financialAnalysis.bankTransferLabel}
-                </label>
               </div>
-              
-              {formData.modePaiement === 'virement' && (
-                <div className="ml-7 bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-green-800 mb-3">{t.financialAnalysis.bankTransferLabel}</h3>
-                  <div className="text-sm text-green-800 space-y-1">
-                    <p><strong>{t.financialAnalysis.beneficiary}:</strong> Myriam Konan</p>
-                    <p><strong>IBAN:</strong> FR76 2823 3000 0102 8891 4178 672</p>
-                    <p><strong>BIC:</strong> REVOFRP2</p>
-                    <p><strong>{t.financialAnalysis.bank}:</strong> Revolut Bank UAB</p>
-                    <p><strong>{t.financialAnalysis.address}:</strong> 10 avenue Kléber, 75116 Paris, France</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <button
+                  type="button"
+                  onClick={handlePayment}
+                  disabled={isSubmitting}
+                  className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Redirection...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      Régler avec Stripe
+                    </>
+                  )}
+                </button>
+                <p className="text-xs text-gray-500 text-center">
+                  Paiement sécurisé par Stripe
+                </p>
+              </div>
+            )}
             
             {errors.modePaiement && (
               <p className="text-sm text-red-600 mt-2">{errors.modePaiement}</p>
@@ -506,7 +540,7 @@ export default function AnalyseFinancierePage() {
           <div className="text-center">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !hasPaid}
               className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
@@ -521,6 +555,11 @@ export default function AnalyseFinancierePage() {
                 'Envoyer mes relevés et finaliser'
               )}
             </button>
+            {!hasPaid && (
+              <p className="text-xs text-red-600 mt-2">
+                Effectuez le paiement d'abord pour soumettre vos relevés
+              </p>
+            )}
           </div>
         </form>
         </div>
