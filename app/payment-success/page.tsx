@@ -1,17 +1,70 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import { createClientBrowser } from '@/lib/supabase'
 
 export default function PaymentSuccessPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const sessionId = searchParams.get('session_id')
+  const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
-    // Attendre 2 secondes puis rediriger vers le dashboard
+    setSupabase(createClientBrowser())
+  }, [])
+
+  useEffect(() => {
+    const verifyAndCreate = async () => {
+      if (!sessionId || !supabase) return
+
+      try {
+        // Vérifier si le paiement a déjà été traité
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        // Vérifier si capsules déjà créées pour cet utilisateur
+        const { data: existingCapsules } = await supabase
+          .from('user_capsules')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+
+        // Si pas de capsules récentes (< 30 secondes), on vérifie le paiement
+        if (!existingCapsules || existingCapsules.length === 0 || 
+            (new Date().getTime() - new Date(existingCapsules[0].created_at).getTime()) > 30000) {
+          
+          // Récupérer le panier depuis sessionStorage
+          const cartData = sessionStorage.getItem('stripe_checkout_items')
+          if (cartData) {
+            const items = JSON.parse(cartData)
+            
+            // Appeler l'API pour créer les capsules manuellement
+            await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionId, items })
+            })
+            
+            // Nettoyer sessionStorage
+            sessionStorage.removeItem('stripe_checkout_items')
+          }
+        }
+      } catch (error) {
+        console.error('Erreur vérification paiement:', error)
+      }
+    }
+
+    verifyAndCreate()
+  }, [sessionId, supabase])
+
+  useEffect(() => {
+    // Attendre 3 secondes puis rediriger vers le dashboard
     const timer = setTimeout(() => {
       router.push('/dashboard?payment=success')
-    }, 2000)
+    }, 3000)
 
     return () => clearTimeout(timer)
   }, [router])

@@ -49,6 +49,8 @@ export default function CartPage() {
       const data = await response.json()
 
       if (response.ok && data.url) {
+        // Sauvegarder le panier dans sessionStorage pour la page de succès
+        sessionStorage.setItem('stripe_checkout_items', JSON.stringify(cartItems))
         // Rediriger vers Stripe Checkout
         window.location.href = data.url
       } else {
