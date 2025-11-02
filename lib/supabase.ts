@@ -16,6 +16,14 @@ export const supabaseAdmin = supabaseUrl && supabaseServiceKey
     })
   : null
 
+// Log pour debug
+if (!supabaseAdmin) {
+  console.warn('⚠️ supabaseAdmin is null. Check environment variables:', {
+    hasUrl: !!supabaseUrl,
+    hasServiceKey: !!supabaseServiceKey
+  })
+}
+
 // Client public pour les opérations côté client
 export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
