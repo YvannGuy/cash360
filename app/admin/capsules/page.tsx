@@ -40,6 +40,7 @@ export default function AdminCapsulesPage() {
   const [loading, setLoading] = useState(true)
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [capsules, setCapsules] = useState<CapsuleRecord[]>([])
+  const [formations, setFormations] = useState<any[]>([])
   const [stats, setStats] = useState<CapsuleStats>({
     totalSales: 0,
     totalBuyers: 0,
@@ -73,8 +74,21 @@ export default function AdminCapsulesPage() {
   useEffect(() => {
     if (adminSession?.isAdmin) {
       loadCapsules()
+      loadFormations()
     }
   }, [adminSession])
+
+  const loadFormations = async () => {
+    try {
+      const response = await fetch('/api/admin/formations')
+      const data = await response.json()
+      if (data.success) {
+        setFormations(data.formations || [])
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des formations:', error)
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -157,8 +171,18 @@ export default function AdminCapsulesPage() {
   }
 
   const handleViewCapsule = (capsule: any) => {
-    // TODO: Implémenter la vue détaillée de la capsule
-    console.log('Voir capsule:', capsule)
+    // Vérifier si une formation existe pour cette capsule
+    const formation = formations.find(f => f.capsule_id === capsule.capsule_id)
+    if (formation && formation.zoom_link) {
+      window.open(formation.zoom_link, '_blank')
+    } else {
+      alert('Aucune formation programmée pour cette capsule')
+    }
+  }
+
+  const handleViewFormation = (capsuleId: string) => {
+    // Rediriger vers la page formations pour gérer cette capsule
+    router.push('/admin/formations')
   }
 
   const filteredCapsules = capsules.filter(capsule => {
@@ -463,7 +487,11 @@ export default function AdminCapsulesPage() {
                           {formatDate(capsule.created_at)}
                         </td>
                         <td className="py-4 px-6">
-                          <button className="text-[#00A1C6] hover:text-[#0089a3] transition-colors">
+                          <button 
+                            onClick={() => handleViewFormation(capsule.capsule_id)}
+                            className="text-[#00A1C6] hover:text-[#0089a3] transition-colors"
+                            title="Voir/modifier la formation"
+                          >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
                             </svg>
