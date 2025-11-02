@@ -11,7 +11,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 export async function POST(request: NextRequest) {
   try {
     // Récupérer les items du panier depuis la requête
-    const { items, total } = await request.json()
+    const { items, total, source } = await request.json()
     
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -106,10 +106,13 @@ export async function POST(request: NextRequest) {
       line_items: lineItems,
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard?tab=boutique`,
+      cancel_url: source === 'analysis' 
+        ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/analyse-financiere`
+        : `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard?tab=boutique`,
       metadata: {
         user_id: user.id,
         items: JSON.stringify(items),
+        source: source || 'boutique',
       },
     })
 
