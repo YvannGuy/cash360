@@ -99,6 +99,32 @@ export default function AnalyseFinancierePage() {
     checkUser()
   }, [supabase, router])
 
+  // Vérifier le paiement au montage et après retour de Stripe
+  useEffect(() => {
+    if (!supabase || !user) return
+    
+    const checkPayment = async () => {
+      const { data: payment } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('product_id', 'analyse-financiere')
+        .eq('status', 'success')
+        .order('created_at', { ascending: false })
+        .limit(1)
+      
+      if (payment && payment.length > 0) {
+        setHasPaid(true)
+      }
+    }
+
+    checkPayment()
+    
+    // Vérifier périodiquement (si l'utilisateur est sur la page après le paiement)
+    const interval = setInterval(checkPayment, 2000)
+    return () => clearInterval(interval)
+  }, [supabase, user])
+
   const handleSignOut = async () => {
     if (!supabase) return
     await supabase.auth.signOut()
