@@ -210,6 +210,26 @@ export default function AdminFichiersPage() {
     }
   }
 
+  const handleDownloadFile = async (fileUrl: string, fileName: string) => {
+    try {
+      const response = await fetch('/api/files/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath: fileUrl, bucket: 'releves' })
+      })
+      
+      const data = await response.json()
+      if (data.downloadUrl) {
+        window.open(data.downloadUrl, '_blank')
+      } else {
+        alert('Erreur lors du téléchargement')
+      }
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error)
+      alert('Erreur lors du téléchargement du fichier')
+    }
+  }
+
   const filteredFiles = files.filter(file => {
     const matchesSearch = 
       file.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -368,16 +388,17 @@ export default function AdminFichiersPage() {
                         <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider"></th>
                         <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Utilisateur</th>
                         <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Type de fichier</th>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Nom du fichier</th>
+                                <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Nom du fichier</th>
                         <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Date d'envoi</th>
                         <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Taille</th>
                         <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Statut</th>
+                        <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {currentFiles.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="text-center py-12 text-gray-500">Aucun fichier trouvé</td>
+                          <td colSpan={8} className="text-center py-12 text-gray-500">Aucun fichier trouvé</td>
                         </tr>
                       ) : (
                         currentFiles.map((file) => (
@@ -414,6 +435,13 @@ export default function AdminFichiersPage() {
                                 )}
                                 {getStatusLabel(file.status)}
                               </span>
+                            </td>
+                            <td className="py-4 px-6">
+                              <button onClick={() => handleDownloadFile(file.file_url, file.file_name)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Télécharger">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                              </button>
                             </td>
                           </tr>
                         ))

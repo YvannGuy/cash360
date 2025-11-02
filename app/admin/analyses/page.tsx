@@ -31,6 +31,7 @@ export default function AdminAnalysesPage() {
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
+  const [openRelevesDropdown, setOpenRelevesDropdown] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -398,7 +399,42 @@ export default function AdminAnalysesPage() {
                           {formatDate(analysis.created_at)}
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-600">
-                          {relevesFiles[analysis.ticket || '']?.length || 0} relevés
+                          {relevesFiles[analysis.ticket || '']?.length > 0 ? (
+                            <div className="relative inline-block">
+                              <button onClick={() => setOpenRelevesDropdown(openRelevesDropdown === analysis.ticket ? null : analysis.ticket || null)} className="text-[#00A1C6] hover:underline">
+                                {relevesFiles[analysis.ticket || '']?.length} relevé{relevesFiles[analysis.ticket || '']?.length > 1 ? 's' : ''}
+                              </button>
+                              {openRelevesDropdown === analysis.ticket && (
+                                <div className="absolute left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[200px]">
+                                  {relevesFiles[analysis.ticket || '']?.map((file: any, idx: number) => (
+                                    <button
+                                      key={idx}
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fetch('/api/files/download', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ filePath: file.path, bucket: 'releves' })
+                                          })
+                                          const data = await response.json()
+                                          if (data.downloadUrl) {
+                                            window.open(data.downloadUrl, '_blank')
+                                          }
+                                        } catch (error) {
+                                          console.error('Erreur téléchargement:', error)
+                                        }
+                                      }}
+                                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                      📄 {file.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span>0 relevé</span>
+                          )}
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-600">
                           {analysis.pdf_url ? (
