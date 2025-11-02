@@ -51,66 +51,7 @@ export default function DashboardPage() {
     }
   ]))
   
-  // Capsules pour la boutique avec prix
-  const boutiqueCapsules = [
-    {
-      id: 'capsule1',
-      title: "L'Éducation financière",
-      img: '/images/logo/capsule1.jpg',
-      blurb: "Apprenez à maîtriser votre budget, comprendre vos dépenses et poser les fondations d'une stabilité durable.",
-      price: 350,
-      isPack: false
-    },
-    {
-      id: 'capsule2',
-      title: 'La Mentalité de la pauvreté',
-      img: '/images/logo/capsule2.jpg',
-      blurb: "Identifiez et brisez les blocages mentaux qui sabotent votre relation avec l'argent.",
-      price: 350,
-      isPack: false
-    },
-    {
-      id: 'capsule3',
-      title: "Les Lois spirituelles liées à l'argent",
-      img: '/images/logo/capsule3.jpg',
-      blurb: 'Découvrez les principes divins qui gouvernent la prospérité et la bénédiction financière.',
-      price: 350,
-      isPack: false
-    },
-    {
-      id: 'capsule4',
-      title: 'Les Combats liés à la prospérité',
-      img: '/images/logo/capsule4.jpg',
-      blurb: 'Apprenez à reconnaître et vaincre les résistances spirituelles à votre épanouissement.',
-      price: 350,
-      isPack: false
-    },
-    {
-      id: 'capsule5',
-      title: 'Épargne & Investissement',
-      img: '/images/logo/capsule5.jpg',
-      blurb: 'Apprenez à épargner intelligemment et à faire fructifier vos ressources avec sagesse.',
-      price: 350,
-      isPack: false
-    },
-    {
-      id: 'pack',
-      title: 'Pack complet Cash360',
-      img: '/images/pack.png',
-      blurb: "Accédez à l'ensemble des 5 capsules pour une transformation complète.",
-      price: 1500,
-      originalPrice: 1750,
-      isPack: true
-    },
-    {
-      id: 'analyse-financiere',
-      title: 'Analyse financière personnalisée',
-      img: '/images/Firefly-2.jpg',
-      blurb: 'Analyse approfondie de votre situation financière avec recommandations personnalisées.',
-      price: 39.99,
-      isPack: false
-    }
-  ]
+  const [boutiqueCapsules, setBoutiqueCapsules] = useState<any[]>([])
   const [selectedCapsules, setSelectedCapsules] = useState<string[]>([])
   const [userCapsules, setUserCapsules] = useState<string[]>([])
   const [formationsData, setFormationsData] = useState<any[]>([])
@@ -202,6 +143,26 @@ export default function DashboardPage() {
         if (Array.isArray(userAnalyses)) {
           setAnalyses(userAnalyses as AnalysisRecord[])
         }
+        // Charger produits boutique
+        const { data: products } = await supabase
+          .from('products')
+          .select('*')
+          .eq('available', true)
+          .order('created_at', { ascending: true })
+        
+        if (products && products.length > 0) {
+          const adaptedProducts = products.map((p: any) => ({
+            id: p.id,
+            title: p.name,
+            img: p.image_url || '/images/default-product.jpg',
+            blurb: p.description || '',
+            price: parseFloat(p.price),
+            originalPrice: p.original_price ? parseFloat(p.original_price) : undefined,
+            isPack: p.is_pack
+          }))
+          setBoutiqueCapsules(adaptedProducts)
+        }
+        
         // Charger capsules utilisateur
         const myCaps = await capsulesService.getUserCapsules().catch(() => [])
         const capsuleIds = Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : []
@@ -817,7 +778,7 @@ export default function DashboardPage() {
               </div>
                         <div>
                   <h2 className="text-2xl font-bold text-gray-900">Boutique</h2>
-                  <p className="text-gray-600">Découvrez les 7 produits exclusifs Cash360 pour transformer votre vie financière et spirituelle.</p>
+                  <p className="text-gray-600">Découvrez nos produits exclusifs Cash360 pour transformer votre vie financière et spirituelle.</p>
                     </div>
                   </div>
 
@@ -842,11 +803,13 @@ export default function DashboardPage() {
 
                       {/* Prix */}
                       <div className="mb-4">
-                        {capsule.isPack && capsule.originalPrice ? (
+                        {capsule.originalPrice && capsule.originalPrice > capsule.price ? (
                           <div className="flex items-center gap-2">
                             <span className="text-lg font-bold text-blue-600">{capsule.price.toFixed(2)} €</span>
                             <span className="text-sm text-gray-400 line-through">{capsule.originalPrice.toFixed(2)} €</span>
-                            <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-semibold">-15%</span>
+                            <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-semibold">
+                              -{Math.round((1 - capsule.price / capsule.originalPrice) * 100)}%
+                            </span>
                         </div>
                         ) : (
                           <span className="text-lg font-bold text-blue-600">{capsule.price.toFixed(2)} €</span>

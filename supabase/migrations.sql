@@ -64,12 +64,13 @@ CREATE TABLE IF NOT EXISTS public.products (
 
 -- Insérer les produits de la boutique
 INSERT INTO public.products (id, name, description, price, original_price, is_pack, image_url) VALUES
-  ('education-financiere', 'L''éducation financière', 'Maîtrisez les bases de la finance personnelle', 350.00, NULL, false, '/capsules/education-financiere.jpg'),
-  ('mentalite-pauvrete', 'La mentalité de pauvreté', 'Changez votre rapport à l''argent', 350.00, NULL, false, '/capsules/mentalite-pauvrete.jpg'),
-  ('epargne-investissement', 'Épargne & investissement', 'Faites fructifier votre argent', 350.00, NULL, false, '/capsules/epargne-investissement.jpg'),
-  ('budget-responsable', 'Budget responsable', 'Apprenez à gérer votre budget efficacement', 350.00, NULL, false, '/capsules/budget-responsable.jpg'),
-  ('endettement', 'Endettement intelligent', 'Gérez et réduisez vos dettes', 350.00, NULL, false, '/capsules/endettement.jpg'),
-  ('pack-complet', 'Pack complet Cash360', 'Accédez à toutes les formations et analyses', 1500.00, 1750.00, true, '/capsules/pack-complet.jpg')
+  ('capsule1', 'L''éducation financière', 'Apprenez à maîtriser votre budget, comprendre vos dépenses et poser les fondations d''une stabilité durable.', 350.00, NULL, false, '/images/logo/capsule1.jpg'),
+  ('capsule2', 'La Mentalité de la pauvreté', 'Identifiez et brisez les blocages mentaux qui sabotent votre relation avec l''argent.', 350.00, NULL, false, '/images/logo/capsule2.jpg'),
+  ('capsule3', 'Les Lois spirituelles liées à l''argent', 'Découvrez les principes divins qui gouvernent la prospérité et la bénédiction financière.', 350.00, NULL, false, '/images/logo/capsule3.jpg'),
+  ('capsule4', 'Les Combats liés à la prospérité', 'Apprenez à reconnaître et vaincre les résistances spirituelles à votre épanouissement.', 350.00, NULL, false, '/images/logo/capsule4.jpg'),
+  ('capsule5', 'Épargne & Investissement', 'Apprenez à épargner intelligemment et à faire fructifier vos ressources avec sagesse.', 350.00, NULL, false, '/images/logo/capsule5.jpg'),
+  ('pack', 'Pack complet Cash360', 'Accédez à l''ensemble des 5 capsules pour une transformation complète.', 1500.00, 1750.00, true, '/images/pack.png'),
+  ('analyse-financiere', 'Analyse financière personnalisée', 'Analyse approfondie de votre situation financière avec recommandations personnalisées.', 39.99, NULL, false, '/images/Firefly-2.jpg')
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
