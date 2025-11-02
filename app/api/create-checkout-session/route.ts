@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       line_items: lineItems,
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/cart?canceled=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard?tab=boutique`,
       metadata: {
         user_id: user.id,
         items: JSON.stringify(items),
