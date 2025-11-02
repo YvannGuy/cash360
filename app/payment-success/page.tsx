@@ -29,20 +29,18 @@ function PaymentSuccessContent() {
         console.log('👤 Utilisateur:', user?.id, authError)
         if (!user) return
 
-        // Vérifier si capsules déjà créées pour cet utilisateur
-        const { data: existingCapsules } = await supabase
-          .from('user_capsules')
+        // Vérifier si le paiement a déjà été traité
+        const { data: existingPayment } = await supabase
+          .from('payments')
           .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
+          .eq('transaction_id', sessionId)
+          .eq('status', 'success')
           .limit(1)
 
-        console.log('📦 Capsules existantes:', existingCapsules?.length)
+        console.log('💳 Paiement existant:', existingPayment?.length)
 
-        // Si pas de capsules récentes (< 30 secondes), on vérifie le paiement
-        if (!existingCapsules || existingCapsules.length === 0 || 
-            (new Date().getTime() - new Date(existingCapsules[0].created_at).getTime()) > 30000) {
-          
+        // Si pas de paiement, on vérifie avec l'API
+        if (!existingPayment || existingPayment.length === 0) {
           // Récupérer le panier depuis sessionStorage
           const cartData = sessionStorage.getItem('stripe_checkout_items')
           console.log('🛒 Panier sessionStorage:', cartData)
@@ -50,7 +48,7 @@ function PaymentSuccessContent() {
             const items = JSON.parse(cartData)
             console.log('📋 Items à créer:', items)
             
-            // Appeler l'API pour créer les capsules manuellement
+            // Appeler l'API pour créer les paiements/capsules manuellement
             const response = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

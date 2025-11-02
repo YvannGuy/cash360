@@ -606,17 +606,17 @@ export default function DashboardPage() {
 
           {/* Onglets de navigation */}
           <div className="mb-8 flex gap-2 border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('analyses')}
+              <button
+                onClick={() => setActiveTab('analyses')}
               className={`px-6 py-3 font-medium transition-all ${
                 activeTab === 'analyses'
                   ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
-            >
+              >
               Mes Analyses
-            </button>
-            <button
+              </button>
+              <button
               onClick={() => setActiveTab('boutique')}
               className={`px-6 py-3 font-medium transition-all ${
                 activeTab === 'boutique'
@@ -625,18 +625,18 @@ export default function DashboardPage() {
               }`}
             >
               Boutique
-            </button>
-            <button
-              onClick={() => setActiveTab('formations')}
+              </button>
+              <button
+                onClick={() => setActiveTab('formations')}
               className={`px-6 py-3 font-medium transition-all ${
                 activeTab === 'formations'
                   ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
-            >
+              >
               Mes Formations
-            </button>
-          </div>
+              </button>
+            </div>
 
           {/* Contenu de l'onglet "Mes Analyses" */}
           {activeTab === 'analyses' && (
@@ -646,13 +646,13 @@ export default function DashboardPage() {
                 <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
+              </svg>
+          </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Mes Analyses</h2>
                   <p className="text-gray-600">Retrouvez ici toutes vos analyses financières réalisées avec Cash360.</p>
-                </div>
-              </div>
+                      </div>
+                      </div>
 
               {/* Carte "Faire une nouvelle analyse" */}
               <div className="bg-yellow-400 rounded-2xl p-8 mb-8">
@@ -666,14 +666,14 @@ export default function DashboardPage() {
                   <p className="text-gray-700 mb-6 max-w-md">
                     Téléversez vos relevés et recevez votre diagnostic sous 48h.
                   </p>
-                  <button
+                          <button
                     onClick={handleNewAnalysis}
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg"
-                  >
+                          >
                     Lancer une nouvelle analyse
-                  </button>
-                </div>
-              </div>
+                          </button>
+                      </div>
+                    </div>
             
             {/* Liste des analyses */}
             {analyses.length > 0 && (
@@ -690,7 +690,7 @@ export default function DashboardPage() {
                         <span className="text-sm font-medium text-gray-700">
                           {analysis.status === 'terminee' ? 'Terminée' : 'En cours'}
                         </span>
-                      </div>
+              </div>
                       <p className="text-sm text-gray-600">
                         {analysis.status === 'terminee' 
                           ? 'Analyse de vos 3 relevés bancaires – rapport disponible.'
@@ -703,25 +703,25 @@ export default function DashboardPage() {
                     <div className="flex gap-3">
                       {analysis.status === 'terminee' && analysis.pdf_url ? (
                         <>
-                          <button
+                <button
                             onClick={() => window.open(analysis.pdf_url, '_blank')}
                             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
-                          >
+                >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Télécharger PDF
-                          </button>
-                          <button
+                </button>
+                  <button
                             onClick={handleNewAnalysis}
                             className="flex-1 px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-                          >
+                  >
                             Refaire une analyse
-                          </button>
+                  </button>
                         </>
                       ) : (
                         <>
-                          <button
+                            <button
                             disabled
                             className="flex-1 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
                           >
@@ -729,7 +729,7 @@ export default function DashboardPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             En traitement
-                          </button>
+                            </button>
                           <button
                             onClick={handleNewAnalysis}
                             className="flex-1 px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
@@ -738,11 +738,11 @@ export default function DashboardPage() {
                           </button>
                         </>
                       )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                        </div>
+                      </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -754,13 +754,13 @@ export default function DashboardPage() {
                 <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                </div>
-                <div>
+                </svg>
+              </div>
+                        <div>
                   <h2 className="text-2xl font-bold text-gray-900">Boutique</h2>
                   <p className="text-gray-600">Découvrez les 6 capsules exclusives Cash360 pour transformer votre vie financière et spirituelle.</p>
-                </div>
-              </div>
+                    </div>
+                  </div>
 
               {/* Grille des capsules */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -788,7 +788,7 @@ export default function DashboardPage() {
                             <span className="text-lg font-bold text-blue-600">{capsule.price.toFixed(2)} €</span>
                             <span className="text-sm text-gray-400 line-through">{capsule.originalPrice.toFixed(2)} €</span>
                             <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-semibold">-15%</span>
-                          </div>
+                        </div>
                         ) : (
                           <span className="text-lg font-bold text-blue-600">{capsule.price.toFixed(2)} €</span>
                         )}
@@ -809,11 +809,11 @@ export default function DashboardPage() {
                       >
                         {capsule.isPack ? 'Acheter le pack' : 'Acheter'}
                       </button>
-                    </div>
-                  </div>
+                        </div>
+                        </div>
                 ))}
-              </div>
-            </div>
+                      </div>
+                    </div>
           )}
 
           {/* Contenu de l'onglet "Mes Formations" */}
@@ -826,22 +826,22 @@ export default function DashboardPage() {
                     <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                  </div>
+                        </div>
                   <h2 className="text-2xl font-bold text-gray-900">Mes Formations</h2>
-                </div>
+                        </div>
                 <p className="text-gray-600">Accédez à vos formations à venir ou passées et rejoignez-les en un clic.</p>
-              </div>
+                      </div>
 
               {userCapsules.length === 0 ? (
                 <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
                   <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-lg bg-gray-100 mb-6">
                     <svg className="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
+                              </svg>
+                            </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucune formation pour le moment</h3>
                   <p className="text-gray-600">Explorez la boutique pour découvrir nos formations disponibles.</p>
-                </div>
+                            </div>
               ) : (
                 <div className="space-y-4">
                   {availableCapsules
@@ -859,19 +859,19 @@ export default function DashboardPage() {
                                 height={96}
                                 className="w-full h-full object-cover"
                               />
-                            </div>
+                          </div>
 
                             {/* Content */}
                             <div className="flex-1 min-w-0">
                               <h3 className="text-lg font-bold text-gray-900 mb-2">{c.title}</h3>
                               <p className="text-sm text-gray-600">{c.blurb}</p>
-                            </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
+                    </div>
+                  </div>
                 </div>
-              )}
+              ))}
+            </div>
+          )}
             </div>
           )}
         </div>
