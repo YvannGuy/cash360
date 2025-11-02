@@ -410,7 +410,7 @@ export default function AdminUsersPage() {
                           {user.analyses_count ? (
                             <span>
                               {user.analyses_count} {user.analyses_count === 1 ? 'terminée' : 'terminées'}
-                              <a href="#" className="ml-2 text-[#00A1C6] hover:underline">voir</a>
+                              <button onClick={() => router.push(`/admin/analyses?user=${encodeURIComponent(user.email)}`)} className="ml-2 text-[#00A1C6] hover:underline">voir</button>
                             </span>
                           ) : (
                             <span className="text-gray-400">0 terminée</span>
