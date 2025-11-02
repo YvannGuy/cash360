@@ -8,10 +8,25 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-10-29.clover',
 })
 
+// Fonction pour obtenir l'URL de base selon l'environnement
+function getBaseUrl(request: NextRequest): string {
+  // En production ou si NEXT_PUBLIC_SITE_URL est défini, utiliser celui-ci
+  if (process.env.NEXT_PUBLIC_SITE_URL && process.env.NODE_ENV === 'production') {
+    return process.env.NEXT_PUBLIC_SITE_URL
+  }
+  
+  // Sinon, construire l'URL depuis la requête (localhost en dev)
+  const protocol = request.headers.get('x-forwarded-proto') || 'http'
+  const host = request.headers.get('host') || 'localhost:3000'
+  return `${protocol}://${host}`
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Récupérer les items du panier depuis la requête
     const { items, total, source } = await request.json()
+    
+    const baseUrl = getBaseUrl(request)
     
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -105,10 +120,10 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: source === 'analysis' 
-        ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/analyse-financiere`
-        : `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard?tab=boutique`,
+        ? `${baseUrl}/analyse-financiere`
+        : `${baseUrl}/dashboard?tab=boutique`,
       metadata: {
         user_id: user.id,
         items: JSON.stringify(items),
