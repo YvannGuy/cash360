@@ -45,6 +45,7 @@ export default function AdminFormationsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
   const [formData, setFormData] = useState({
+    capsuleId: '',
     sessionName: '',
     sessionType: 'Capsule',
     duration: 60,
@@ -129,13 +130,50 @@ export default function AdminFormationsPage() {
 
   const handleSaveSession = async () => {
     try {
-      // TODO: Envoyer les données à l'API
-      console.log('Saving session:', formData)
+      if (!formData.capsuleId || !formData.sessionName || !formData.date || !formData.time) {
+        alert('Veuillez remplir tous les champs obligatoires (Capsule, Nom, Date, Heure)')
+        return
+      }
+
+      const response = await fetch('/api/admin/formations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Erreur lors de la sauvegarde')
+      }
+
       alert('Session programmée avec succès!')
       setShowSessionModal(false)
+      
+      // Reset form
+      setFormData({
+        capsuleId: '',
+        sessionName: '',
+        sessionType: 'Capsule',
+        duration: 60,
+        date: '',
+        time: '',
+        description: '',
+        zoomLink: '',
+        maxParticipants: 50,
+        timezone: 'Europe/Paris',
+        accessType: 'tous',
+        price: 0,
+        requirePayment: false,
+        sendNotification: false
+      })
+      
       loadFormations()
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error)
+      alert(error instanceof Error ? error.message : 'Erreur lors de la sauvegarde')
     }
   }
 
@@ -502,6 +540,22 @@ export default function AdminFormationsPage() {
               
               <div className="p-6 space-y-6">
                 {/* Détails de la session */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Capsule associée *</label>
+                  <select
+                    value={formData.capsuleId}
+                    onChange={(e) => setFormData({...formData, capsuleId: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                  >
+                    <option value="">Sélectionner une capsule</option>
+                    <option value="capsule1">L'éducation financière</option>
+                    <option value="capsule2">Les combats liés à la prospérité</option>
+                    <option value="capsule3">Les lois spirituelles liées à l'argent</option>
+                    <option value="capsule4">La mentalité de Pauvre</option>
+                    <option value="capsule5">Épargne et Investissement</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Nom de la session</label>
                   <input
