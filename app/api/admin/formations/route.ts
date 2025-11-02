@@ -80,6 +80,95 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Configuration Supabase manquante' },
+        { status: 500 }
+      )
+    }
+
+    const { searchParams } = new URL(request.url)
+    const formationId = searchParams.get('formationId')
+
+    if (!formationId) {
+      return NextResponse.json(
+        { error: 'ID de formation manquant' },
+        { status: 400 }
+      )
+    }
+
+    const body = await request.json()
+    const {
+      capsuleId,
+      sessionName,
+      sessionType,
+      duration,
+      date,
+      time,
+      description,
+      zoomLink,
+      maxParticipants,
+      timezone,
+      accessType,
+      price,
+      requirePayment,
+      sendNotification
+    } = body
+
+    // Validation
+    if (!capsuleId || !sessionName || !date || !time) {
+      return NextResponse.json(
+        { error: 'Capsule, nom, date et heure sont obligatoires' },
+        { status: 400 }
+      )
+    }
+
+    // Mettre à jour dans Supabase
+    const { data, error } = await supabaseAdmin!
+      .from('formations')
+      .update({
+        capsule_id: capsuleId,
+        session_name: sessionName,
+        session_type: sessionType || 'Capsule',
+        duration: duration || 60,
+        date_scheduled: date,
+        time_scheduled: time,
+        description: description || null,
+        zoom_link: zoomLink || null,
+        max_participants: maxParticipants || 50,
+        timezone: timezone || 'Europe/Paris',
+        access_type: accessType || 'tous',
+        price: price || 0,
+        require_payment: requirePayment || false,
+        send_notification: sendNotification || true
+      })
+      .eq('id', formationId)
+      .select()
+
+    if (error) {
+      console.error('Erreur lors de la mise à jour de la formation:', error)
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      formation: data[0]
+    })
+
+  } catch (error) {
+    console.error('Erreur API admin formations PUT:', error)
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     if (!supabaseAdmin) {

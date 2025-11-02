@@ -138,11 +138,35 @@ export default function AdminFormationsPage() {
   }
 
   const handleOpenModalForCapsule = (capsuleId: string) => {
-    setEditingCapsule(capsuleId)
-    setFormData({
-      ...formData,
-      capsuleId: capsuleId
-    })
+    const existingFormation = formations.find(f => f.capsule_id === capsuleId)
+    
+    if (existingFormation) {
+      // Édition : remplir le formulaire avec les données existantes
+      setEditingCapsule(capsuleId)
+      setFormData({
+        capsuleId: capsuleId,
+        sessionName: existingFormation.title,
+        sessionType: 'Capsule',
+        duration: 60,
+        date: existingFormation.date.split('T')[0], // Convertir YYYY-MM-DD
+        time: existingFormation.time,
+        description: '',
+        zoomLink: existingFormation.zoom_link || '',
+        maxParticipants: 50,
+        timezone: 'Europe/Paris',
+        accessType: 'tous',
+        price: 0,
+        requirePayment: false,
+        sendNotification: false
+      })
+    } else {
+      // Création : juste la capsule
+      setEditingCapsule(capsuleId)
+      setFormData({
+        ...formData,
+        capsuleId: capsuleId
+      })
+    }
     setShowSessionModal(true)
   }
 
@@ -153,8 +177,18 @@ export default function AdminFormationsPage() {
         return
       }
 
-      const response = await fetch('/api/admin/formations', {
-        method: 'POST',
+      // Vérifier si on est en mode édition
+      const existingFormation = formations.find(f => f.capsule_id === formData.capsuleId)
+      const isEdit = !!existingFormation
+
+      const url = isEdit 
+        ? `/api/admin/formations?formationId=${existingFormation.id}`
+        : '/api/admin/formations'
+      
+      const method = isEdit ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -167,7 +201,7 @@ export default function AdminFormationsPage() {
         throw new Error(data.error || 'Erreur lors de la sauvegarde')
       }
 
-      alert('Session programmée avec succès!')
+      alert(isEdit ? 'Session modifiée avec succès!' : 'Session programmée avec succès!')
       setShowSessionModal(false)
       setEditingCapsule(null)
       
