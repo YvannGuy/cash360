@@ -29,6 +29,14 @@ interface FormationStats {
   sessionsThisWeek: number
 }
 
+const CAPSULES = [
+  { id: 'capsule1', title: "L'éducation financière", img: '/images/logo/capsule1.jpg' },
+  { id: 'capsule2', title: 'Les combats liés à la prospérité', img: '/images/logo/capsule2.jpg' },
+  { id: 'capsule3', title: "Les lois spirituelles liées à l'argent", img: '/images/logo/capsule3.jpg' },
+  { id: 'capsule4', title: 'La mentalité de Pauvre', img: '/images/logo/capsule4.jpg' },
+  { id: 'capsule5', title: 'Épargne et Investissement', img: '/images/logo/capsule5.jpg' }
+]
+
 export default function AdminFormationsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -42,6 +50,7 @@ export default function AdminFormationsPage() {
   })
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showSessionModal, setShowSessionModal] = useState(false)
+  const [editingCapsule, setEditingCapsule] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
   const [formData, setFormData] = useState({
@@ -128,6 +137,15 @@ export default function AdminFormationsPage() {
     return email.substring(0, 2).toUpperCase()
   }
 
+  const handleOpenModalForCapsule = (capsuleId: string) => {
+    setEditingCapsule(capsuleId)
+    setFormData({
+      ...formData,
+      capsuleId: capsuleId
+    })
+    setShowSessionModal(true)
+  }
+
   const handleSaveSession = async () => {
     try {
       if (!formData.capsuleId || !formData.sessionName || !formData.date || !formData.time) {
@@ -151,6 +169,7 @@ export default function AdminFormationsPage() {
 
       alert('Session programmée avec succès!')
       setShowSessionModal(false)
+      setEditingCapsule(null)
       
       // Reset form
       setFormData({
@@ -338,6 +357,48 @@ export default function AdminFormationsPage() {
                 </svg>
                 Programmer une nouvelle session
               </button>
+            </div>
+          </div>
+
+          {/* 5 Capsules Cards */}
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-[#012F4E] mb-4">Capsules disponibles</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {CAPSULES.map((capsule) => {
+                const formation = formations.find(f => f.capsule_id === capsule.id)
+                return (
+                  <div key={capsule.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div className="p-4">
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 relative">
+                          <Image src={capsule.img} alt={capsule.title} width={64} height={64} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 mb-1">{capsule.title}</h3>
+                          {formation ? (
+                            <div className="mt-2 space-y-1">
+                              <p className="text-xs text-gray-600">
+                                {formatDate(formation.date)} à {formation.time?.substring(0, 5)}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {formation.zoom_link ? 'Lien Zoom configuré' : 'Pas de lien Zoom'}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-gray-500 mt-1">Aucune session programmée</p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleOpenModalForCapsule(capsule.id)}
+                        className="w-full px-4 py-2 bg-[#00A1C6] text-white rounded-lg hover:bg-[#0089a3] transition-colors font-medium text-sm"
+                      >
+                        {formation ? 'Modifier la session' : 'Programmer une session'}
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
 
