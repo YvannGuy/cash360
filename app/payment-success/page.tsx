@@ -17,11 +17,16 @@ function PaymentSuccessContent() {
 
   useEffect(() => {
     const verifyAndCreate = async () => {
-      if (!sessionId || !supabase) return
+      console.log('🔍 Vérification paiement - sessionId:', sessionId)
+      if (!sessionId || !supabase) {
+        console.log('❌ Pas de sessionId ou supabase:', { sessionId, hasSupabase: !!supabase })
+        return
+      }
 
       try {
         // Vérifier si le paiement a déjà été traité
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        console.log('👤 Utilisateur:', user?.id, authError)
         if (!user) return
 
         // Vérifier si capsules déjà créées pour cet utilisateur
@@ -32,28 +37,35 @@ function PaymentSuccessContent() {
           .order('created_at', { ascending: false })
           .limit(1)
 
+        console.log('📦 Capsules existantes:', existingCapsules?.length)
+
         // Si pas de capsules récentes (< 30 secondes), on vérifie le paiement
         if (!existingCapsules || existingCapsules.length === 0 || 
             (new Date().getTime() - new Date(existingCapsules[0].created_at).getTime()) > 30000) {
           
           // Récupérer le panier depuis sessionStorage
           const cartData = sessionStorage.getItem('stripe_checkout_items')
+          console.log('🛒 Panier sessionStorage:', cartData)
           if (cartData) {
             const items = JSON.parse(cartData)
+            console.log('📋 Items à créer:', items)
             
             // Appeler l'API pour créer les capsules manuellement
-            await fetch('/api/verify-payment', {
+            const response = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ sessionId, items })
             })
+            
+            const result = await response.json()
+            console.log('✅ Réponse API verify-payment:', result)
             
             // Nettoyer sessionStorage
             sessionStorage.removeItem('stripe_checkout_items')
           }
         }
       } catch (error) {
-        console.error('Erreur vérification paiement:', error)
+        console.error('❌ Erreur vérification paiement:', error)
       }
     }
 

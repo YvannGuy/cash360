@@ -8,10 +8,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 })
 
 export async function POST(request: NextRequest) {
+  console.log('🔍 API verify-payment appelée')
   try {
     const { sessionId, items } = await request.json()
+    console.log('📋 Données reçues:', { sessionId, items })
     
     if (!sessionId) {
+      console.log('❌ Pas de sessionId')
       return NextResponse.json(
         { error: 'Session ID manquant' },
         { status: 400 }
@@ -20,13 +23,16 @@ export async function POST(request: NextRequest) {
 
     // Vérifier la session Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId)
+    console.log('💳 Session Stripe:', session.payment_status)
     
     if (session.payment_status !== 'paid') {
+      console.log('❌ Paiement non complété:', session.payment_status)
       return NextResponse.json(
         { error: 'Paiement non complété' },
         { status: 400 }
       )
     }
+    console.log('✅ Paiement confirmé')
 
     // Créer un client Supabase avec les cookies
     const cookieStore = await cookies()
@@ -53,7 +59,9 @@ export async function POST(request: NextRequest) {
     
     // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log('👤 Utilisateur autentifié:', user?.id, authError)
     if (authError || !user) {
+      console.log('❌ Non authentifié')
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -68,7 +76,9 @@ export async function POST(request: NextRequest) {
       .eq('status', 'success')
       .limit(1)
 
+    console.log('💳 Paiements existants:', existingPayments?.length)
     if (existingPayments && existingPayments.length > 0) {
+      console.log('✅ Paiement déjà traité')
       return NextResponse.json({
         success: true,
         message: 'Paiement déjà traité'
@@ -109,7 +119,8 @@ export async function POST(request: NextRequest) {
     )
 
     // Insérer les paiements
-    await supabase.from('payments').insert(paymentEntries)
+    const { error: paymentError } = await supabase.from('payments').insert(paymentEntries)
+    console.log('💰 Paiements insérés:', paymentEntries.length, paymentError)
 
     // Créer les capsules achetées (user_capsules)
     const capsuleEntries = []
@@ -142,9 +153,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log('📦 Capsules à créer:', capsuleEntries.length, capsuleEntries)
     // Insérer les capsules achetées
     if (capsuleEntries.length > 0) {
-      await supabase.from('user_capsules').insert(capsuleEntries)
+      const { error: capsuleError } = await supabase.from('user_capsules').insert(capsuleEntries)
+      console.log('✅ Capsules insérées:', capsuleError)
     }
 
     return NextResponse.json({
