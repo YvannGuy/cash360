@@ -27,12 +27,13 @@ interface CapsuleStats {
 }
 
 const CAPSULE_INFO: { [key: string]: { title: string } } = {
-  'education-financiere': { title: "L'éducation financière" },
-  'mentalite-pauvrete': { title: 'La mentalité de pauvreté' },
-  'epargne-investissement': { title: 'Épargne & investissement' },
-  'budget-responsable': { title: 'Budget responsable' },
-  'endettement': { title: 'Endettement intelligent' },
-  'pack-complet': { title: 'Pack complet Cash360' }
+  'capsule1': { title: "L'éducation financière" },
+  'capsule2': { title: 'La Mentalité de la pauvreté' },
+  'capsule3': { title: 'Les Lois spirituelles liées à l\'argent' },
+  'capsule4': { title: 'Les Combats liés à la prospérité' },
+  'capsule5': { title: 'Épargne & Investissement' },
+  'pack': { title: 'Pack complet Cash360' },
+  'analyse-financiere': { title: 'Analyse financière personnalisée' }
 }
 
 export default function AdminCapsulesPage() {
