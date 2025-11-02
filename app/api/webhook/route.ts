@@ -73,7 +73,13 @@ export async function POST(request: NextRequest) {
       const paymentEntries = await Promise.all(
         items.map(async (item: any) => {
           const product = products.find(p => p.id === item.id)
-          const paymentType = product?.is_pack ? 'pack' : 'capsule'
+          // Déterminer le type de paiement selon le produit
+          let paymentType = 'capsule'
+          if (product?.is_pack) {
+            paymentType = 'pack'
+          } else if (item.id === 'analyse-financiere') {
+            paymentType = 'analysis'
+          }
           
           return {
             user_id: userId,

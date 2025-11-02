@@ -45,7 +45,6 @@ export default function AnalyseFinancierePage() {
   })
 
   const [supabase, setSupabase] = useState<any>(null)
-  const [hasPaid, setHasPaid] = useState(false)
 
   // Fonction pour extraire les initiales de l'email
   const getInitials = (email: string | undefined): string => {
@@ -78,52 +77,11 @@ export default function AnalyseFinancierePage() {
         ...prev,
         email: user.email || ''
       }))
-      
-      // Vérifier si l'utilisateur a déjà payé
-      const { data: payment } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('product_id', 'analyse-financiere')
-        .eq('status', 'success')
-        .order('created_at', { ascending: false })
-        .limit(1)
-      
-      if (payment && payment.length > 0) {
-        setHasPaid(true)
-      }
-      
       setLoading(false)
     }
 
     checkUser()
   }, [supabase, router])
-
-  // Vérifier le paiement au montage et après retour de Stripe
-  useEffect(() => {
-    if (!supabase || !user) return
-    
-    const checkPayment = async () => {
-      const { data: payment } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('product_id', 'analyse-financiere')
-        .eq('status', 'success')
-        .order('created_at', { ascending: false })
-        .limit(1)
-      
-      if (payment && payment.length > 0) {
-        setHasPaid(true)
-      }
-    }
-
-    checkPayment()
-    
-    // Vérifier périodiquement (si l'utilisateur est sur la page après le paiement)
-    const interval = setInterval(checkPayment, 2000)
-    return () => clearInterval(interval)
-  }, [supabase, user])
 
   const handleSignOut = async () => {
     if (!supabase) return
@@ -171,52 +129,10 @@ export default function AnalyseFinancierePage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handlePayment = async () => {
-    if (!supabase) return
-
-    setIsSubmitting(true)
-    
-    try {
-      // Créer une session Stripe Checkout
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: [{ id: 'analyse-financiere', quantity: 1 }],
-          total: 39.99,
-          source: 'analysis' // Indiquer que c'est pour l'analyse
-        })
-      })
-
-      const data = await response.json()
-
-      if (response.ok && data.url) {
-        // Sauvegarder dans sessionStorage pour le retour
-        sessionStorage.setItem('stripe_checkout_items', JSON.stringify([{ id: 'analyse-financiere', quantity: 1 }]))
-        sessionStorage.setItem('stripe_checkout_source', 'analysis')
-        // Rediriger vers Stripe Checkout
-        window.location.href = data.url
-      } else {
-        alert(`Erreur: ${data.error || 'Erreur lors de la création de la session de paiement'}`)
-        setIsSubmitting(false)
-      }
-    } catch (error) {
-      console.error('Erreur checkout:', error)
-      alert('Erreur lors du traitement du paiement')
-      setIsSubmitting(false)
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!supabase) return
-    
-    // Vérifier que le paiement a été effectué
-    if (!hasPaid) {
-      setErrors({ submit: 'Vous devez effectuer le paiement avant de soumettre vos relevés.' })
-      return
-    }
     
     if (!validateForm()) {
       return
@@ -432,56 +348,6 @@ export default function AnalyseFinancierePage() {
             </div>
           </div>
 
-          {/* Mode de paiement */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-1">Mode de paiement</h2>
-            <p className="text-xs text-gray-600 mb-4">Régler 39,99 €</p>
-            
-            {hasPaid ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-green-800 font-medium">Paiement effectué</span>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <button
-                  type="button"
-                  onClick={handlePayment}
-                  disabled={isSubmitting}
-                  className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Redirection...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      Régler avec Stripe
-                    </>
-                  )}
-                </button>
-                <p className="text-xs text-gray-500 text-center">
-                  Paiement sécurisé par Stripe
-                </p>
-              </div>
-            )}
-            
-            {errors.modePaiement && (
-              <p className="text-sm text-red-600 mt-2">{errors.modePaiement}</p>
-            )}
-          </div>
-
           {/* Upload des relevés */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -566,7 +432,7 @@ export default function AnalyseFinancierePage() {
           <div className="text-center">
             <button
               type="submit"
-              disabled={isSubmitting || !hasPaid}
+              disabled={isSubmitting}
               className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
@@ -581,11 +447,6 @@ export default function AnalyseFinancierePage() {
                 'Envoyer mes relevés et finaliser'
               )}
             </button>
-            {!hasPaid && (
-              <p className="text-xs text-red-600 mt-2">
-                Effectuez le paiement d'abord pour soumettre vos relevés
-              </p>
-            )}
           </div>
         </form>
         </div>

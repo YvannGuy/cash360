@@ -101,12 +101,21 @@ export default function DashboardPage() {
       price: 1500,
       originalPrice: 1750,
       isPack: true
+    },
+    {
+      id: 'analyse-financiere',
+      title: 'Analyse financière personnalisée',
+      img: '/images/pack.png', // TODO: changer l'image
+      blurb: 'Analyse approfondie de votre situation financière avec recommandations personnalisées.',
+      price: 39.99,
+      isPack: false
     }
   ]
   const [selectedCapsules, setSelectedCapsules] = useState<string[]>([])
   const [userCapsules, setUserCapsules] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [hasPaidAnalysis, setHasPaidAnalysis] = useState(false)
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [legalModalOpen, setLegalModalOpen] = useState(false)
@@ -195,6 +204,16 @@ export default function DashboardPage() {
         // Charger capsules utilisateur
         const myCaps = await capsulesService.getUserCapsules().catch(() => [])
         setUserCapsules(Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : [])
+        
+        // Vérifier si l'utilisateur a payé l'analyse financière
+        const { data: paymentAnalysis } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('product_id', 'analyse-financiere')
+          .eq('status', 'success')
+          .limit(1)
+        setHasPaidAnalysis(!!(paymentAnalysis && paymentAnalysis.length > 0))
       } catch (e) {
         console.error('Erreur init dashboard:', e)
       } finally {
@@ -262,6 +281,18 @@ export default function DashboardPage() {
   }
 
   const handleNewAnalysis = () => {
+    if (!hasPaidAnalysis) {
+      // Rediriger vers la boutique pour acheter l'analyse
+      setActiveTab('boutique')
+      // Scroll vers la carte analyse financière
+      setTimeout(() => {
+        const element = document.getElementById('analyse-financiere-card')
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 100)
+      return
+    }
     router.push('/analyse-financiere')
   }
 
@@ -668,10 +699,25 @@ export default function DashboardPage() {
                   </p>
                           <button
                     onClick={handleNewAnalysis}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg"
+                    disabled={!hasPaidAnalysis}
+                    className={`px-6 py-3 rounded-lg transition-colors font-medium shadow-lg flex items-center gap-2 mx-auto ${
+                      hasPaidAnalysis
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-400 text-gray-700 cursor-not-allowed relative'
+                    }`}
                           >
-                    Lancer une nouvelle analyse
+                    <span>Lancer une nouvelle analyse</span>
+                    {!hasPaidAnalysis && (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    )}
                           </button>
+                          {!hasPaidAnalysis && (
+                            <p className="text-sm text-gray-800 mt-3 font-medium">
+                              Achetez l'analyse dans la boutique pour débloquer cette fonctionnalité
+                            </p>
+                          )}
                       </div>
                     </div>
             
@@ -758,14 +804,14 @@ export default function DashboardPage() {
               </div>
                         <div>
                   <h2 className="text-2xl font-bold text-gray-900">Boutique</h2>
-                  <p className="text-gray-600">Découvrez les 6 capsules exclusives Cash360 pour transformer votre vie financière et spirituelle.</p>
+                  <p className="text-gray-600">Découvrez les 7 produits exclusifs Cash360 pour transformer votre vie financière et spirituelle.</p>
                     </div>
                   </div>
 
               {/* Grille des capsules */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {boutiqueCapsules.map((capsule) => (
-                  <div key={capsule.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                  <div key={capsule.id} id={capsule.id === 'analyse-financiere' ? 'analyse-financiere-card' : undefined} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
                     {/* Image */}
                     <div className="relative h-48 w-full overflow-hidden">
                       <Image
