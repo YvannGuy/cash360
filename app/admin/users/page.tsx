@@ -159,11 +159,6 @@ export default function AdminUsersPage() {
     }
   }
 
-  const handleViewUser = (user: User) => {
-    // TODO: Implémenter la vue détaillée de l'utilisateur
-    console.log('Voir utilisateur:', user)
-  }
-
   const handleViewFiles = (user: User) => {
     // TODO: Implémenter la vue des fichiers de l'utilisateur
     router.push(`/admin/fichiers?user=${user.email}`)
@@ -429,12 +424,6 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center space-x-3">
-                            <button onClick={() => handleViewUser(user)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Voir détails">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                              </svg>
-                            </button>
                             <button onClick={() => handleViewFiles(user)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Voir fichiers">
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>

@@ -22,58 +22,40 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Recherche des relevés pour le ticket:', ticket)
     
-    // Enlever le préfixe "CASH-" du ticket pour correspondre au dossier de stockage
-    const folderName = ticket.replace('CASH-', '')
-    console.log('📁 Nom du dossier:', folderName)
+    // Récupérer l'analyse correspondant au ticket
+    const { data: analysis } = await supabaseAdmin!
+      .from('analyses')
+      .select('id')
+      .eq('ticket', ticket)
+      .single()
     
-    // Méthode alternative : récupérer tous les fichiers et filtrer côté client
-    const getAllFiles = async (path = ''): Promise<any[]> => {
-      if (!supabaseAdmin) return []
-      
-      const { data, error } = await supabaseAdmin.storage
-        .from('releves')
-        .list(path, { limit: 1000, offset: 0 })
-      
-      if (error) {
-        console.error('Erreur dans', path, ':', error)
-        return []
-      }
-      
-      const files = []
-      for (const item of data || []) {
-        const fullPath = path ? `${path}/${item.name}` : item.name
-        
-        if (item.metadata?.size) {
-          // C'est un fichier
-          files.push({
-            name: item.name,
-            path: fullPath,
-            size: item.metadata.size,
-            created_at: item.created_at,
-            updated_at: item.updated_at
-          })
-        } else {
-          // C'est un dossier, chercher récursivement
-          const subFiles = await getAllFiles(fullPath)
-          files.push(...subFiles)
-        }
-      }
-      
-      return files
+    if (!analysis) {
+      return NextResponse.json({ success: true, files: [] })
     }
     
-    const allFiles = await getAllFiles()
-    console.log('📋 Tous les fichiers trouvés:', allFiles)
+    // Récupérer les fichiers depuis analysis_files
+    const { data: files, error } = await supabaseAdmin!
+      .from('analysis_files')
+      .select('*')
+      .eq('analysis_id', analysis.id)
+      .order('created_at', { ascending: false })
     
-    // Filtrer les fichiers qui correspondent au ticket
-    const releveFiles = allFiles.filter(file => 
-      file.path.startsWith(`releves/${folderName}/`) && 
-      file.name.startsWith('releve_')
-    )
+    if (error) {
+      console.error('Erreur lors de la récupération des fichiers:', error)
+      return NextResponse.json({ success: true, files: [] })
+    }
     
-    console.log('📄 Fichiers de relevés filtrés pour', folderName, ':', releveFiles)
+    // Transformer les fichiers pour correspondre au format attendu
+    const releveFiles = (files || []).map(file => ({
+      name: file.file_name,
+      path: file.file_url,
+      size: file.file_size,
+      created_at: file.created_at
+    }))
     
-    return NextResponse.json({ files: releveFiles })
+    console.log('📄 Fichiers de relevés pour', ticket, ':', releveFiles)
+    
+    return NextResponse.json({ success: true, files: releveFiles })
     
   } catch (error) {
     console.error('Erreur API releves:', error)

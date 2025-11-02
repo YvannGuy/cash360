@@ -176,6 +176,34 @@ export default function AdminAnalysesPage() {
     console.log('Voir analyse:', analysis)
   }
 
+  const handleMarkAsCompleted = async (analysis: Analysis) => {
+    if (!confirm(`Marquer l'analyse ${analysis.ticket} comme terminée ?`)) {
+      return
+    }
+    
+    try {
+      const response = await fetch('/api/admin/analyses', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId: analysis.id,
+          progress: 100,
+          status: 'terminee'
+        })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        loadAllAnalyses()
+      } else {
+        alert('Erreur lors de la mise à jour')
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      alert('Erreur lors de la mise à jour')
+    }
+  }
+
   const filteredAnalyses = analyses.filter(analysis => {
     const matchesSearch = 
       analysis.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -452,16 +480,18 @@ export default function AdminAnalysesPage() {
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center space-x-3">
-                            <button onClick={() => handleViewAnalysis(analysis)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Voir détails">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                              </svg>
-                            </button>
+                            {analysis.pdf_url && analysis.status !== 'terminee' && (
+                              <button onClick={() => handleMarkAsCompleted(analysis)} className="text-green-600 hover:text-green-800 transition-colors" title="Marquer comme terminé">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </button>
+                            )}
                             {analysis.pdf_url && (
                               <button 
                                 onClick={() => window.open(analysis.pdf_url, '_blank')}
                                 className="text-gray-400 hover:text-[#00A1C6] transition-colors"
+                                title="Télécharger PDF"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -471,6 +501,7 @@ export default function AdminAnalysesPage() {
                             <button 
                               onClick={() => handleUploadClick(analysis.id)}
                               className="text-gray-400 hover:text-[#00A1C6] transition-colors"
+                              title="Uploader PDF"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
