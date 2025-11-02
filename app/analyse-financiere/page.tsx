@@ -157,7 +157,7 @@ export default function AnalyseFinancierePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: [{ id: 'analyse-financiere', quantity: 1 }],
-          total: 39.00,
+          total: 39.99,
           source: 'analysis' // Indiquer que c'est pour l'analyse
         })
       })
@@ -409,7 +409,7 @@ export default function AnalyseFinancierePage() {
           {/* Mode de paiement */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-1">Mode de paiement</h2>
-            <p className="text-xs text-gray-600 mb-4">Régler 39,00 €</p>
+            <p className="text-xs text-gray-600 mb-4">Régler 39,99 €</p>
             
             {hasPaid ? (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
