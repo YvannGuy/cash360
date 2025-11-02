@@ -105,7 +105,7 @@ export default function DashboardPage() {
     {
       id: 'analyse-financiere',
       title: 'Analyse financière personnalisée',
-      img: '/images/pack.png', // TODO: changer l'image
+      img: '/images/Firefly-2.jpg',
       blurb: 'Analyse approfondie de votre situation financière avec recommandations personnalisées.',
       price: 39.99,
       isPack: false
@@ -205,15 +205,16 @@ export default function DashboardPage() {
         const myCaps = await capsulesService.getUserCapsules().catch(() => [])
         setUserCapsules(Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : [])
         
-        // Vérifier si l'utilisateur a payé l'analyse financière
+        // Vérifier si l'utilisateur a plus de paiements que d'analyses
         const { data: paymentAnalysis } = await supabase
           .from('payments')
           .select('*')
           .eq('user_id', user.id)
           .eq('product_id', 'analyse-financiere')
           .eq('status', 'success')
-          .limit(1)
-        setHasPaidAnalysis(!!(paymentAnalysis && paymentAnalysis.length > 0))
+        const nbPayments = paymentAnalysis?.length || 0
+        const nbAnalyses = userAnalyses?.length || 0
+        setHasPaidAnalysis(nbPayments > nbAnalyses)
       } catch (e) {
         console.error('Erreur init dashboard:', e)
       } finally {
