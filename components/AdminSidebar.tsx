@@ -14,6 +14,11 @@ const Icons = {
       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
     </svg>
   ),
+  store: (
+    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+      <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd"/>
+    </svg>
+  ),
   home: (
     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
       <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
@@ -64,6 +69,7 @@ export default function AdminSidebar({ activeTab = 'overview' }: AdminSidebarPro
     { id: 'overview', label: 'Overview', icon: 'home', route: '/admin/dashboard' },
     { id: 'users', label: 'Utilisateurs', icon: 'users', route: '/admin/users' },
     { id: 'analyses', label: 'Analyses financières', icon: 'chart', route: '/admin/analyses' },
+    { id: 'boutique', label: 'Boutique', icon: 'store', route: '/admin/boutique' },
     { id: 'capsules', label: 'Capsules achetées', icon: 'graduation', route: '/admin/capsules' },
     { id: 'formations', label: 'Formations & sessions', icon: 'chalkboard', route: '/admin/formations' },
     { id: 'paiements', label: 'Paiements', icon: 'creditCard', route: '/admin/paiements' },
