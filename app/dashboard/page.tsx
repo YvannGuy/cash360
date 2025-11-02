@@ -113,6 +113,7 @@ export default function DashboardPage() {
   ]
   const [selectedCapsules, setSelectedCapsules] = useState<string[]>([])
   const [userCapsules, setUserCapsules] = useState<string[]>([])
+  const [formationsData, setFormationsData] = useState<any[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [hasPaidAnalysis, setHasPaidAnalysis] = useState(false)
@@ -203,7 +204,18 @@ export default function DashboardPage() {
         }
         // Charger capsules utilisateur
         const myCaps = await capsulesService.getUserCapsules().catch(() => [])
-        setUserCapsules(Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : [])
+        const capsuleIds = Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : []
+        setUserCapsules(capsuleIds)
+        
+        // Charger formations pour ces capsules
+        if (capsuleIds.length > 0) {
+          const { data: formations } = await supabase
+            .from('formations')
+            .select('*')
+            .in('capsule_id', capsuleIds)
+            .order('date_scheduled', { ascending: true })
+          setFormationsData(formations || [])
+        }
         
         // Vérifier si l'utilisateur a plus de paiements que d'analyses
         const { data: paymentAnalysis } = await supabase
@@ -842,20 +854,32 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Bouton d'achat */}
-                      <button
-                        onClick={() => {
-                          addToCart({
-                            id: capsule.id,
-                            title: capsule.title,
-                            img: capsule.img,
-                            price: capsule.price
-                          })
-                          setShowCartDropdown(true)
-                        }}
-                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                      >
-                        {capsule.isPack ? 'Acheter le pack' : 'Acheter'}
-                      </button>
+                      {userCapsules.includes(capsule.id) ? (
+                        <button
+                          disabled
+                          className="w-full px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Déjà acheté
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            addToCart({
+                              id: capsule.id,
+                              title: capsule.title,
+                              img: capsule.img,
+                              price: capsule.price
+                            })
+                            setShowCartDropdown(true)
+                          }}
+                          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        >
+                          {capsule.isPack ? 'Acheter le pack' : 'Acheter'}
+                        </button>
+                      )}
                         </div>
                         </div>
                 ))}
@@ -893,30 +917,89 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   {availableCapsules
                     .filter(c => userCapsules.includes(c.id))
-                    .map((c, index) => (
-                      <div key={c.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                        <div className="p-6">
-                          <div className="flex items-start gap-4">
-                            {/* Thumbnail */}
-                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                              <Image
-                                src={c.img}
-                                alt={c.title}
-                                width={96}
-                                height={96}
-                                className="w-full h-full object-cover"
-                              />
-                          </div>
+                    .map((c, index) => {
+                      const formation = formationsData.find(f => f.capsule_id === c.id)
+                      const formatDate = (dateStr: string) => {
+                        if (!dateStr) return ''
+                        return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+                      }
+                      const formatTime = (timeStr: string) => {
+                        if (!timeStr) return ''
+                        return timeStr.substring(0, 5)
+                      }
+                      const getStatus = (formation: any) => {
+                        if (!formation) return { label: 'Non programmée', color: 'bg-gray-100 text-gray-800' }
+                        const now = new Date()
+                        const sessionDate = new Date(`${formation.date_scheduled}T${formation.time_scheduled}`)
+                        if (sessionDate < now) return { label: 'Terminée', color: 'bg-gray-100 text-gray-800' }
+                        if (sessionDate.toDateString() === now.toDateString()) return { label: 'En cours', color: 'bg-blue-100 text-blue-800' }
+                        return { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' }
+                      }
+                      const status = getStatus(formation)
+                      
+                      return (
+                        <div key={c.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                          <div className="p-6">
+                            <div className="flex items-start gap-4">
+                              {/* Thumbnail */}
+                              <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={c.img}
+                                  alt={c.title}
+                                  width={96}
+                                  height={96}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
 
-                            {/* Content */}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-bold text-gray-900 mb-2">{c.title}</h3>
-                              <p className="text-sm text-gray-600">{c.blurb}</p>
+                              {/* Content */}
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">{c.title}</h3>
+                                <p className="text-sm text-gray-600 mb-3">{c.blurb}</p>
+                                
+                                {/* Session info */}
+                                {formation && (
+                                  <div className="space-y-2 mb-4">
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                      <span className="text-gray-700 font-medium">{formatDate(formation.date_scheduled)} à {formatTime(formation.time_scheduled)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status.color}`}>
+                                        {status.label}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Button */}
+                                {formation && formation.zoom_link && status.label !== 'Terminée' ? (
+                                  <a
+                                    href={formation.zoom_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                    Participer
+                                  </a>
+                                ) : (
+                                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium">
+                                    {status.label === 'Terminée' ? 'Terminée' : 'Session en cours de planification'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                    </div>
-                  </div>
+                        </div>
+                      )
+                    })}
                 </div>
-              ))}
+              )}
             </div>
           )}
             </div>
