@@ -12,22 +12,56 @@ import LegalModal from '@/components/LegalModal'
 export default function CartPage() {
   const { t } = useLanguage()
   const router = useRouter()
-  const { cartItems, updateQuantity, removeFromCart, getSubtotal } = useCart()
+  const { cartItems, updateQuantity, removeFromCart, getSubtotal, clearCart } = useCart()
   
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [showLegalModal, setShowLegalModal] = useState(false)
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'legal' | 'terms'>('terms')
+  const [isProcessing, setIsProcessing] = useState(false)
   
   const subtotal = getSubtotal()
   const total = subtotal
   
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!termsAccepted) {
       alert('Veuillez accepter les conditions générales de vente')
       return
     }
-    // TODO: Implementer le paiement
-    console.log('Proceeding to payment...')
+    
+    if (cartItems.length === 0) {
+      alert('Votre panier est vide')
+      return
+    }
+
+    setIsProcessing(true)
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cartItems,
+          total: total
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Vider le panier
+        clearCart()
+        // Rediriger vers le dashboard
+        alert('Paiement effectué avec succès ! Vos capsules sont maintenant disponibles dans Mes Formations.')
+        router.push('/dashboard')
+      } else {
+        alert(`Erreur: ${data.error || 'Erreur lors du paiement'}`)
+      }
+    } catch (error) {
+      console.error('Erreur checkout:', error)
+      alert('Erreur lors du traitement du paiement')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   return (
@@ -220,11 +254,11 @@ export default function CartPage() {
               {/* Checkout Button */}
               <button
                 onClick={handleCheckout}
-                disabled={cartItems.length === 0 || !termsAccepted}
+                disabled={cartItems.length === 0 || !termsAccepted || isProcessing}
                 className="w-full px-4 py-3 bg-[#FEBE02] text-white rounded-lg font-bold hover:bg-[#e0a900] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed mb-4"
                 style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}
               >
-                Procéder au paiement
+                {isProcessing ? 'Traitement en cours...' : 'Procéder au paiement'}
               </button>
 
               {/* Security and Support Info */}
