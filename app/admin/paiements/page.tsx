@@ -369,104 +369,61 @@ export default function AdminPaiementsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  <tr className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-[#00A1C6] flex items-center justify-center text-white font-medium text-sm">PC</div>
-                        <span className="font-medium text-gray-900">Paola C.</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">Analyse financière</td>
-                    <td className="py-4 px-6 text-sm font-medium text-gray-900">39,00</td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
+                  {payments.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-gray-500">
+                        Aucun paiement enregistré
+                      </td>
+                    </tr>
+                  ) : (
+                    payments.map((payment: any) => {
+                      const initials = getInitials(payment.user_email || payment.email || 'UN')
+                      const statusColor = payment.status === 'success' ? 'green' : payment.status === 'failed' ? 'red' : payment.status === 'pending' ? 'orange' : 'gray'
+                      const StatusIcon = payment.status === 'success' ? (
                         <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                         </svg>
-                        <span className="text-green-600 text-sm">Réussi</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">PayPal</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">01/11/2025</td>
-                    <td className="py-4 px-6">
-                      <button className="text-[#00A1C6] hover:text-[#0089a3] transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-medium text-sm">JK</div>
-                        <span className="font-medium text-gray-900">Jean K.</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">Capsule "Éducation financière"</td>
-                    <td className="py-4 px-6 text-sm font-medium text-gray-900">20,00</td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
+                      ) : (
                         <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                        <span className="text-red-600 text-sm">Échec</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">Stripe</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">03/11/2025</td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <button className="text-[#00A1C6] hover:text-[#0089a3] transition-colors">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                          </svg>
-                        </button>
-                        <button className="text-orange-500 hover:text-orange-600 transition-colors">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center text-white font-medium text-sm">NM</div>
-                        <span className="font-medium text-gray-900">Nadia M.</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">Pack complet</td>
-                    <td className="py-4 px-6 text-sm font-medium text-gray-900">149,99</td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                        </svg>
-                        <span className="text-green-600 text-sm">Réussi</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">Carte bancaire</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">04/11/2025</td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <button className="text-[#00A1C6] hover:text-[#0089a3] transition-colors">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                          </svg>
-                        </button>
-                        <button className="text-gray-500 hover:text-gray-600 transition-colors">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      )
+                      const statusLabel = payment.status === 'success' ? 'Réussi' : payment.status === 'failed' ? 'Échec' : payment.status === 'pending' ? 'En attente' : 'Inconnu'
+                      
+                      return (
+                        <tr key={payment.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-6">
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-10 h-10 rounded-full bg-[#00A1C6] flex items-center justify-center text-white font-medium text-sm`}>
+                                {initials}
+                              </div>
+                              <span className="font-medium text-gray-900">{payment.user_name || payment.user_email?.split('@')[0] || 'Unknown'}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-sm text-gray-600">{payment.type_label || payment.payment_type || payment.type || 'N/A'}</td>
+                          <td className="py-4 px-6 text-sm font-medium text-gray-900">{parseFloat(payment.amount || 0).toFixed(2).replace('.', ',')}</td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-2">
+                              {StatusIcon}
+                              <span className={`text-${statusColor}-600 text-sm`}>{statusLabel}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-sm text-gray-600">{payment.method || 'N/A'}</td>
+                          <td className="py-4 px-6 text-sm text-gray-600">
+                            {payment.created_at ? new Date(payment.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : payment.date || 'N/A'}
+                          </td>
+                          <td className="py-4 px-6">
+                            <button className="text-[#00A1C6] hover:text-[#0089a3] transition-colors">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
