@@ -82,13 +82,18 @@ export async function POST(request: NextRequest) {
     // Créer les line items pour Stripe
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item: any) => {
       const product = products.find(p => p.id === item.id)
+      const productData: any = {
+        name: product.name,
+      }
+      // Ajouter la description seulement si elle existe et n'est pas vide
+      if (item.blurb && item.blurb.trim() !== '') {
+        productData.description = item.blurb
+      }
+      
       return {
         price_data: {
           currency: 'eur',
-          product_data: {
-            name: product.name,
-            description: item.blurb || '',
-          },
+          product_data: productData,
           unit_amount: Math.round(parseFloat(product.price) * 100), // Stripe utilise les centimes
         },
         quantity: item.quantity,
