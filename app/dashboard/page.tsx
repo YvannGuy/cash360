@@ -864,51 +864,7 @@ export default function DashboardPage() {
                             {/* Content */}
                             <div className="flex-1 min-w-0">
                               <h3 className="text-lg font-bold text-gray-900 mb-2">{c.title}</h3>
-                              
-                              {/* Session info */}
-                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                {index === 0 && <span>Prochaine session : Dimanche 16 mars 2025, à 19h00 (heure de Paris)</span>}
-                                {index === 1 && <span>Prochaine session : Samedi 22 mars 2025, à 15h00 (heure de Paris)</span>}
-                                {index > 1 && <span>Session terminée : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>}
-                              </div>
-
-                              {/* Status badge */}
-                              <div className="flex items-center gap-3">
-                                {index === 0 && (
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">En attente</span>
-                                )}
-                                {index === 1 && (
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">En cours</span>
-                                )}
-                                {index > 1 && (
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Terminée ✔</span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Action button */}
-                            <div className="flex-shrink-0">
-                              {index > 1 ? (
-                                <button
-                                  disabled
-                                  className="px-6 py-2 bg-gray-300 text-white rounded-lg font-medium cursor-not-allowed"
-                                >
-                                  Terminée
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => {
-                                    // TODO: Implementer la logique de participation
-                                    console.log(`Participation: ${c.title}`)
-                                  }}
-                                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                                >
-                                  Participer
-                                </button>
-                              )}
+                              <p className="text-sm text-gray-600">{c.blurb}</p>
                             </div>
                           </div>
                         </div>
