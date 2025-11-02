@@ -75,3 +75,75 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function DELETE(request: NextRequest) {
+  try {
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Configuration Supabase manquante' },
+        { status: 500 }
+      )
+    }
+
+    const { fileId } = await request.json()
+    
+    if (!fileId) {
+      return NextResponse.json(
+        { error: 'ID fichier manquant' },
+        { status: 400 }
+      )
+    }
+
+    // Récupérer les infos du fichier pour supprimer aussi dans le storage
+    const { data: fileData, error: fileError } = await supabaseAdmin!
+      .from('analysis_files')
+      .select('file_url, file_name, analysis_id')
+      .eq('id', fileId)
+      .single()
+
+    if (fileError || !fileData) {
+      console.error('Erreur lors de la récupération du fichier:', fileError)
+      return NextResponse.json(
+        { error: 'Fichier non trouvé' },
+        { status: 404 }
+      )
+    }
+
+    // Supprimer le fichier du storage Supabase
+    const { error: storageError } = await supabaseAdmin!
+      .storage
+      .from('releves')
+      .remove([fileData.file_url])
+
+    if (storageError) {
+      console.error('Erreur lors de la suppression du fichier du storage:', storageError)
+      // Continue quand même la suppression de la DB
+    }
+
+    // Supprimer l'enregistrement de la base de données
+    const { error: deleteError } = await supabaseAdmin!
+      .from('analysis_files')
+      .delete()
+      .eq('id', fileId)
+
+    if (deleteError) {
+      console.error('Erreur lors de la suppression du fichier:', deleteError)
+      return NextResponse.json(
+        { error: 'Erreur lors de la suppression' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Fichier supprimé avec succès'
+    })
+
+  } catch (error) {
+    console.error('Erreur API admin fichiers DELETE:', error)
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur' },
+      { status: 500 }
+    )
+  }
+}
+

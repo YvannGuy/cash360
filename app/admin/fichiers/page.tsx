@@ -230,6 +230,30 @@ export default function AdminFichiersPage() {
     }
   }
 
+  const handleDeleteFile = async (fileId: string, fileName: string) => {
+    if (!confirm(`Voulez-vous vraiment supprimer le fichier "${fileName}" ?`)) {
+      return
+    }
+    
+    try {
+      const response = await fetch('/api/admin/fichiers', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        loadFiles()
+      } else {
+        alert('Erreur lors de la suppression')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      alert('Erreur lors de la suppression du fichier')
+    }
+  }
+
   const filteredFiles = files.filter(file => {
     const matchesSearch = 
       file.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -437,11 +461,18 @@ export default function AdminFichiersPage() {
                               </span>
                             </td>
                             <td className="py-4 px-6">
-                              <button onClick={() => handleDownloadFile(file.file_url, file.file_name)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Télécharger">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                              </button>
+                              <div className="flex items-center space-x-3">
+                                <button onClick={() => handleDownloadFile(file.file_url, file.file_name)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Télécharger">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                  </svg>
+                                </button>
+                                <button onClick={() => handleDeleteFile(file.id, file.file_name)} className="text-gray-400 hover:text-red-500 transition-colors" title="Supprimer">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
