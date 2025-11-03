@@ -66,7 +66,11 @@ export default function DashboardPage() {
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
-  const analysesPerPage = 2
+  const [currentPageBoutique, setCurrentPageBoutique] = useState(1)
+  const [currentPageFormations, setCurrentPageFormations] = useState(1)
+  const itemsPerPage = 6
+  const analysesPerPage = 6
+  const formationsPerPage = 6
   
   const [supabase, setSupabase] = useState<any>(null)
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
@@ -108,14 +112,35 @@ export default function DashboardPage() {
     return localPart.substring(0, 1).toUpperCase() + localPart.substring(1, 2)
   }
 
-  // Calculs de pagination
-  const totalPages = Math.ceil(analyses.length / analysesPerPage)
-  const startIndex = (currentPage - 1) * analysesPerPage
-  const endIndex = startIndex + analysesPerPage
-  const currentAnalyses = analyses.slice(startIndex, endIndex)
+  // Calculs de pagination pour Analyses
+  const totalPagesAnalyses = Math.ceil(analyses.length / analysesPerPage)
+  const startIndexAnalyses = (currentPage - 1) * analysesPerPage
+  const endIndexAnalyses = startIndexAnalyses + analysesPerPage
+  const currentAnalyses = analyses.slice(startIndexAnalyses, endIndexAnalyses)
+
+  // Calculs de pagination pour Boutique
+  const totalPagesBoutique = Math.ceil(boutiqueCapsules.length / itemsPerPage)
+  const startIndexBoutique = (currentPageBoutique - 1) * itemsPerPage
+  const endIndexBoutique = startIndexBoutique + itemsPerPage
+  const currentBoutiqueCapsules = boutiqueCapsules.slice(startIndexBoutique, endIndexBoutique)
+
+  // Calculs de pagination pour Formations
+  const filteredFormations = availableCapsules.filter(c => userCapsules.includes(c.id))
+  const totalPagesFormations = Math.ceil(filteredFormations.length / formationsPerPage)
+  const startIndexFormations = (currentPageFormations - 1) * formationsPerPage
+  const endIndexFormations = startIndexFormations + formationsPerPage
+  const currentFormations = filteredFormations.slice(startIndexFormations, endIndexFormations)
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+  }
+
+  const handlePageChangeBoutique = (page: number) => {
+    setCurrentPageBoutique(page)
+  }
+
+  const handlePageChangeFormations = (page: number) => {
+    setCurrentPageFormations(page)
   }
 
   useEffect(() => {
@@ -123,6 +148,13 @@ export default function DashboardPage() {
     // Initialiser Supabase côté client uniquement
     setSupabase(createClientBrowser())
   }, [])
+
+  // Réinitialiser les pages lors du changement d'onglet
+  useEffect(() => {
+    setCurrentPage(1)
+    setCurrentPageBoutique(1)
+    setCurrentPageFormations(1)
+  }, [activeTab])
 
   useEffect(() => {
     if (!supabase) return
@@ -158,7 +190,8 @@ export default function DashboardPage() {
             blurb: p.description || '',
             price: parseFloat(p.price),
             originalPrice: p.original_price ? parseFloat(p.original_price) : undefined,
-            isPack: p.is_pack
+            isPack: p.is_pack,
+            isOneTime: p.is_one_time !== false
           }))
           setBoutiqueCapsules(adaptedProducts)
         }
@@ -566,6 +599,15 @@ export default function DashboardPage() {
                         </button>
                         <button
                           onClick={() => {
+                            router.push('/dashboard/settings')
+                            setShowUserMenu(false)
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Paramètres
+                        </button>
+                        <button
+                          onClick={() => {
                             handleSignOut()
                             setShowUserMenu(false)
                           }}
@@ -698,7 +740,7 @@ export default function DashboardPage() {
             {/* Liste des analyses */}
             {analyses.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {analyses.map((analysis) => (
+                {currentAnalyses.map((analysis) => (
                   <div key={analysis.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow p-6">
                     {/* En-tête de la carte */}
                     <div className="mb-4">
@@ -706,14 +748,22 @@ export default function DashboardPage() {
                         Analyse du {new Date(analysis.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </h3>
                       <div className="flex items-center gap-2 mb-3">
-                        <div className={`w-3 h-3 rounded-full ${analysis.status === 'terminee' ? 'bg-green-500' : 'bg-orange-500'}`}></div>
+                        <div className={`w-3 h-3 rounded-full ${
+                          analysis.status === 'terminee' ? 'bg-green-500' : 
+                          analysis.status === 'en_analyse' ? 'bg-blue-500' : 
+                          'bg-orange-500'
+                        }`}></div>
                         <span className="text-sm font-medium text-gray-700">
-                          {analysis.status === 'terminee' ? 'Terminée' : 'En cours'}
+                          {analysis.status === 'terminee' ? 'Terminée' : 
+                           analysis.status === 'en_analyse' ? 'En analyse' : 
+                           'En cours'}
                         </span>
               </div>
                       <p className="text-sm text-gray-600">
                         {analysis.status === 'terminee' 
                           ? 'Analyse de vos 3 relevés bancaires – rapport disponible.'
+                          : analysis.status === 'en_analyse'
+                          ? 'Vos documents sont en cours d\'analyse par nos experts.'
                           : 'Traitement en cours de vos relevés bancaires.'
                         }
                       </p>
@@ -763,6 +813,64 @@ export default function DashboardPage() {
                   ))}
                 </div>
               )}
+
+              {/* Pagination Analyses */}
+              {totalPagesAnalyses > 1 && (
+                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                  <div className="flex-1 flex justify-between sm:hidden">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Précédent
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPagesAnalyses, prev + 1))}
+                      disabled={currentPage === totalPagesAnalyses}
+                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Suivant
+                    </button>
+                  </div>
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Affichage de <span className="font-medium">{startIndexAnalyses + 1}</span> à{' '}
+                        <span className="font-medium">{Math.min(endIndexAnalyses, analyses.length)}</span> sur{' '}
+                        <span className="font-medium">{analyses.length}</span> analyses
+                      </p>
+                    </div>
+                    <div>
+                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                          disabled={currentPage === 1}
+                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Précédent</span>
+                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                          Page {currentPage} sur {totalPagesAnalyses}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(totalPagesAnalyses, prev + 1))}
+                          disabled={currentPage === totalPagesAnalyses}
+                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Suivant</span>
+                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -784,7 +892,7 @@ export default function DashboardPage() {
 
               {/* Grille des capsules */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {boutiqueCapsules.map((capsule) => (
+                {currentBoutiqueCapsules.map((capsule) => (
                   <div key={capsule.id} id={capsule.id === 'analyse-financiere' ? 'analyse-financiere-card' : undefined} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
                     {/* Image */}
                     <div className="relative h-48 w-full overflow-hidden">
@@ -817,7 +925,7 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Bouton d'achat */}
-                      {userCapsules.includes(capsule.id) ? (
+                      {capsule.isOneTime && userCapsules.includes(capsule.id) ? (
                         <button
                           disabled
                           className="w-full px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
@@ -847,7 +955,65 @@ export default function DashboardPage() {
                         </div>
                 ))}
                       </div>
+
+              {/* Pagination Boutique */}
+              {totalPagesBoutique > 1 && (
+                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                  <div className="flex-1 flex justify-between sm:hidden">
+                    <button
+                      onClick={() => setCurrentPageBoutique(prev => Math.max(1, prev - 1))}
+                      disabled={currentPageBoutique === 1}
+                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Précédent
+                    </button>
+                    <button
+                      onClick={() => setCurrentPageBoutique(prev => Math.min(totalPagesBoutique, prev + 1))}
+                      disabled={currentPageBoutique === totalPagesBoutique}
+                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Suivant
+                    </button>
+                  </div>
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Affichage de <span className="font-medium">{startIndexBoutique + 1}</span> à{' '}
+                        <span className="font-medium">{Math.min(endIndexBoutique, boutiqueCapsules.length)}</span> sur{' '}
+                        <span className="font-medium">{boutiqueCapsules.length}</span> produits
+                      </p>
                     </div>
+                    <div>
+                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button
+                          onClick={() => setCurrentPageBoutique(prev => Math.max(1, prev - 1))}
+                          disabled={currentPageBoutique === 1}
+                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Précédent</span>
+                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                          Page {currentPageBoutique} sur {totalPagesBoutique}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPageBoutique(prev => Math.min(totalPagesBoutique, prev + 1))}
+                          disabled={currentPageBoutique === totalPagesBoutique}
+                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Suivant</span>
+                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {/* Contenu de l'onglet "Mes Formations" */}
@@ -878,8 +1044,7 @@ export default function DashboardPage() {
                             </div>
               ) : (
                 <div className="space-y-4">
-                  {availableCapsules
-                    .filter(c => userCapsules.includes(c.id))
+                  {currentFormations
                     .map((c, index) => {
                       const formation = formationsData.find(f => f.capsule_id === c.id)
                       const formatDate = (dateStr: string) => {
@@ -961,6 +1126,64 @@ export default function DashboardPage() {
                         </div>
                       )
                     })}
+                </div>
+              )}
+
+              {/* Pagination Formations */}
+              {totalPagesFormations > 1 && (
+                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                  <div className="flex-1 flex justify-between sm:hidden">
+                    <button
+                      onClick={() => setCurrentPageFormations(prev => Math.max(1, prev - 1))}
+                      disabled={currentPageFormations === 1}
+                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Précédent
+                    </button>
+                    <button
+                      onClick={() => setCurrentPageFormations(prev => Math.min(totalPagesFormations, prev + 1))}
+                      disabled={currentPageFormations === totalPagesFormations}
+                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Suivant
+                    </button>
+                  </div>
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Affichage de <span className="font-medium">{startIndexFormations + 1}</span> à{' '}
+                        <span className="font-medium">{Math.min(endIndexFormations, filteredFormations.length)}</span> sur{' '}
+                        <span className="font-medium">{filteredFormations.length}</span> formations
+                      </p>
+                    </div>
+                    <div>
+                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button
+                          onClick={() => setCurrentPageFormations(prev => Math.max(1, prev - 1))}
+                          disabled={currentPageFormations === 1}
+                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Précédent</span>
+                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                          Page {currentPageFormations} sur {totalPagesFormations}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPageFormations(prev => Math.min(totalPagesFormations, prev + 1))}
+                          disabled={currentPageFormations === totalPagesFormations}
+                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Suivant</span>
+                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

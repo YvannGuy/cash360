@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
       
       if (authUser) {
         // Utilisateur authentifié
+        const role = authUser.user_metadata?.role || 'user'
         return {
           id: authUser.id,
           email: emailUser.email,
@@ -67,7 +68,8 @@ export async function GET(request: NextRequest) {
           email_confirmed_at: authUser.email_confirmed_at,
           first_analysis_date: emailUser.first_analysis_date,
           analysis_count: emailUser.analysis_count,
-          is_authenticated: true
+          is_authenticated: true,
+          role: role
         }
       } else {
         // Utilisateur non authentifié (juste email dans analyse)
@@ -80,7 +82,8 @@ export async function GET(request: NextRequest) {
           email_confirmed_at: null,
           first_analysis_date: emailUser.first_analysis_date,
           analysis_count: emailUser.analysis_count,
-          is_authenticated: false
+          is_authenticated: false,
+          role: 'user'
         }
       }
     })
@@ -95,6 +98,82 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Erreur API users:', error)
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    // Vérifier la configuration Supabase
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Configuration Supabase manquante' },
+        { status: 500 }
+      )
+    }
+
+    const { userId, role } = await request.json()
+
+    if (!userId || !role) {
+      return NextResponse.json(
+        { error: 'ID utilisateur et rôle requis' },
+        { status: 400 }
+      )
+    }
+
+    // Vérifier que le rôle est valide
+    if (!['user', 'admin', 'commercial'].includes(role)) {
+      return NextResponse.json(
+        { error: 'Rôle invalide. Les rôles valides sont: user, admin, commercial' },
+        { status: 400 }
+      )
+    }
+
+    // Récupérer l'utilisateur actuel
+    const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(userId)
+    
+    if (getUserError || !userData) {
+      return NextResponse.json(
+        { error: 'Utilisateur non trouvé' },
+        { status: 404 }
+      )
+    }
+
+    // Mettre à jour les métadonnées utilisateur avec le nouveau rôle
+    const currentMetadata = userData.user.user_metadata || {}
+    const updatedMetadata = {
+      ...currentMetadata,
+      role: role
+    }
+
+    const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      { user_metadata: updatedMetadata }
+    )
+
+    if (updateError) {
+      console.error('Erreur lors de la mise à jour du rôle:', updateError)
+      return NextResponse.json(
+        { error: 'Erreur lors de la mise à jour du rôle' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Rôle mis à jour avec succès',
+      user: {
+        id: updatedUser.user.id,
+        email: updatedUser.user.email,
+        role: role
+      }
+    })
+
+  } catch (error) {
+    console.error('Erreur API update user role:', error)
     return NextResponse.json(
       { error: 'Erreur interne du serveur' },
       { status: 500 }

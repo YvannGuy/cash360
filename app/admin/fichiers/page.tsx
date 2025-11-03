@@ -47,6 +47,7 @@ export default function AdminFichiersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
+  const [expandedUsers, setExpandedUsers] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -265,11 +266,35 @@ export default function AdminFichiersPage() {
     return matchesSearch && matchesType && matchesStatus
   })
 
+  // Grouper les fichiers par utilisateur
+  const groupedByUser = filteredFiles.reduce((acc, file) => {
+    const key = file.user_email
+    if (!acc[key]) {
+      acc[key] = {
+        user_name: file.user_name,
+        user_email: file.user_email,
+        files: []
+      }
+    }
+    acc[key].files.push(file)
+    return acc
+  }, {} as Record<string, { user_name: string, user_email: string, files: FileRecord[] }>)
+
+  // Convertir en array pour la pagination
+  const userGroups = Object.values(groupedByUser)
+  
   // Pagination
-  const totalPages = Math.ceil(filteredFiles.length / itemsPerPage)
+  const totalPages = Math.ceil(userGroups.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentFiles = filteredFiles.slice(startIndex, endIndex)
+  const currentUserGroups = userGroups.slice(startIndex, endIndex)
+
+  const toggleUserExpansion = (userEmail: string) => {
+    setExpandedUsers(prev => ({
+      ...prev,
+      [userEmail]: !prev[userEmail]
+    }))
+  }
 
   // Reset page when filtering
   useEffect(() => {
@@ -420,61 +445,93 @@ export default function AdminFichiersPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {currentFiles.length === 0 ? (
+                      {currentUserGroups.length === 0 ? (
                         <tr>
                           <td colSpan={8} className="text-center py-12 text-gray-500">Aucun fichier trouvé</td>
                         </tr>
                       ) : (
-                        currentFiles.map((file) => (
-                          <tr key={file.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="py-4 px-6">
-                              <input type="checkbox" className="rounded border-gray-300 text-[#00A1C6] focus:ring-[#00A1C6]" />
-                            </td>
-                            <td className="py-4 px-6">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 rounded-full bg-[#00A1C6] flex items-center justify-center text-white font-medium text-sm">{getInitials(file.user_email)}</div>
-                                <span className="font-medium text-gray-900">{file.user_name}</span>
-                              </div>
-                            </td>
-                            <td className="py-4 px-6 text-sm text-gray-600">{getFileTypeLabel(file.file_name)}</td>
-                            <td className="py-4 px-6 text-sm text-gray-900">{file.file_name}</td>
-                            <td className="py-4 px-6 text-sm text-gray-600">{formatDate(file.created_at)}</td>
-                            <td className="py-4 px-6 text-sm text-gray-600">{formatFileSize(file.file_size)}</td>
-                            <td className="py-4 px-6">
-                              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(file.status)}`}>
-                                {getStatusLabel(file.status) === 'Analysé' && (
-                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                                  </svg>
-                                )}
-                                {getStatusLabel(file.status) === 'En attente' && (
-                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
-                                  </svg>
-                                )}
-                                {getStatusLabel(file.status) === 'Non traité' && (
-                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                )}
-                                {getStatusLabel(file.status)}
-                              </span>
-                            </td>
-                            <td className="py-4 px-6">
-                              <div className="flex items-center space-x-3">
-                                <button onClick={() => handleDownloadFile(file.file_url, file.file_name)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Télécharger">
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        currentUserGroups.map((userGroup) => (
+                          <React.Fragment key={userGroup.user_email}>
+                            {/* Dossier utilisateur */}
+                            <tr className="hover:bg-gray-50 transition-colors bg-gray-50">
+                              <td className="py-4 px-6">
+                                <input type="checkbox" className="rounded border-gray-300 text-[#00A1C6] focus:ring-[#00A1C6]" />
+                              </td>
+                              <td className="py-4 px-6" colSpan={7}>
+                                <button
+                                  onClick={() => toggleUserExpansion(userGroup.user_email)}
+                                  className="flex items-center space-x-3 w-full text-left"
+                                >
+                                  <div className="w-10 h-10 rounded-full bg-[#00A1C6] flex items-center justify-center text-white font-medium text-sm">
+                                    {getInitials(userGroup.user_email)}
+                                  </div>
+                                  <span className="font-medium text-gray-900">{userGroup.user_name}</span>
+                                  <span className="text-sm text-gray-500">({userGroup.files.length} fichier{userGroup.files.length > 1 ? 's' : ''})</span>
+                                  <svg 
+                                    className={`w-5 h-5 text-gray-400 ml-auto transition-transform ${expandedUsers[userGroup.user_email] ? 'transform rotate-90' : ''}`} 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                   </svg>
                                 </button>
-                                <button onClick={() => handleDeleteFile(file.id, file.file_name)} className="text-gray-400 hover:text-red-500 transition-colors" title="Supprimer">
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
+                              </td>
+                            </tr>
+                            {/* Fichiers sous le dossier */}
+                            {expandedUsers[userGroup.user_email] && userGroup.files.map((file) => (
+                              <tr key={file.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="py-4 px-6 pl-16">
+                                  <input type="checkbox" className="rounded border-gray-300 text-[#00A1C6] focus:ring-[#00A1C6]" />
+                                </td>
+                                <td className="py-4 px-6">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-gray-600 text-xs">
+                                      {getFileTypeLabel(file.file_name).charAt(0)}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4 px-6 text-sm text-gray-600">{getFileTypeLabel(file.file_name)}</td>
+                                <td className="py-4 px-6 text-sm text-gray-900">{file.file_name}</td>
+                                <td className="py-4 px-6 text-sm text-gray-600">{formatDate(file.created_at)}</td>
+                                <td className="py-4 px-6 text-sm text-gray-600">{formatFileSize(file.file_size)}</td>
+                                <td className="py-4 px-6">
+                                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(file.status)}`}>
+                                    {getStatusLabel(file.status) === 'Analysé' && (
+                                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                      </svg>
+                                    )}
+                                    {getStatusLabel(file.status) === 'En attente' && (
+                                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
+                                      </svg>
+                                    )}
+                                    {getStatusLabel(file.status) === 'Non traité' && (
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    )}
+                                    {getStatusLabel(file.status)}
+                                  </span>
+                                </td>
+                                <td className="py-4 px-6">
+                                  <div className="flex items-center space-x-3">
+                                    <button onClick={() => handleDownloadFile(file.file_url, file.file_name)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Télécharger">
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                      </svg>
+                                    </button>
+                                    <button onClick={() => handleDeleteFile(file.id, file.file_name)} className="text-gray-400 hover:text-red-500 transition-colors" title="Supprimer">
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </React.Fragment>
                         ))
                       )}
                     </tbody>
@@ -505,8 +562,8 @@ export default function AdminFichiersPage() {
                     <div>
                       <p className="text-sm text-gray-700">
                         Affichage de <span className="font-medium">{startIndex + 1}</span> à{' '}
-                        <span className="font-medium">{Math.min(endIndex, filteredFiles.length)}</span> sur{' '}
-                        <span className="font-medium">{filteredFiles.length}</span> fichiers
+                        <span className="font-medium">{Math.min(endIndex, userGroups.length)}</span> sur{' '}
+                        <span className="font-medium">{userGroups.length}</span> dossier{userGroups.length > 1 ? 's' : ''}
                       </p>
                     </div>
                     <div>

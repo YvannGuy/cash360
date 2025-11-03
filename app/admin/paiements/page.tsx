@@ -25,6 +25,8 @@ export default function AdminPaiementsPage() {
     failureRate: 0,
     averageBasket: 0
   })
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [selectedPayment, setSelectedPayment] = useState<any>(null)
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -161,8 +163,8 @@ export default function AdminPaiementsPage() {
   }
 
   const handleViewPayment = (payment: any) => {
-    // TODO: Implémenter la vue détaillée du paiement
-    console.log('Voir paiement:', payment)
+    setSelectedPayment(payment)
+    setShowPaymentModal(true)
   }
 
   // Pagination
@@ -507,6 +509,126 @@ export default function AdminPaiementsPage() {
         </main>
 
       </div>
+
+      {/* Modal Détails Paiement */}
+      {showPaymentModal && selectedPayment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-[#012F4E]">Détails du Paiement</h2>
+                <button 
+                  onClick={() => setShowPaymentModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Statut */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Statut</label>
+                <div className="flex items-center gap-2">
+                  {selectedPayment.status === 'success' ? (
+                    <>
+                      <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span className="text-green-600 font-medium">Réussi</span>
+                    </>
+                  ) : selectedPayment.status === 'failed' ? (
+                    <>
+                      <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      <span className="text-red-600 font-medium">Échec</span>
+                    </>
+                  ) : (
+                    <span className="text-orange-600 font-medium">En attente</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Informations Utilisateur */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Utilisateur</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#00A1C6] flex items-center justify-center text-white font-medium">
+                    {getInitials(selectedPayment.user_email || selectedPayment.email || 'UN')}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedPayment.user_name || selectedPayment.user_email?.split('@')[0] || 'Unknown'}</p>
+                    <p className="text-sm text-gray-600">{selectedPayment.user_email || selectedPayment.email || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Type de Paiement */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Type</label>
+                <p className="text-gray-900">{selectedPayment.type_label || selectedPayment.payment_type || selectedPayment.type || 'N/A'}</p>
+              </div>
+
+              {/* Montant */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Montant</label>
+                <p className="text-2xl font-bold text-[#012F4E]">{parseFloat(selectedPayment.amount || 0).toFixed(2).replace('.', ',')}€</p>
+              </div>
+
+              {/* Méthode de Paiement */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Méthode de Paiement</label>
+                <p className="text-gray-900">{selectedPayment.method || 'N/A'}</p>
+              </div>
+
+              {/* Date */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Date</label>
+                <p className="text-gray-900">
+                  {selectedPayment.created_at 
+                    ? new Date(selectedPayment.created_at).toLocaleDateString('fr-FR', { 
+                        day: '2-digit', 
+                        month: 'long', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : selectedPayment.date || 'N/A'}
+                </p>
+              </div>
+
+              {/* Transaction ID */}
+              {selectedPayment.transaction_id && (
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block">ID Transaction</label>
+                  <p className="text-gray-900 font-mono text-sm break-all">{selectedPayment.transaction_id}</p>
+                </div>
+              )}
+
+              {/* Description */}
+              {selectedPayment.description && (
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block">Description</label>
+                  <p className="text-gray-900">{selectedPayment.description}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="px-6 py-2 bg-[#012F4E] text-white rounded-lg font-medium hover:bg-[#011a28] transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

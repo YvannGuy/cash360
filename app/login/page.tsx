@@ -18,6 +18,14 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [mounted, setMounted] = useState(false)
   const [supabase, setSupabase] = useState<any>(null)
+  
+  // Champs supplémentaires pour l'inscription
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [country, setCountry] = useState('France')
+  const [city, setCity] = useState('')
+  const [profession, setProfession] = useState('')
 
   const router = useRouter()
 
@@ -60,6 +68,17 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              phone: phone,
+              country: country,
+              city: city,
+              profession: profession,
+              role: 'user'
+            }
+          }
         })
         if (error) throw error
         setMessage(t.login.messageVerifyEmail)
@@ -187,22 +206,114 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Confirmation mot de passe (inscription) */}
+            {/* Champs supplémentaires pour l'inscription */}
             {isSignUp && (
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1 sm:mb-2">
-                  {t.login.confirmPassword}
-                </label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={t.login.passwordPlaceholder}
-                />
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                      Prénom *
+                    </label>
+                    <input
+                      id="firstName"
+                      type="text"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Votre prénom"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                      Nom *
+                    </label>
+                    <input
+                      id="lastName"
+                      type="text"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Votre nom"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                    {t.login.confirmPassword}
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={t.login.passwordPlaceholder}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                    Téléphone
+                  </label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="+33 X XX XX XX XX"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="country" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                      Pays
+                    </label>
+                    <select
+                      id="country"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="France">France</option>
+                      <option value="Belgique">Belgique</option>
+                      <option value="Suisse">Suisse</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                      Ville *
+                    </label>
+                    <input
+                      id="city"
+                      type="text"
+                      required
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Votre ville"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="profession" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                    Profession *
+                  </label>
+                  <input
+                    id="profession"
+                    type="text"
+                    required
+                    value={profession}
+                    onChange={(e) => setProfession(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Votre profession"
+                  />
+                </div>
+              </>
             )}
 
             <button

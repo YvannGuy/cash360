@@ -19,6 +19,7 @@ interface User {
   last_activity?: string
   analyses_count?: number
   capsules_count?: number
+  role?: 'user' | 'admin' | 'commercial'
 }
 
 export default function AdminUsersPage() {
@@ -31,6 +32,7 @@ export default function AdminUsersPage() {
   const [activitySort, setActivitySort] = useState<string>('recent')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [editingRole, setEditingRole] = useState<string | null>(null)
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -64,11 +66,17 @@ export default function AdminUsersPage() {
           setShowAdminMenu(false)
         }
       }
+      if (editingRole) {
+        const target = event.target as Element
+        if (!target.closest('.role-dropdown')) {
+          setEditingRole(null)
+        }
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showAdminMenu])
+  }, [showAdminMenu, editingRole])
 
   const loadAllUsers = async () => {
     try {
@@ -85,7 +93,8 @@ export default function AdminUsersPage() {
           created_at: user.created_at,
           last_activity: user.last_sign_in_at || user.first_analysis_date,
           analyses_count: user.analysis_count || 0,
-          capsules_count: 0 // TODO: récupérer depuis la table user_capsules
+          capsules_count: 0, // TODO: récupérer depuis la table user_capsules
+          role: user.role || 'user'
         }))
         setUsers(adaptedUsers)
       } else {
@@ -132,6 +141,53 @@ export default function AdminUsersPage() {
         return 'Inactif'
       default:
         return 'Inconnu'
+    }
+  }
+
+  const getRoleColor = (role?: string) => {
+    switch (role) {
+      case 'admin':
+        return 'bg-red-100 text-red-800'
+      case 'commercial':
+        return 'bg-blue-100 text-blue-800'
+      case 'user':
+        return 'bg-gray-100 text-gray-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getRoleLabel = (role?: string) => {
+    switch (role) {
+      case 'admin':
+        return 'Admin'
+      case 'commercial':
+        return 'Commercial'
+      case 'user':
+        return 'Utilisateur'
+      default:
+        return 'Utilisateur'
+    }
+  }
+
+  const handleUpdateRole = async (userId: string, newRole: string) => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, role: newRole })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        loadAllUsers()
+        setEditingRole(null)
+      } else {
+        alert('Erreur lors de la mise à jour du rôle: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      alert('Erreur lors de la mise à jour du rôle')
     }
   }
 
@@ -376,6 +432,7 @@ export default function AdminUsersPage() {
                   <tr>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Utilisateur</th>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Email</th>
+                    <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Rôle</th>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Analyses</th>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Capsules</th>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Dernière activité</th>
@@ -385,7 +442,7 @@ export default function AdminUsersPage() {
                 <tbody className="divide-y divide-gray-200">
                   {currentUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-12 text-gray-500">
+                      <td colSpan={7} className="text-center py-12 text-gray-500">
                         Aucun utilisateur trouvé
                       </td>
                     </tr>
@@ -406,6 +463,36 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-600">{user.email}</td>
+                        <td className="py-4 px-6 text-sm text-gray-600">
+                          <div className="relative inline-block role-dropdown">
+                            <button
+                              onClick={() => setEditingRole(editingRole === user.id ? null : user.id)}
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)} hover:opacity-80 transition-opacity cursor-pointer`}
+                            >
+                              {getRoleLabel(user.role)}
+                              <svg className="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {editingRole === user.id && (
+                              <div className="absolute left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[150px] role-dropdown">
+                                {['user', 'admin', 'commercial'].map((role) => (
+                                  <button
+                                    key={role}
+                                    onClick={async () => {
+                                      await handleUpdateRole(user.id, role)
+                                    }}
+                                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                                      user.role === role ? 'text-[#00A1C6] font-medium' : 'text-gray-700'
+                                    }`}
+                                  >
+                                    {getRoleLabel(role as any)}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-4 px-6 text-sm text-gray-600">
                           {user.analyses_count ? (
                             <span>

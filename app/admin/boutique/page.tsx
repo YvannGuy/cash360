@@ -19,6 +19,7 @@ interface Product {
   is_pack: boolean
   image_url: string | null
   available: boolean
+  is_one_time: boolean
   created_at: string
   updated_at: string
 }
@@ -39,7 +40,8 @@ export default function AdminBoutiquePage() {
     originalPrice: '',
     isPack: false,
     imageUrl: '',
-    available: true
+    available: true,
+    isOneTime: true
   })
 
   useEffect(() => {
@@ -118,7 +120,8 @@ export default function AdminBoutiquePage() {
       originalPrice: '',
       isPack: false,
       imageUrl: '',
-      available: true
+      available: true,
+      isOneTime: true
     })
     setShowProductModal(true)
   }
@@ -133,7 +136,8 @@ export default function AdminBoutiquePage() {
       originalPrice: product.original_price?.toString() || '',
       isPack: product.is_pack,
       imageUrl: product.image_url || '',
-      available: product.available
+      available: product.available,
+      isOneTime: product.is_one_time !== false
     })
     setShowProductModal(true)
   }
@@ -165,7 +169,8 @@ export default function AdminBoutiquePage() {
           originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
           isPack: formData.isPack,
           imageUrl: formData.imageUrl || null,
-          available: formData.available
+          available: formData.available,
+          isOneTime: formData.isOneTime
         })
       })
 
@@ -357,11 +362,18 @@ export default function AdminBoutiquePage() {
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-                    {product.is_pack && (
-                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold">
-                        Pack
-                      </span>
-                    )}
+                    <div className="flex gap-1">
+                      {product.is_pack && (
+                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold">
+                          Pack
+                        </span>
+                      )}
+                      {product.is_one_time === false && (
+                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+                          Illimité
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   {product.description && (
@@ -538,6 +550,16 @@ export default function AdminBoutiquePage() {
                       className="rounded border-gray-300 text-[#00A1C6] focus:ring-[#00A1C6]"
                     />
                     <span className="text-sm text-gray-700">Produit de type "Pack"</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isOneTime}
+                      onChange={(e) => setFormData({...formData, isOneTime: e.target.checked})}
+                      className="rounded border-gray-300 text-[#00A1C6] focus:ring-[#00A1C6]"
+                    />
+                    <span className="text-sm text-gray-700">Achat unique (cocher) / Achat illimité (décoché)</span>
                   </label>
 
                   <label className="flex items-center gap-2 cursor-pointer">

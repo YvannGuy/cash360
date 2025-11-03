@@ -53,7 +53,8 @@ export async function POST(request: NextRequest) {
       price,
       originalPrice,
       isPack,
-      imageUrl
+      imageUrl,
+      isOneTime
     } = body
 
     // Validation
@@ -74,7 +75,8 @@ export async function POST(request: NextRequest) {
         original_price: originalPrice || null,
         is_pack: isPack || false,
         image_url: imageUrl || null,
-        available: true
+        available: true,
+        is_one_time: isOneTime !== undefined ? isOneTime : true
       })
       .select()
 
@@ -126,7 +128,8 @@ export async function PUT(request: NextRequest) {
       originalPrice,
       isPack,
       imageUrl,
-      available
+      available,
+      isOneTime
     } = body
 
     // Validation
@@ -147,6 +150,7 @@ export async function PUT(request: NextRequest) {
         is_pack: isPack || false,
         image_url: imageUrl || null,
         available: available !== undefined ? available : true,
+        is_one_time: isOneTime !== undefined ? isOneTime : true,
         updated_at: new Date().toISOString()
       })
       .eq('id', productId)

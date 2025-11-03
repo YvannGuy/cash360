@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { createClientBrowser } from '@/lib/supabase'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -10,26 +11,58 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [supabase, setSupabase] = useState<any>(null)
 
-  // Credentials admin (en production, utilisez des variables d'environnement)
-  const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'cash@cash360.finance'
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'Yywxcjji2026@'
+  useEffect(() => {
+    setSupabase(createClientBrowser())
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    // Vérification simple des credentials (à améliorer en production)
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // Stocker la session admin
-      localStorage.setItem('admin_session', 'true')
-      localStorage.setItem('admin_email', email)
+    if (!supabase) {
+      setError('Initialisation en cours...')
+      setLoading(false)
+      return
+    }
+
+    try {
+      // Se connecter avec Supabase
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (signInError) {
+        setError('Email ou mot de passe incorrect')
+        setLoading(false)
+        return
+      }
+
+      // Vérifier si l'utilisateur a le rôle admin ou commercial
+      const userRole = data.user?.user_metadata?.role
       
-      // Rediriger vers le dashboard admin
-      router.push('/admin/dashboard')
-    } else {
-      setError('Identifiants admin incorrects')
+      if (userRole === 'admin' || userRole === 'commercial') {
+        // Stocker la session admin
+        localStorage.setItem('admin_session', 'true')
+        localStorage.setItem('admin_email', email)
+        localStorage.setItem('admin_role', userRole)
+        
+        // Rediriger vers le dashboard approprié
+        if (userRole === 'commercial') {
+          router.push('/admin/commercial-calls')
+        } else {
+          router.push('/admin/dashboard')
+        }
+      } else {
+        // Déconnecter l'utilisateur si pas admin
+        await supabase.auth.signOut()
+        setError('Accès refusé : vous devez être administrateur ou commercial')
+      }
+    } catch (err: any) {
+      setError('Erreur de connexion : ' + (err.message || 'Erreur inconnue'))
     }
     
     setLoading(false)

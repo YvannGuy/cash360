@@ -9,6 +9,7 @@ import AdminPdfUploadModal from '@/components/AdminPdfUploadModal'
 interface AdminSession {
   isAdmin: boolean
   email: string
+  role?: 'admin' | 'commercial'
 }
 
 export default function AdminDashboardPage() {
@@ -30,9 +31,14 @@ export default function AdminDashboardPage() {
     const checkAdminSession = () => {
       const adminSessionData = localStorage.getItem('admin_session')
       const adminEmail = localStorage.getItem('admin_email')
+      const adminRole = localStorage.getItem('admin_role')
       
       if (adminSessionData === 'true' && adminEmail) {
-        setAdminSession({ isAdmin: true, email: adminEmail })
+        setAdminSession({ isAdmin: true, email: adminEmail, role: adminRole as 'admin' | 'commercial' })
+        // Rediriger les commerciaux vers leur page
+        if (adminRole === 'commercial') {
+          router.push('/admin/commercial-calls')
+        }
       } else {
         router.push('/admin/login')
         return

@@ -12,9 +12,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Lire le fichier SQL de migration
-    const migrationPath = path.join(process.cwd(), 'supabase', 'migrations.sql')
-    const migrationSQL = fs.readFileSync(migrationPath, 'utf-8')
+    // Lire tous les fichiers SQL de migration
+    const migrationsPath = path.join(process.cwd(), 'supabase')
+    const migrationFiles = ['migrations.sql', 'migration_002_products_one_time.sql', 'migration_003_user_roles.sql', 'migration_004_commercial_calls.sql']
+    
+    let allMigrationSQL = ''
+    for (const file of migrationFiles) {
+      const filePath = path.join(migrationsPath, file)
+      if (fs.existsSync(filePath)) {
+        allMigrationSQL += fs.readFileSync(filePath, 'utf-8') + '\n\n'
+      }
+    }
+    const migrationSQL = allMigrationSQL
 
     // Appliquer la migration (on doit découper par instructions)
     const statements = migrationSQL

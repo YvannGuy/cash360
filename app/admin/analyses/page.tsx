@@ -32,6 +32,7 @@ export default function AdminAnalysesPage() {
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
   const [openRelevesDropdown, setOpenRelevesDropdown] = useState<string | null>(null)
+  const [editingStatus, setEditingStatus] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -68,11 +69,17 @@ export default function AdminAnalysesPage() {
           setShowAdminMenu(false)
         }
       }
+      if (editingStatus) {
+        const target = event.target as Element
+        if (!target.closest('.status-dropdown')) {
+          setEditingStatus(null)
+        }
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showAdminMenu])
+  }, [showAdminMenu, editingStatus])
 
   const loadAllAnalyses = async () => {
     try {
@@ -133,8 +140,6 @@ export default function AdminAnalysesPage() {
         return 'bg-blue-100 text-blue-800'
       case 'en_analyse':
         return 'bg-blue-100 text-blue-800'
-      case 'en_attente':
-        return 'bg-orange-100 text-orange-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -147,9 +152,7 @@ export default function AdminAnalysesPage() {
       case 'en_cours':
         return 'En cours'
       case 'en_analyse':
-        return 'En cours'
-      case 'en_attente':
-        return 'En attente'
+        return 'En analyse'
       default:
         return 'Inconnu'
     }
@@ -201,6 +204,30 @@ export default function AdminAnalysesPage() {
     } catch (error) {
       console.error('Erreur:', error)
       alert('Erreur lors de la mise à jour')
+    }
+  }
+
+  const handleUpdateStatus = async (analysis: Analysis, newStatus: string) => {
+    try {
+      const response = await fetch('/api/admin/analyses', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId: analysis.id,
+          progress: newStatus === 'terminee' ? 100 : newStatus === 'en_analyse' ? 50 : newStatus === 'en_cours' ? 25 : 25,
+          status: newStatus
+        })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        loadAllAnalyses()
+      } else {
+        alert('Erreur lors de la mise à jour du statut')
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      alert('Erreur lors de la mise à jour du statut')
     }
   }
 
@@ -346,7 +373,6 @@ export default function AdminAnalysesPage() {
                   className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer"
                 >
                   <option value="all">Tous les statuts</option>
-                  <option value="en_attente">En attente</option>
                   <option value="en_cours">En cours</option>
                   <option value="en_analyse">En analyse</option>
                   <option value="terminee">Terminé</option>
@@ -419,9 +445,35 @@ export default function AdminAnalysesPage() {
                           </div>
                         </td>
                         <td className="py-4 px-6">
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(analysis.status)}`}>
-                            {getStatusLabel(analysis.status)}
-                          </span>
+                          <div className="relative inline-block status-dropdown">
+                            <button
+                              onClick={() => setEditingStatus(editingStatus === analysis.id ? null : analysis.id)}
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(analysis.status)} hover:opacity-80 transition-opacity cursor-pointer`}
+                            >
+                              {getStatusLabel(analysis.status)}
+                              <svg className="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {editingStatus === analysis.id && (
+                              <div className="absolute left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[150px] status-dropdown">
+                                {['en_cours', 'en_analyse', 'terminee'].map((statut) => (
+                                  <button
+                                    key={statut}
+                                    onClick={async () => {
+                                      await handleUpdateStatus(analysis, statut)
+                                      setEditingStatus(null)
+                                    }}
+                                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                                      analysis.status === statut ? 'text-[#00A1C6] font-medium' : 'text-gray-700'
+                                    }`}
+                                  >
+                                    {getStatusLabel(statut)}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-600">
                           {formatDate(analysis.created_at)}
