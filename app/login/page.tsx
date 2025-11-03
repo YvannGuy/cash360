@@ -206,6 +206,24 @@ export default function LoginPage() {
               />
             </div>
 
+            {/* Confirmer le mot de passe - directement après le mot de passe pour l'inscription */}
+            {isSignUp && (
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                  {t.login.confirmPassword}
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder={t.login.passwordPlaceholder}
+                />
+              </div>
+            )}
+
             {/* Champs supplémentaires pour l'inscription */}
             {isSignUp && (
               <>
@@ -238,20 +256,6 @@ export default function LoginPage() {
                       placeholder="Votre nom"
                     />
                   </div>
-                </div>
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1 sm:mb-2">
-                    {t.login.confirmPassword}
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={t.login.passwordPlaceholder}
-                  />
                 </div>
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-white mb-1 sm:mb-2">

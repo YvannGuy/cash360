@@ -47,28 +47,49 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const {
-      id,
       name,
       description,
       price,
       originalPrice,
       isPack,
       imageUrl,
-      isOneTime
+      isOneTime,
+      productType,
+      capsuleId,
+      appearsInFormations,
+      category,
+      pdfUrl
     } = body
 
     // Validation
-    if (!id || !name || !price) {
+    if (!name || !price) {
       return NextResponse.json(
-        { error: 'ID, nom et prix sont obligatoires' },
+        { error: 'Nom et prix sont obligatoires' },
         { status: 400 }
       )
     }
 
+    // Générer un ID automatique basé sur le nom du produit
+    const generateProductId = (productName: string): string => {
+      const baseId = productName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
+        .replace(/[^a-z0-9]+/g, '-') // Remplacer les caractères spéciaux par des tirets
+        .replace(/^-+|-+$/g, '') // Enlever les tirets en début/fin
+        .substring(0, 50) // Limiter la longueur
+      
+      // Ajouter un timestamp pour garantir l'unicité
+      const timestamp = Date.now().toString().slice(-6)
+      return `${baseId}-${timestamp}`
+    }
+
+    const autoId = generateProductId(name)
+
     const { data, error } = await supabaseAdmin!
       .from('products')
       .insert({
-        id,
+        id: autoId,
         name,
         description: description || null,
         price,
@@ -76,7 +97,12 @@ export async function POST(request: NextRequest) {
         is_pack: isPack || false,
         image_url: imageUrl || null,
         available: true,
-        is_one_time: isOneTime !== undefined ? isOneTime : true
+        is_one_time: isOneTime !== undefined ? isOneTime : true,
+        product_type: productType || null,
+        capsule_id: capsuleId || null,
+        appears_in_formations: appearsInFormations !== false, // Par défaut true
+        category: category || 'capsules', // Catégorie du produit
+        pdf_url: pdfUrl || null // URL du PDF pour ebook
       })
       .select()
 
@@ -88,10 +114,86 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({
-      success: true,
-      product: data[0]
-    })
+    // Créer automatiquement une formation SEULEMENT si la catégorie est "capsules"
+    // Les autres catégories (analyse-financiere, pack, ebook, abonnement) n'apparaissent pas dans "Formations et Sessions"
+    const productCategory = category || 'capsules'
+    
+    if (productCategory === 'capsules') {
+      console.log('Création de la formation associée au produit (catégorie capsules):', { productId: autoId, productName: name })
+      
+      // Déterminer le type de session basé sur productType
+      // La contrainte CHECK semble n'accepter que certaines valeurs
+      // Utiliser 'Capsule' par défaut pour tous les produits créés depuis la boutique
+      // L'admin pourra modifier le type plus tard dans "Formations et Sessions"
+      const sessionType = 'Capsule'
+      
+      // Utiliser l'ID du produit comme capsule_id pour lier la formation au produit
+      const formationCapsuleId = capsuleId || autoId
+      
+      // Créer une formation vierge (sans date/heure) pour que l'admin puisse la compléter plus tard
+      // date_scheduled et time_scheduled sont maintenant optionnels grâce à la migration
+      const formationDataToInsert = {
+        capsule_id: formationCapsuleId,
+        session_name: name,
+        session_type: sessionType,
+        duration: 60,
+        date_scheduled: null, // Laisser vide pour "Session en cours de planification"
+        time_scheduled: null, // Laisser vide pour "Session en cours de planification"
+        description: description || null,
+        zoom_link: null,
+        max_participants: 50,
+        timezone: 'Europe/Paris',
+        access_type: 'tous',
+        price: price,
+        require_payment: true,
+        send_notification: true,
+        status: 'a_venir'
+      }
+      
+      console.log('Données de la formation à créer:', formationDataToInsert)
+      
+      const { data: formationData, error: formationError } = await supabaseAdmin!
+        .from('formations')
+        .insert(formationDataToInsert)
+        .select()
+
+      if (formationError) {
+        console.error('❌ ERREUR lors de la création de la formation associée:', formationError)
+        console.error('Code erreur:', formationError.code)
+        console.error('Message:', formationError.message)
+        console.error('Détails:', JSON.stringify(formationError, null, 2))
+        console.error('Données tentatives:', formationDataToInsert)
+        // Ne pas faire échouer la création du produit si la formation échoue, mais loguer l'erreur
+        // Retourner un warning dans la réponse
+        return NextResponse.json({
+          success: true,
+          product: data[0],
+          warning: `Produit créé avec succès mais la formation associée n'a pas pu être créée: ${formationError.message}`,
+          formationError: formationError.message
+        })
+      } else {
+        console.log('✅ Formation créée avec succès!')
+        console.log('Formation ID:', formationData?.[0]?.id)
+        console.log('Formation capsule_id:', formationData?.[0]?.capsule_id)
+        console.log('Formation session_name:', formationData?.[0]?.session_name)
+        
+        return NextResponse.json({
+          success: true,
+          product: data[0],
+          formationCreated: true,
+          formation: formationData?.[0]
+        })
+      }
+    } else {
+      // Produit d'une autre catégorie - ne pas créer de formation
+      console.log(`Produit de catégorie "${productCategory}" - aucune formation créée (non visible dans "Formations et Sessions")`)
+      return NextResponse.json({
+        success: true,
+        product: data[0],
+        formationCreated: false,
+        message: `Produit créé avec succès. Les produits de catégorie "${productCategory}" n'apparaissent pas dans "Formations et Sessions".`
+      })
+    }
   } catch (error) {
     console.error('Erreur API admin products POST:', error)
     return NextResponse.json(
@@ -129,7 +231,12 @@ export async function PUT(request: NextRequest) {
       isPack,
       imageUrl,
       available,
-      isOneTime
+      isOneTime,
+      productType,
+      capsuleId,
+      appearsInFormations,
+      category,
+      pdfUrl
     } = body
 
     // Validation
@@ -151,6 +258,11 @@ export async function PUT(request: NextRequest) {
         image_url: imageUrl || null,
         available: available !== undefined ? available : true,
         is_one_time: isOneTime !== undefined ? isOneTime : true,
+        product_type: productType || null,
+        capsule_id: capsuleId || null,
+        appears_in_formations: appearsInFormations !== false, // Par défaut true
+        category: category || 'capsules', // Catégorie du produit
+        pdf_url: pdfUrl !== undefined ? pdfUrl : undefined, // URL du PDF pour ebook (undefined pour ne pas écraser si non fourni)
         updated_at: new Date().toISOString()
       })
       .eq('id', productId)
@@ -162,6 +274,35 @@ export async function PUT(request: NextRequest) {
         { error: error.message },
         { status: 500 }
       )
+    }
+
+    // Mettre à jour aussi la formation associée SEULEMENT si la catégorie est "capsules"
+    const productCategory = category || 'capsules'
+    
+    if (productCategory === 'capsules') {
+      // Utiliser 'Capsule' par défaut (l'admin peut modifier le type plus tard)
+      const sessionType = 'Capsule'
+      const { error: formationError } = await supabaseAdmin!
+        .from('formations')
+        .update({
+          capsule_id: capsuleId || productId,
+          session_name: name,
+          session_type: sessionType,
+          description: description || null,
+          price: price
+        })
+        .eq('capsule_id', productId)
+
+      if (formationError) {
+        console.error('Erreur lors de la mise à jour de la formation associée:', formationError)
+        // Ne pas faire échouer la mise à jour du produit si la formation échoue
+      } else {
+        console.log('Formation associée mise à jour pour le produit:', productId)
+      }
+    } else {
+      // Si la catégorie change de "capsules" à autre chose, la formation ne sera plus visible dans "Formations et Sessions"
+      // (elle sera automatiquement filtrée par le GET)
+      console.log(`Produit de catégorie "${productCategory}" - la formation associée (si elle existe) ne sera plus visible dans "Formations et Sessions"`)
     }
 
     return NextResponse.json({
@@ -194,6 +335,37 @@ export async function DELETE(request: NextRequest) {
         { error: 'ID produit manquant' },
         { status: 400 }
       )
+    }
+
+    // Récupérer le produit pour vérifier son type
+    const { data: product } = await supabaseAdmin!
+      .from('products')
+      .select('product_type')
+      .eq('id', productId)
+      .single()
+
+    // Supprimer d'abord les inscriptions associées si c'est une formation
+    if (product?.product_type === 'formation' || product?.product_type === 'capsule') {
+      // Trouver la formation associée
+      const { data: formation } = await supabaseAdmin!
+        .from('formations')
+        .select('id')
+        .eq('capsule_id', productId)
+        .single()
+
+      if (formation) {
+        // Supprimer les inscriptions
+        await supabaseAdmin!
+          .from('formation_registrations')
+          .delete()
+          .eq('formation_id', formation.id)
+
+        // Supprimer la formation
+        await supabaseAdmin!
+          .from('formations')
+          .delete()
+          .eq('id', formation.id)
+      }
     }
 
     const { error } = await supabaseAdmin!

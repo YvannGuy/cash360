@@ -76,23 +76,59 @@ export async function POST(request: NextRequest) {
     }
 
     // Créer les paiements
-    const paymentEntries = await Promise.all(
-      items.map(async (item: any) => {
-        const product = products.find(p => p.id === item.id)
-        const paymentType = product?.is_pack ? 'pack' : 'capsule'
-        
-        return {
+    // IMPORTANT : Pour l'analyse financière avec quantité > 1, créer un paiement par quantité
+    const paymentEntries = []
+    
+    for (const item of items) {
+      const product = products.find(p => p.id === item.id)
+      
+      // Déterminer le type de paiement selon le produit
+      let paymentType = 'capsule' // Par défaut
+      
+      // Vérifier d'abord si c'est l'analyse financière (par ID ou catégorie)
+      if (item.id === 'analyse-financiere' || product?.category === 'analyse-financiere' || product?.id === 'analyse-financiere') {
+        paymentType = 'analysis'
+      } 
+      // Vérifier les packs (par catégorie ou is_pack)
+      else if (product?.category === 'pack' || product?.is_pack) {
+        paymentType = 'pack'
+      } 
+      // Vérifier les ebooks
+      else if (product?.category === 'ebook') {
+        paymentType = 'ebook'
+      } 
+      // Vérifier les abonnements
+      else if (product?.category === 'abonnement') {
+        paymentType = 'abonnement'
+      } 
+      // Vérifier les capsules prédéfinies (capsule1-5)
+      else if (/^capsule[1-5]$/.test(item.id)) {
+        paymentType = 'capsule'
+      } 
+      // Vérifier les capsules de la boutique (par catégorie)
+      else if (product?.category === 'capsules') {
+        paymentType = 'capsule'
+      }
+      // Sinon, par défaut 'capsule' pour les capsules prédéfinies non reconnues
+      
+      const unitAmount = parseFloat(product?.price || '0')
+      
+      // Créer UN paiement par quantité pour l'analyse financière
+      // Exemple : quantity = 3 → 3 paiements distincts (3 analyses possibles)
+      for (let qty = 0; qty < item.quantity; qty++) {
+        paymentEntries.push({
           user_id: user.id,
           product_id: item.id,
           payment_type: paymentType,
-          amount: parseFloat(product.price) * item.quantity,
+          amount: unitAmount,
           currency: 'EUR',
           status: 'success', // TODO: Intégrer un vrai système de paiement (Stripe, PayPal, etc.)
           method: 'PayPal', // TODO: Déterminer dynamiquement
+          transaction_id: `paypal-${Date.now()}-${item.id}-${qty}`,
           created_at: new Date().toISOString()
-        }
-      })
-    )
+        })
+      }
+    }
 
     // Insérer les paiements
     const { error: paymentsError } = await supabase
@@ -108,18 +144,53 @@ export async function POST(request: NextRequest) {
     }
 
     // Créer les capsules achetées (user_capsules)
+    // LOGIQUE: Seulement si category = 'capsules' OU capsule prédéfinie (capsule1-5) OU pack
+    // EXCLURE "analyse-financiere", "ebook", "abonnement"
     const capsuleEntries = []
     for (const item of items) {
+      // Vérifier si c'est une capsule prédéfinie (capsule1-5) - toujours ajoutée
+      const isPredefinedCapsule = /^capsule[1-5]$/.test(item.id)
+      if (isPredefinedCapsule) {
+        console.log(`[CHECKOUT] ✅ Capsule prédéfinie ${item.id} ajoutée`)
+        capsuleEntries.push({
+          user_id: user.id,
+          capsule_id: item.id,
+          created_at: new Date().toISOString()
+        })
+        continue
+      }
+      
+      // EXCLURE explicitement "analyse-financiere", ebooks et abonnements
+      if (item.id === 'analyse-financiere') {
+        console.log(`[CHECKOUT] ⏭️ Analyse financière ignorée - n'apparaît jamais dans "Mes achats"`)
+        continue
+      }
+      
       const product = products.find(p => p.id === item.id)
       
-      // Si c'est un pack, on ajoute toutes les capsules individuelles
-      if (product?.is_pack) {
-        // Récupérer toutes les capsules individuelles
+      if (!product) {
+        console.log(`[CHECKOUT] ⏭️ Produit ${item.id} ignoré car non trouvé dans products`)
+        continue
+      }
+      
+      // Vérifier la catégorie du produit
+      const productCategory = (product as any)?.category || 'capsules'
+      
+      // Seules les capsules (catégorie 'capsules') et les packs doivent apparaître dans "Mes achats"
+      if (productCategory === 'ebook' || productCategory === 'abonnement' || productCategory === 'analyse-financiere') {
+        console.log(`[CHECKOUT] ⏭️ Produit ${item.id} ignoré - catégorie: ${productCategory}`)
+        continue
+      }
+      
+      // Si c'est un pack (category === 'pack' ou is_pack)
+      if (productCategory === 'pack' || (product as any)?.is_pack) {
+        console.log(`[CHECKOUT] ✅ Pack détecté ${item.id}, ajout des capsules individuelles`)
+        // Récupérer toutes les capsules de la catégorie 'capsules'
         const { data: allCapsules } = await supabase
           .from('products')
-          .select('id')
-          .eq('is_pack', false)
-          .neq('id', 'analyse-financiere') // Exclure l'analyse financière des capsules pack
+          .select('id, category')
+          .eq('category', 'capsules')
+          .neq('id', 'analyse-financiere')
         
         if (allCapsules && allCapsules.length > 0) {
           for (const capsule of allCapsules) {
@@ -130,8 +201,18 @@ export async function POST(request: NextRequest) {
             })
           }
         }
-      } else {
-        // Sinon, on ajoute juste la capsule achetée
+        // Ajouter aussi les 5 capsules prédéfinies
+        for (let i = 1; i <= 5; i++) {
+          capsuleEntries.push({
+            user_id: user.id,
+            capsule_id: `capsule${i}`,
+            created_at: new Date().toISOString()
+          })
+        }
+      } 
+      // Si c'est une capsule de la boutique (category === 'capsules')
+      else if (productCategory === 'capsules') {
+        console.log(`[CHECKOUT] ✅ Capsule boutique ${item.id} ajoutée`)
         capsuleEntries.push({
           user_id: user.id,
           capsule_id: item.id,

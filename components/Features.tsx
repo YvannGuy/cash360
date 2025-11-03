@@ -12,18 +12,18 @@ export default function Features() {
   const additionalFeaturesIcons = ["🎯", "🛡️", "📈"]
 
   return (
-    <section id="features" className="py-20 bg-gray-50">
+    <section id="features" className="py-20 bg-gray-50 dark:bg-gray-800 transition-colors duration-200">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             {t.features.title}{' '}
             <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
               {t.features.titleHighlight}
             </span>
             ?
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             {t.features.subtitle}
           </p>
         </div>
@@ -32,11 +32,11 @@ export default function Features() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           {t.features.mainFeatures.map((feature, index) => (
             <div key={index}>
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 dark:border-gray-700">
                 <div className={`w-16 h-16 bg-gradient-to-r ${featuresColors[index]} rounded-2xl flex items-center justify-center mb-6 hover:scale-110 transition-transform duration-300`}>
                   <span className="text-2xl">{featuresIcons[index]}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
@@ -49,7 +49,7 @@ export default function Features() {
 
         {/* Additional Features */}
         <div>
-          <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 transition-colors duration-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {t.features.additionalFeatures.map((feature, index) => (
                 <div key={index} className="flex items-start space-x-4">
@@ -57,7 +57,7 @@ export default function Features() {
                     <span className="text-xl">{additionalFeaturesIcons[index]}</span>
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                       {feature.title}
                     </h4>
                     <p className="text-gray-600">

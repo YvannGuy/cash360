@@ -83,7 +83,6 @@ export default function AdminSidebar({ activeTab = 'overview' }: AdminSidebarPro
     { id: 'users', label: 'Utilisateurs', icon: 'users', route: '/admin/users', adminOnly: true },
     { id: 'analyses', label: 'Analyses financières', icon: 'chart', route: '/admin/analyses', adminOnly: true },
     { id: 'boutique', label: 'Boutique', icon: 'store', route: '/admin/boutique', adminOnly: true },
-    { id: 'capsules', label: 'Capsules achetées', icon: 'graduation', route: '/admin/capsules', adminOnly: true },
     { id: 'formations', label: 'Formations & sessions', icon: 'chalkboard', route: '/admin/formations', adminOnly: true },
     { id: 'paiements', label: 'Paiements', icon: 'creditCard', route: '/admin/paiements', adminOnly: true },
     { id: 'fichiers', label: 'Fichiers & relevés', icon: 'folder', route: '/admin/fichiers', adminOnly: true },

@@ -26,7 +26,9 @@ export default function Header() {
             </div>
           </div>
           
-          <LanguageSwitch />
+          <div className="flex items-center gap-3">
+            <LanguageSwitch />
+          </div>
         </div>
       </div>
     </header>

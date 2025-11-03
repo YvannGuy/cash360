@@ -7,9 +7,6 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 Mo
 export const paymentMethodSchema = z.enum(['virement', 'paypal'])
 
 export const clientInfoSchema = z.object({
-  prenom: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères').max(50, 'Le prénom ne peut pas dépasser 50 caractères'),
-  nom: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(50, 'Le nom ne peut pas dépasser 50 caractères'),
-  email: z.string().email('Adresse email invalide'),
   message: z.string().max(500, 'Le message ne peut pas dépasser 500 caractères').optional(),
   modePaiement: paymentMethodSchema,
   consentement: z.boolean().refine(val => val === true, 'Vous devez accepter le traitement de vos données'),
@@ -32,9 +29,6 @@ export const uploadSchema = z.object({
 
 // Schéma global pour la page d'analyse (front)
 export const analysisFormSchema = z.object({
-  prenom: z.string().min(2).max(50),
-  nom: z.string().min(2).max(50),
-  email: z.string().email(),
   message: z.string().max(500).optional(),
   modePaiement: paymentMethodSchema,
   consentement: z.literal(true, { errorMap: () => ({ message: 'Vous devez accepter le traitement de vos données' }) }),

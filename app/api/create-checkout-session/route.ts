@@ -126,7 +126,8 @@ export async function POST(request: NextRequest) {
         : `${baseUrl}/dashboard?tab=boutique`,
       metadata: {
         user_id: user.id,
-        items: JSON.stringify(items),
+        // Stocker uniquement les IDs et quantités pour éviter de dépasser la limite de 500 caractères
+        items: JSON.stringify(items.map(item => ({ id: item.id, quantity: item.quantity }))),
         source: source || 'boutique',
       },
     })

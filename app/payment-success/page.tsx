@@ -25,7 +25,10 @@ function PaymentSuccessContent() {
     const verifyAndCreate = async () => {
       console.log('🔍 Vérification paiement - sessionId:', sessionId)
       if (!sessionId || !supabase) {
-        console.log('❌ Pas de sessionId ou supabase:', { sessionId, hasSupabase: !!supabase })
+        // Log silencieux - supabase peut être null pendant l'initialisation
+        if (sessionId && !supabase) {
+          console.log('⏳ Initialisation Supabase en cours...')
+        }
         return
       }
 
@@ -61,8 +64,63 @@ function PaymentSuccessContent() {
               body: JSON.stringify({ sessionId, items })
             })
             
-            const result = await response.json()
-            console.log('✅ Réponse API verify-payment:', result)
+            let result: any = {}
+            try {
+              result = await response.json()
+              console.log('✅ Réponse API verify-payment:', result)
+            } catch (jsonError: any) {
+              console.error('❌ Erreur parsing JSON response:', jsonError)
+              try {
+                const text = await response.text()
+                console.error('❌ Réponse brute:', text)
+                result = { error: 'Erreur de parsing de la réponse', details: text }
+              } catch (textError) {
+                console.error('❌ Impossible de lire la réponse:', textError)
+                result = { error: 'Erreur serveur inconnue', status: response.status }
+              }
+            }
+            
+            if (!response.ok) {
+              const errorDetails: any = {
+                status: response.status,
+                statusText: response.statusText,
+                error: result?.error || result,
+                details: result?.details,
+                code: result?.code,
+                hint: result?.hint,
+                success: result?.success,
+                message: result?.message,
+                paymentsInserted: result?.paymentsInserted,
+                paymentsAttempted: result?.paymentsAttempted
+              }
+              
+              console.error('❌ Erreur API verify-payment (HTTP ' + response.status + '):', errorDetails)
+              
+              // Afficher l'erreur de manière plus visible avec tous les détails
+              let errorMessage = `Erreur lors de la vérification du paiement (${response.status}):\n\n`
+              errorMessage += `Erreur: ${result?.error || 'Erreur serveur inconnue'}\n`
+              if (result?.details) {
+                errorMessage += `Détails: ${result.details}\n`
+              }
+              if (result?.code) {
+                errorMessage += `Code: ${result.code}\n`
+              }
+              if (result?.hint) {
+                errorMessage += `Hint: ${result.hint}\n`
+              }
+              if (result?.paymentsInserted !== undefined && result?.paymentsAttempted !== undefined) {
+                errorMessage += `\nPaiements: ${result.paymentsInserted}/${result.paymentsAttempted} insérés`
+              }
+              errorMessage += `\n\nVérifiez les logs serveur pour plus de détails.`
+              
+              alert(errorMessage)
+            } else {
+              console.log('✅ Paiements créés:', {
+                paymentsCreated: result?.paymentsCreated,
+                paymentsInserted: result?.paymentsInserted,
+                message: result?.message
+              })
+            }
             
             // Nettoyer sessionStorage
             sessionStorage.removeItem('stripe_checkout_items')

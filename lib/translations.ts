@@ -419,7 +419,7 @@ export const translations = {
       adminSpace: "Espace Administrateur →",
       errorPasswordMismatch: "Les mots de passe ne correspondent pas",
       errorEnterEmail: "Veuillez entrer votre email",
-      messageVerifyEmail: "Vérifiez votre email pour confirmer votre compte",
+      messageVerifyEmail: "Vérifiez votre email pour confirmer votre compte. Vérifiez vos spams.",
       messageResetSent: "Lien de réinitialisation envoyé par email"
     },
 

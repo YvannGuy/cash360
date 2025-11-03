@@ -16,21 +16,6 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-async function executeSQL(sql) {
-  // Utiliser la fonction REST API de Supabase pour exécuter du SQL brut
-  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': supabaseServiceKey,
-      'Authorization': `Bearer ${supabaseServiceKey}`
-    },
-    body: JSON.stringify({ sql_query: sql })
-  })
-  
-  return response.ok
-}
-
 async function applyMigrations() {
   console.log('🚀 Démarrage des migrations Supabase...\n')
   
@@ -38,14 +23,11 @@ async function applyMigrations() {
   const migrationPath = path.join(__dirname, '../supabase/migrations.sql')
   const migrationSQL = fs.readFileSync(migrationPath, 'utf-8')
   
-  // Découper par grandes sections
-  const sections = migrationSQL.split(/^--\s*(TABLE:|RLS|TRIGGERS|FONCTIONS)/m)
-  
   console.log(`📝 Application de la migration complète\n`)
   
   try {
     // Application via executeSQL qui utilise l'admin API
-    const { data, error } = await supabase.rpc('exec_sql', { sql_query: migrationSQL })
+    const { error } = await supabase.rpc('exec_sql', { sql_query: migrationSQL })
     
     if (error) {
       throw error

@@ -27,6 +27,7 @@ export default function AdminPaiementsPage() {
   })
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<any>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -81,9 +82,31 @@ export default function AdminPaiementsPage() {
 
   const loadPayments = async () => {
     try {
+      setRefreshing(true)
       const response = await fetch('/api/admin/paiements')
       const data = await response.json()
       if (data.success) {
+        console.log('[PAGE PAIEMENTS] Données reçues:', {
+          totalPayments: data.payments?.length || 0,
+          payments: data.payments?.map((p: any) => ({
+            id: p.id,
+            user_email: p.user_email,
+            product_id: p.product_id,
+            payment_type: p.payment_type,
+            type_label: p.type_label,
+            amount: p.amount,
+            status: p.status,
+            created_at: p.created_at
+          }))
+        })
+        
+        // Diagnostic: Vérifier si certains paiements manquent
+        const byType = (data.payments || []).reduce((acc: any, p: any) => {
+          const type = p.payment_type || 'non défini'
+          acc[type] = (acc[type] || 0) + 1
+          return acc
+        }, {})
+        console.log('[PAGE PAIEMENTS] Paiements par type:', byType)
         setPayments(data.payments || [])
         setStats(data.stats || {
           monthlyRevenue: 0,
@@ -92,9 +115,16 @@ export default function AdminPaiementsPage() {
           failureRate: 0,
           averageBasket: 0
         })
+        console.log('[PAGE PAIEMENTS] Paiements chargés:', data.payments?.length || 0)
+      } else {
+        console.error('Erreur lors du chargement des paiements:', data.error)
+        alert('Erreur lors du chargement des paiements: ' + (data.error || 'Erreur inconnue'))
       }
     } catch (error) {
       console.error('Erreur lors du chargement des paiements:', error)
+      alert('Erreur lors du chargement des paiements')
+    } finally {
+      setRefreshing(false)
     }
   }
 
@@ -167,6 +197,33 @@ export default function AdminPaiementsPage() {
     setShowPaymentModal(true)
   }
 
+  const handleDeletePayment = async (paymentId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce paiement ? Cette action est irréversible.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/paiements?paymentId=${paymentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      alert('Paiement supprimé avec succès!')
+      loadPayments()
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      alert(error instanceof Error ? error.message : 'Erreur lors de la suppression')
+    }
+  }
+
   // Pagination
   const totalPages = Math.ceil(payments.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -231,17 +288,23 @@ export default function AdminPaiementsPage() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-[#012F4E] mb-2">Paiements et Transactions</h1>
-              <p className="text-gray-600">Suivez et gérez toutes les transactions effectuées sur Cash380 (analyses, capsules, formations).</p>
+              <p className="text-gray-600">Suivez et gérez toutes les transactions effectuées sur Cash360 : analyses financières, capsules, packs complets, ebooks, abonnements et formations.</p>
             </div>
             <div className="flex gap-3">
               <button 
                 onClick={loadPayments}
-                className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors flex items-center gap-2"
+                disabled={refreshing}
+                className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg 
+                  className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Actualiser
+                {refreshing ? 'Actualisation...' : 'Actualiser'}
               </button>
               <button 
                 onClick={handleExportCSV}
@@ -260,6 +323,24 @@ export default function AdminPaiementsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 Générer rapport mensuel
+              </button>
+              <button 
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/admin/debug-payments')
+                    const data = await response.json()
+                    console.log('[DEBUG] Tous les paiements dans la DB:', data)
+                    alert(`Total dans DB: ${data.total}\nPar type: ${JSON.stringify(data.summary)}\nVoir console pour détails`)
+                  } catch (error) {
+                    console.error('Erreur debug:', error)
+                  }
+                }}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Debug DB
               </button>
             </div>
           </div>
@@ -363,9 +444,12 @@ export default function AdminPaiementsPage() {
               <div className="relative">
                 <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
                   <option>Tous les types</option>
-                  <option>Analyse</option>
+                  <option>Analyse financière</option>
                   <option>Capsule</option>
-                  <option>Pack</option>
+                  <option>Pack complet</option>
+                  <option>Ebook</option>
+                  <option>Abonnement</option>
+                  <option>Formation</option>
                 </select>
                 <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -433,12 +517,23 @@ export default function AdminPaiementsPage() {
                             {payment.created_at ? new Date(payment.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : payment.date || 'N/A'}
                           </td>
                           <td className="py-4 px-6">
-                            <button onClick={() => handleViewPayment(payment)} className="text-[#00A1C6] hover:text-[#0089a3] transition-colors" title="Voir détails">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                              </svg>
-                            </button>
+                            <div className="flex items-center gap-3">
+                              <button onClick={() => handleViewPayment(payment)} className="text-[#00A1C6] hover:text-[#0089a3] transition-colors" title="Voir détails">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                              </button>
+                              <button 
+                                onClick={() => handleDeletePayment(payment.id)} 
+                                className="text-red-600 hover:text-red-800 transition-colors" 
+                                title="Supprimer"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       )

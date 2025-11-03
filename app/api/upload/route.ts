@@ -24,6 +24,9 @@ export async function POST(request: NextRequest) {
     // Récupérer l'utilisateur connecté depuis le token
     const authHeader = request.headers.get('authorization')
     let userId: string | null = null
+    let userEmail: string | null = null
+    let userFirstName: string | null = null
+    let userLastName: string | null = null
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7)
@@ -31,19 +34,34 @@ export async function POST(request: NextRequest) {
         const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
         if (!error && user) {
           userId = user.id
+          userEmail = user.email || null
+          // Récupérer nom et prénom depuis user_metadata
+          userFirstName = user.user_metadata?.first_name || null
+          userLastName = user.user_metadata?.last_name || null
         }
       } catch (tokenError) {
         console.log('Token invalide ou expiré, on continue sans user_id:', tokenError)
       }
     }
 
+    if (!userId || !userEmail) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      )
+    }
+
+    if (!userFirstName || !userLastName) {
+      return NextResponse.json(
+        { error: 'Nom et prénom manquants. Veuillez compléter votre profil dans les paramètres.' },
+        { status: 400 }
+      )
+    }
+
     const formData = await request.formData()
     
     // Extraire les données du formulaire
     const clientInfo = {
-      prenom: formData.get('prenom') as string,
-      nom: formData.get('nom') as string,
-      email: formData.get('email') as string,
       message: formData.get('message') as string || undefined,
       modePaiement: formData.get('modePaiement') as string,
       consentement: formData.get('consentement') === 'true'
@@ -51,6 +69,14 @@ export async function POST(request: NextRequest) {
 
     // Validation des données client
     const validatedClientInfo = clientInfoSchema.parse(clientInfo)
+    
+    // Ajouter les informations utilisateur depuis user_metadata
+    const fullClientInfo = {
+      ...validatedClientInfo,
+      prenom: userFirstName,
+      nom: userLastName,
+      email: userEmail
+    }
 
     // Extraire les fichiers
     const relevesFiles = formData.getAll('releves') as File[]
@@ -65,18 +91,18 @@ export async function POST(request: NextRequest) {
     const ticket = generateShortTicket()
     const timestamp = new Date().toISOString()
 
-    // Créer l'analyse dans la base de données avec l'utilisateur connecté si disponible
+    // Créer l'analyse dans la base de données avec l'utilisateur connecté
     const { data: analysis, error: analysisError } = await supabaseAdmin
       .from('analyses')
       .insert({
         ticket: `CASH-${ticket}`,
-        client_name: `${validatedClientInfo.prenom} ${validatedClientInfo.nom}`,
-        client_email: validatedClientInfo.email,
+        client_name: `${fullClientInfo.prenom} ${fullClientInfo.nom}`,
+        client_email: fullClientInfo.email,
         status: 'en_cours',
         progress: 10,
-        mode_paiement: validatedClientInfo.modePaiement,
-        message: validatedClientInfo.message || null,
-        user_id: userId // Utiliser l'ID utilisateur si disponible
+        mode_paiement: fullClientInfo.modePaiement,
+        message: fullClientInfo.message || null,
+        user_id: userId // Utiliser l'ID utilisateur depuis l'authentification
       })
       .select()
       .single()
@@ -157,9 +183,9 @@ export async function POST(request: NextRequest) {
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
     // Envoyer l'email client (priorité)
-    const clientEmailHtml = generateClientEmailHtml(validatedClientInfo, ticket)
+    const clientEmailHtml = generateClientEmailHtml(fullClientInfo, ticket)
     await sendMail({
-      to: validatedClientInfo.email,
+      to: fullClientInfo.email,
       subject: `Cash360 – Confirmation de réception de vos documents – ${ticket}`,
       html: clientEmailHtml
     })
@@ -168,10 +194,10 @@ export async function POST(request: NextRequest) {
     await delay(1000)
 
     // Envoyer l'email admin combiné (documents + notification paiement)
-    const adminEmailHtml = generateAdminEmailHtml(validatedClientInfo, ticket, timestamp)
+    const adminEmailHtml = generateAdminEmailHtml(fullClientInfo, ticket, timestamp)
     await sendMail({
       to: process.env.MAIL_ADMIN || process.env.DESTINATION_EMAIL || 'cash@cash360.finance',
-      subject: `[Cash360] Nouveau paiement reçu – ${validatedClientInfo.prenom} ${validatedClientInfo.nom} – ${ticket}`,
+      subject: `[Cash360] Nouveau paiement reçu – ${fullClientInfo.prenom} ${fullClientInfo.nom} – ${ticket}`,
       html: adminEmailHtml
     })
 

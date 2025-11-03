@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Geist, Geist_Mono, Pacifico } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { ThemeProvider } from "@/lib/ThemeContext";
 import { CartProvider } from "@/lib/CartContext";
 
 const pacifico = Pacifico({
@@ -238,7 +239,9 @@ export default function RootLayout({
         </Script>
 
         <LanguageProvider>
-          <CartProvider>{children}</CartProvider>
+          <ThemeProvider>
+            <CartProvider>{children}</CartProvider>
+          </ThemeProvider>
         </LanguageProvider>
       </body>
     </html>

@@ -12,9 +12,6 @@ import LanguageSwitch from '@/components/LanguageSwitch'
 import LegalModal from '@/components/LegalModal'
 
 interface FormData {
-  prenom: string
-  nom: string
-  email: string
   message: string
   modePaiement: string
   consentement: boolean
@@ -36,9 +33,6 @@ export default function AnalyseFinancierePage() {
   const [showPrivacy, setShowPrivacy] = useState(false)
   
   const [formData, setFormData] = useState<FormData>({
-    prenom: '',
-    nom: '',
-    email: '',
     message: '',
     modePaiement: 'paypal', // Valeur par défaut
     consentement: false
@@ -73,10 +67,6 @@ export default function AnalyseFinancierePage() {
         return
       }
       setUser(user)
-      setFormData(prev => ({
-        ...prev,
-        email: user.email || ''
-      }))
       setLoading(false)
     }
 
@@ -111,9 +101,6 @@ export default function AnalyseFinancierePage() {
     
     try {
       analysisFormSchema.parse({
-        prenom: formData.prenom,
-        nom: formData.nom,
-        email: formData.email,
         message: formData.message || undefined,
         modePaiement: formData.modePaiement as 'paypal' | 'virement',
         consentement: formData.consentement,
@@ -253,40 +240,6 @@ export default function AnalyseFinancierePage() {
           <p className="text-sm text-gray-600">Service d’accompagnement à visée éducative (non soumis à agrément financier).</p>
         </div>
 
-        {/* Étapes du processus */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t.financialAnalysis.processSteps}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">1</div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">{t.financialAnalysis.step1}</p>
-                <p className="text-xs text-gray-600">{t.financialAnalysis.step1Desc}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">2</div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">{t.financialAnalysis.step2}</p>
-                <p className="text-xs text-gray-600">{t.financialAnalysis.step2Desc}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">3</div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">{t.financialAnalysis.step3}</p>
-                <p className="text-xs text-gray-600">{t.financialAnalysis.step3Desc}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">✓</div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">{t.financialAnalysis.step4}</p>
-                <p className="text-xs text-gray-600">{t.financialAnalysis.step4Desc}</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Pourquoi cette analyse ? */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
@@ -301,39 +254,9 @@ export default function AnalyseFinancierePage() {
         {/* Formulaire */}
         <form onSubmit={handleSubmit} className="space-y-8">
 
-          {/* Informations personnelles */}
+          {/* Message optionnel */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t.financialAnalysis.yourInfo}</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Field
-                label={t.financialAnalysis.firstName}
-                name="prenom"
-                required
-                value={formData.prenom}
-                onChange={handleInputChange}
-                error={errors.prenom}
-              />
-              
-              <Field
-                label={t.financialAnalysis.lastName}
-                name="nom"
-                required
-                value={formData.nom}
-                onChange={handleInputChange}
-                error={errors.nom}
-              />
-              
-              <Field
-                label={t.financialAnalysis.email}
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                error={errors.email}
-              />
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Message (optionnel)</h2>
             
             <div className="mt-6">
               <Field

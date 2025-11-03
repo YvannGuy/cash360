@@ -48,6 +48,7 @@ export default function AdminFichiersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
   const [expandedUsers, setExpandedUsers] = useState<Record<string, boolean>>({})
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -88,17 +89,23 @@ export default function AdminFichiersPage() {
 
   const loadFiles = async () => {
     try {
+      setRefreshing(true)
       const response = await fetch('/api/admin/fichiers')
       const data = await response.json()
       
       if (data.success) {
         setFiles(data.files || [])
         setStats(data.stats || { totalFiles: 0, pendingAnalysis: 0, analyzed: 0, deleted: 0 })
+        console.log('Fichiers chargés:', data.files?.length || 0)
       } else {
         console.error('Erreur lors du chargement des fichiers:', data.error)
+        alert('Erreur lors du chargement des fichiers: ' + (data.error || 'Erreur inconnue'))
       }
     } catch (error) {
       console.error('Erreur lors du chargement des fichiers:', error)
+      alert('Erreur lors du chargement des fichiers')
+    } finally {
+      setRefreshing(false)
     }
   }
 
@@ -359,12 +366,18 @@ export default function AdminFichiersPage() {
             <div className="flex gap-3">
               <button 
                 onClick={loadFiles}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2"
+                disabled={refreshing}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg 
+                  className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Actualiser
+                {refreshing ? 'Actualisation...' : 'Actualiser'}
               </button>
               <button 
                 onClick={handleExportList}

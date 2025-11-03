@@ -24,33 +24,58 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Récupérer les informations utilisateurs depuis auth.users
-    const enrichedCapsules = await Promise.all(
-      (capsules || []).map(async (capsule: any) => {
-        try {
-          const { data: authUser } = await supabaseAdmin!.auth.admin.getUserById(capsule.user_id)
-          return {
-            ...capsule,
-            user_email: authUser?.user?.email || 'Unknown',
-            user_name: authUser?.user?.email?.split('@')[0] || 'Unknown User'
+    // Récupérer les informations utilisateurs depuis auth.users (batch)
+    const userIds = [...new Set((capsules || []).map((c: any) => c.user_id).filter(Boolean))]
+    const userMap = new Map()
+    
+    if (userIds.length > 0) {
+      const { data: allUsers } = await supabaseAdmin!.auth.admin.listUsers()
+      
+      if (allUsers?.users) {
+        allUsers.users.forEach((authUser) => {
+          if (userIds.includes(authUser.id)) {
+            userMap.set(authUser.id, {
+              email: authUser.email || 'Unknown',
+              name: authUser.email?.split('@')[0] || 'Unknown User'
+            })
           }
-        } catch (err) {
-          // Si l'utilisateur n'existe plus, on garde l'enregistrement avec des valeurs par défaut
-          return {
-            ...capsule,
-            user_email: 'Unknown',
-            user_name: 'Unknown User'
-          }
-        }
-      })
-    )
+        })
+      }
+    }
+    
+    const enrichedCapsules = (capsules || []).map((capsule: any) => {
+      const userInfo = userMap.get(capsule.user_id) || { email: 'Unknown', name: 'Unknown User' }
+      return {
+        ...capsule,
+        user_email: userInfo.email,
+        user_name: userInfo.name
+      }
+    })
 
-    // Calculer les statistiques
+    // Calculer les statistiques depuis les paiements réels
+    const { data: allPayments } = await supabaseAdmin!
+      .from('payments')
+      .select('product_id, amount, payment_type')
+      .eq('status', 'success')
+      .in('payment_type', ['capsule', 'pack'])
+    
+    const totalSales = allPayments?.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0) || 0
+    const capsuleCounts = new Map<string, number>()
+    
+    allPayments?.forEach((p: any) => {
+      if (p.payment_type === 'capsule' && p.product_id) {
+        capsuleCounts.set(p.product_id, (capsuleCounts.get(p.product_id) || 0) + 1)
+      }
+    })
+    
+    const mostPopular = Array.from(capsuleCounts.entries())
+      .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Éducation financière'
+    
     const stats = {
-      totalSales: 0, // TODO: calculer depuis les paiements réels
+      totalSales,
       totalBuyers: new Set(enrichedCapsules.map(c => c.user_id)).size,
-      mostPopular: 'Éducation financière', // TODO: calculer depuis les données
-      repurchaseRate: 0 // TODO: calculer depuis les données
+      mostPopular,
+      repurchaseRate: 0 // TODO: calculer le taux de rachat
     }
 
     return NextResponse.json({

@@ -31,9 +31,9 @@ interface FormationStats {
 
 const CAPSULES = [
   { id: 'capsule1', title: "L'éducation financière", img: '/images/logo/capsule1.jpg' },
-  { id: 'capsule2', title: 'Les combats liés à la prospérité', img: '/images/logo/capsule2.jpg' },
+  { id: 'capsule2', title: 'La mentalité de pauvreté', img: '/images/logo/capsule2.jpg' },
   { id: 'capsule3', title: "Les lois spirituelles liées à l'argent", img: '/images/logo/capsule3.jpg' },
-  { id: 'capsule4', title: 'La mentalité de Pauvre', img: '/images/logo/capsule4.jpg' },
+  { id: 'capsule4', title: 'Les combats liés à la prospérité', img: '/images/logo/capsule4.jpg' },
   { id: 'capsule5', title: 'Épargne et Investissement', img: '/images/logo/capsule5.jpg' }
 ]
 
@@ -50,11 +50,12 @@ export default function AdminFormationsPage() {
   })
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showSessionModal, setShowSessionModal] = useState(false)
-  const [editingCapsule, setEditingCapsule] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [refreshing, setRefreshing] = useState(false)
   const itemsPerPage = 10
   const [formData, setFormData] = useState({
     capsuleId: '',
+    sessionName: '',
     sessionType: 'Capsule',
     duration: 60,
     date: '',
@@ -104,17 +105,30 @@ export default function AdminFormationsPage() {
 
   const loadFormations = async () => {
     try {
+      setRefreshing(true)
       const response = await fetch('/api/admin/formations')
       const data = await response.json()
       
       if (data.success) {
-        setFormations(data.formations || [])
+        const loadedFormations = data.formations || []
+        setFormations(loadedFormations)
         setStats(data.stats || { sessionsThisMonth: 0, totalRegistered: 0, participationRate: 0, sessionsThisWeek: 0 })
+        console.log('Formations chargées:', loadedFormations.length)
+        console.log('Détails des formations:', loadedFormations.map((f: Formation) => ({ id: f.id, title: f.title, capsule_id: f.capsule_id })))
+        
+        // Afficher un message si aucune formation n'est trouvée
+        if (loadedFormations.length === 0) {
+          console.warn('Aucune formation trouvée dans la base de données')
+        }
       } else {
         console.error('Erreur lors du chargement des formations:', data.error)
+        alert('Erreur lors du chargement des formations: ' + (data.error || 'Erreur inconnue'))
       }
     } catch (error) {
       console.error('Erreur lors du chargement des formations:', error)
+      alert('Erreur lors du chargement des formations')
+    } finally {
+      setRefreshing(false)
     }
   }
 
@@ -137,9 +151,9 @@ export default function AdminFormationsPage() {
     
     if (existingFormation) {
       // Édition : remplir le formulaire avec les données existantes
-      setEditingCapsule(capsuleId)
       setFormData({
         capsuleId: capsuleId,
+        sessionName: existingFormation.title,
         sessionType: 'Capsule',
         duration: 60,
         date: existingFormation.date.split('T')[0], // Convertir YYYY-MM-DD
@@ -151,27 +165,63 @@ export default function AdminFormationsPage() {
       })
     } else {
       // Création : juste la capsule
-      setEditingCapsule(capsuleId)
-      setFormData({
-        ...formData,
-        capsuleId: capsuleId
-      })
+      const capsule = CAPSULES.find(c => c.id === capsuleId)
+      const newFormData = {
+        capsuleId: capsuleId,
+        sessionName: capsule ? capsule.title : '',
+        sessionType: 'Capsule',
+        duration: 60,
+        date: '',
+        time: '',
+        description: '',
+        zoomLink: '',
+        maxParticipants: 50,
+        timezone: 'Europe/Paris'
+      }
+      setFormData(newFormData)
     }
+    setShowSessionModal(true)
+  }
+
+  const handleOpenModalForFormation = (formation: Formation) => {
+    setFormData({
+      capsuleId: formation.capsule_id || '',
+      sessionName: formation.title,
+      sessionType: 'Capsule',
+      duration: 60,
+      date: formation.date ? formation.date.split('T')[0] : '',
+      time: formation.time || '',
+      description: '',
+      zoomLink: formation.zoom_link || '',
+      maxParticipants: 50,
+      timezone: 'Europe/Paris'
+    })
     setShowSessionModal(true)
   }
 
   const handleSaveSession = async () => {
     try {
-      if (!formData.capsuleId || !formData.date || !formData.time) {
-        alert('Veuillez remplir tous les champs obligatoires (Capsule, Date, Heure)')
+      if (!formData.sessionName) {
+        alert('Veuillez remplir le nom de la session (champ obligatoire)')
         return
       }
 
-      // Vérifier si on est en mode édition
-      const existingFormation = formations.find(f => f.capsule_id === formData.capsuleId)
+      // Vérifier si on est en mode édition (chercher par ID si on a une formation existante)
+      // Si capsuleId est fourni, chercher par capsule_id, sinon chercher par titre et date
+      let existingFormation = null
+      if (formData.capsuleId) {
+        existingFormation = formations.find(f => f.capsule_id === formData.capsuleId)
+      }
+      // Si pas trouvé par capsule, chercher par titre et date pour les formations indépendantes
+      if (!existingFormation) {
+        existingFormation = formations.find(f => 
+          f.title === formData.sessionName && 
+          f.date.split('T')[0] === formData.date
+        )
+      }
       const isEdit = !!existingFormation
 
-      const url = isEdit 
+      const url = isEdit && existingFormation
         ? `/api/admin/formations?formationId=${existingFormation.id}`
         : '/api/admin/formations'
       
@@ -191,13 +241,14 @@ export default function AdminFormationsPage() {
         throw new Error(data.error || 'Erreur lors de la sauvegarde')
       }
 
+      console.log('Formation sauvegardée:', data)
       alert(isEdit ? 'Session modifiée avec succès!' : 'Session programmée avec succès!')
       setShowSessionModal(false)
-      setEditingCapsule(null)
       
       // Reset form
       setFormData({
         capsuleId: '',
+        sessionName: '',
         sessionType: 'Capsule',
         duration: 60,
         date: '',
@@ -208,10 +259,69 @@ export default function AdminFormationsPage() {
         timezone: 'Europe/Paris'
       })
       
-      loadFormations()
+      // Recharger les formations après un court délai pour laisser le temps à la base de données
+      setTimeout(() => {
+        loadFormations()
+      }, 500)
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error)
       alert(error instanceof Error ? error.message : 'Erreur lors de la sauvegarde')
+    }
+  }
+
+  const handleDeleteFormation = async (formationId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer la date et l\'heure de cette formation ? La formation restera disponible mais sans date/heure programmée.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/formations?formationId=${formationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      alert('Date et heure supprimées avec succès! La formation reste disponible.')
+      loadFormations()
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      alert(error instanceof Error ? error.message : 'Erreur lors de la suppression')
+    }
+  }
+
+  const handleDeleteFormationCompletely = async (formationId: string, event: React.MouseEvent) => {
+    event.stopPropagation() // Empêcher l'ouverture du modal si on clique sur l'icône
+    
+    if (!confirm('Êtes-vous sûr de vouloir supprimer définitivement cette formation ? Cette action est irréversible et la formation sera complètement supprimée.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/formations?formationId=${formationId}&deleteCompletely=true`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      alert('Formation supprimée définitivement avec succès!')
+      loadFormations()
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      alert(error instanceof Error ? error.message : 'Erreur lors de la suppression')
     }
   }
 
@@ -246,16 +356,15 @@ export default function AdminFormationsPage() {
     }
   }
 
-  const handleViewFormation = (formation: any) => {
-    // TODO: Implémenter la vue détaillée de la formation
-    console.log('Voir formation:', formation)
-  }
-
+  // Filtrer les formations pour le tableau : seulement celles avec date et heure
+  // Les formations sans date/heure n'apparaissent que dans "Formations disponibles" (cards)
+  const formationsWithDate = formations.filter(f => f.date && f.time)
+  
   // Pagination
-  const totalPages = Math.ceil(formations.length / itemsPerPage)
+  const totalPages = Math.ceil(formationsWithDate.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentFormations = formations.slice(startIndex, endIndex)
+  const currentFormations = formationsWithDate.slice(startIndex, endIndex)
 
   // Reset page when formations change
   useEffect(() => {
@@ -301,8 +410,8 @@ export default function AdminFormationsPage() {
                 </button>
               </div>
               
-              {/* Informations de connexion */}
-              <div className="flex items-center gap-1 sm:gap-4 mr-2 sm:mr-20">
+              {/* Theme & Informations de connexion */}
+              <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">
                     <div className="relative admin-menu-container z-[9999]">
@@ -360,15 +469,35 @@ export default function AdminFormationsPage() {
             <div className="flex gap-3">
               <button 
                 onClick={loadFormations}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2"
+                disabled={refreshing}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg 
+                  className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Actualiser
+                {refreshing ? 'Actualisation...' : 'Actualiser'}
               </button>
               <button 
-                onClick={() => setShowSessionModal(true)}
+                onClick={() => {
+                  setFormData({
+                    capsuleId: '',
+                    sessionName: '',
+                    sessionType: 'Capsule',
+                    duration: 60,
+                    date: '',
+                    time: '',
+                    description: '',
+                    zoomLink: '',
+                    maxParticipants: 50,
+                    timezone: 'Europe/Paris'
+                  })
+                  setShowSessionModal(true)
+                }}
                 className="bg-[#FEBE02] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e6a802] transition-colors flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,45 +508,83 @@ export default function AdminFormationsPage() {
             </div>
           </div>
 
-          {/* 5 Capsules Cards */}
+          {/* Formations disponibles */}
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-[#012F4E] mb-4">Capsules disponibles</h2>
+            <h2 className="text-xl font-bold text-[#012F4E] mb-4">Formations disponibles</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {CAPSULES.map((capsule) => {
-                const formation = formations.find(f => f.capsule_id === capsule.id)
+              {/* Afficher toutes les formations */}
+              {formations.map((formation) => {
+                const capsule = CAPSULES.find(c => c.id === formation.capsule_id)
                 return (
-                  <div key={capsule.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div key={formation.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     <div className="p-4">
                       <div className="flex items-start gap-3 mb-4">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 relative">
-                          <Image src={capsule.img} alt={capsule.title} width={64} height={64} className="w-full h-full object-cover" />
+                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 relative bg-gray-100 flex items-center justify-center">
+                          {capsule ? (
+                            <Image src={capsule.img} alt={capsule.title} width={64} height={64} className="w-full h-full object-cover" />
+                          ) : (
+                            <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                            </svg>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 mb-1">{capsule.title}</h3>
-                          {formation ? (
-                            <div className="mt-2 space-y-1">
-                              <p className="text-xs text-gray-600">
-                                {formatDate(formation.date)} à {formation.time?.substring(0, 5)}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {formation.zoom_link ? 'Lien Zoom configuré' : 'Pas de lien Zoom'}
-                              </p>
-                            </div>
-                          ) : (
-                            <p className="text-xs text-gray-500 mt-1">Aucune session programmée</p>
-                          )}
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-semibold text-gray-900 mb-1 flex-1">{formation.title}</h3>
+                            <button
+                              onClick={(e) => handleDeleteFormationCompletely(formation.id, e)}
+                              className="text-red-500 hover:text-red-700 transition-colors flex-shrink-0 p-1"
+                              title="Supprimer définitivement cette formation"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="mt-2 space-y-1">
+                            <p className="text-xs text-gray-600">
+                              {formation.date && formation.time 
+                                ? `${formatDate(formation.date)} à ${formation.time?.substring(0, 5)}`
+                                : 'Date et heure non définies'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {formation.zoom_link ? 'Lien Zoom configuré' : 'Pas de lien Zoom'}
+                            </p>
+                          </div>
                         </div>
                       </div>
                       <button
-                        onClick={() => handleOpenModalForCapsule(capsule.id)}
+                        onClick={() => handleOpenModalForFormation(formation)}
                         className="w-full px-4 py-2 bg-[#00A1C6] text-white rounded-lg hover:bg-[#0089a3] transition-colors font-medium text-sm"
                       >
-                        {formation ? 'Modifier la session' : 'Programmer une session'}
+                        Modifier la session
                       </button>
                     </div>
                   </div>
                 )
               })}
+              {/* Afficher les capsules sans formations */}
+              {CAPSULES.filter(capsule => !formations.find(f => f.capsule_id === capsule.id)).map((capsule) => (
+                <div key={capsule.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="p-4">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 relative">
+                        <Image src={capsule.img} alt={capsule.title} width={64} height={64} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 mb-1">{capsule.title}</h3>
+                        <p className="text-xs text-gray-500 mt-1">Aucune session programmée</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleOpenModalForCapsule(capsule.id)}
+                      className="w-full px-4 py-2 bg-[#00A1C6] text-white rounded-lg hover:bg-[#0089a3] transition-colors font-medium text-sm"
+                    >
+                      Programmer une session
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -428,7 +595,7 @@ export default function AdminFormationsPage() {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Formation</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Capsule liée</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Type</th>
                     <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Date & Heure</th>
                     <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Inscrits</th>
                     <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Lien Zoom</th>
@@ -450,13 +617,25 @@ export default function AdminFormationsPage() {
                           <span className="font-medium text-gray-900">{formation.title}</span>
                         </td>
                         <td className="py-4 px-6">
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            Capsule #{formation.capsule_number}
-                          </span>
+                          {formation.capsule_id ? (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              Capsule #{formation.capsule_number || 'N/A'}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              Formation
+                            </span>
+                          )}
                         </td>
                         <td className="py-4 px-6">
-                          <div className="text-sm text-gray-900">{formatDate(formation.date)}</div>
-                          <div className="text-sm text-gray-500">{formation.time}</div>
+                          {formation.date && formation.time ? (
+                            <>
+                              <div className="text-sm text-gray-900">{formatDate(formation.date)}</div>
+                              <div className="text-sm text-gray-500">{formation.time}</div>
+                            </>
+                          ) : (
+                            <div className="text-sm text-gray-400 italic">Non définies</div>
+                          )}
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-2">
@@ -485,10 +664,13 @@ export default function AdminFormationsPage() {
                           </span>
                         </td>
                         <td className="py-4 px-6">
-                          <button onClick={() => handleViewFormation(formation)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Voir détails">
+                          <button 
+                            onClick={() => handleDeleteFormation(formation.id)} 
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                            title="Supprimer la date et l'heure (la formation reste disponible)"
+                          >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </td>
@@ -621,19 +803,31 @@ export default function AdminFormationsPage() {
               <div className="p-6 space-y-6">
                 {/* Détails de la session */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Capsule associée *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Capsule associée (optionnel)</label>
                   <select
                     value={formData.capsuleId}
                     onChange={(e) => setFormData({...formData, capsuleId: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
                   >
-                    <option value="">Sélectionner une capsule</option>
+                    <option value="">Aucune capsule (Formation indépendante)</option>
                     <option value="capsule1">L'éducation financière</option>
-                    <option value="capsule2">Les combats liés à la prospérité</option>
+                    <option value="capsule2">La mentalité de pauvreté</option>
                     <option value="capsule3">Les lois spirituelles liées à l'argent</option>
-                    <option value="capsule4">La mentalité de Pauvre</option>
+                    <option value="capsule4">Les combats liés à la prospérité</option>
                     <option value="capsule5">Épargne et Investissement</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">Laissez vide pour créer une formation indépendante</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nom de la session *</label>
+                  <input
+                    type="text"
+                    value={formData.sessionName}
+                    onChange={(e) => setFormData({...formData, sessionName: e.target.value})}
+                    placeholder="Ex: Session 1 - L'éducation financière"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

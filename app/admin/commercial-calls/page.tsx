@@ -188,17 +188,393 @@ export default function CommercialCallsPage() {
     
     setIsSaving(true)
     try {
-      // Pour l'instant, juste simuler l'import
-      alert('Fonctionnalité d\'import CSV en cours de développement')
+      // Lire le fichier CSV
+      const text = await csvFile.text()
+      const lines = text.split('\n').filter(line => line.trim())
+      
+      if (lines.length < 2) {
+        alert('Le fichier CSV est vide ou ne contient que l\'en-tête')
+        return
+      }
+
+      // Parser la première ligne (en-têtes)
+      const headers = parseCSVLine(lines[0])
+      const headersLower = headers.map(h => h.toLowerCase().trim())
+      
+      // Fonction pour trouver l'index d'une colonne (supporte plusieurs variantes)
+      const findColumn = (variants: string[]): number => {
+        for (const variant of variants) {
+          const index = headersLower.findIndex(h => 
+            h.includes(variant.toLowerCase()) || variant.toLowerCase().includes(h)
+          )
+          if (index !== -1) return index
+        }
+        return -1
+      }
+
+      // Identifier les colonnes
+      const clientIndex = findColumn(['client', 'contact_name', 'nom', 'name'])
+      const emailIndex = findColumn(['email', 'contact_email', 'courriel'])
+      const phoneIndex = findColumn(['téléphone', 'telephone', 'phone', 'contact_phone', 'tel'])
+      const dateIndex = findColumn(['date', 'appointment_date'])
+      const timeIndex = findColumn(['heure', 'time', 'appointment_time'])
+      const durationIndex = findColumn(['durée', 'duree', 'duration', 'durée (min)'])
+      const typeIndex = findColumn(['type', 'appointment_type', 'type de rendez-vous'])
+      const sourceIndex = findColumn(['source'])
+      const statusIndex = findColumn(['statut', 'status'])
+      const priorityIndex = findColumn(['priorité', 'priorite', 'priority'])
+      const zoomIndex = findColumn(['lien zoom', 'zoom_link', 'zoom', 'lien'])
+      const notesIndex = findColumn(['notes', 'note', 'commentaire'])
+
+      // Vérifier les colonnes obligatoires
+      if (clientIndex === -1 || emailIndex === -1 || dateIndex === -1 || timeIndex === -1) {
+        alert('Le fichier CSV doit contenir au minimum les colonnes: Client, Email, Date, Heure')
+        return
+      }
+
+      // Parser les lignes de données
+      const appointments: any[] = []
+      const errors: string[] = []
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i])
+        
+        if (values.length === 0) continue
+
+        try {
+          const contactName = values[clientIndex]?.trim()
+          const contactEmail = values[emailIndex]?.trim()
+          const contactPhone = phoneIndex !== -1 ? values[phoneIndex]?.trim() || null : null
+          const dateStr = values[dateIndex]?.trim()
+          const timeStr = values[timeIndex]?.trim()
+          const duration = durationIndex !== -1 ? parseInt(values[durationIndex]?.trim() || '30') : 30
+          const appointmentType = typeIndex !== -1 ? mapAppointmentType(values[typeIndex]?.trim()) : 'analysis'
+          const source = sourceIndex !== -1 ? mapSource(values[sourceIndex]?.trim()) : 'calendly'
+          const status = statusIndex !== -1 ? mapStatus(values[statusIndex]?.trim()) : 'nouveau'
+          const priority = priorityIndex !== -1 ? mapPriority(values[priorityIndex]?.trim()) : false
+          const zoomLink = zoomIndex !== -1 ? values[zoomIndex]?.trim() || null : null
+          const notes = notesIndex !== -1 ? values[notesIndex]?.trim() || null : null
+
+          // Validation des champs obligatoires
+          if (!contactName || !contactEmail || !dateStr || !timeStr) {
+            errors.push(`Ligne ${i + 1}: Champs obligatoires manquants (Client, Email, Date, Heure)`)
+            continue
+          }
+
+          // Parser la date et l'heure
+          let appointmentDate: Date
+          try {
+            // Essayer différents formats de date
+            let datePart = dateStr
+            // Si format JJ/MM/AAAA, convertir en AAAA-MM-JJ
+            if (dateStr.includes('/')) {
+              const parts = dateStr.split('/')
+              if (parts.length === 3) {
+                datePart = `${parts[2]}-${parts[1]}-${parts[0]}`
+              }
+            }
+            
+            // Formater l'heure (enlever les secondes si présentes)
+            let timePart = timeStr
+            if (timePart.includes(':')) {
+              const timeParts = timePart.split(':')
+              timePart = `${timeParts[0]}:${timeParts[1]}`
+            }
+
+            appointmentDate = new Date(`${datePart}T${timePart}`)
+            
+            if (isNaN(appointmentDate.getTime())) {
+              throw new Error('Date invalide')
+            }
+          } catch (dateError) {
+            errors.push(`Ligne ${i + 1}: Format de date/heure invalide (${dateStr} ${timeStr})`)
+            continue
+          }
+
+          appointments.push({
+            contact_name: contactName,
+            contact_email: contactEmail,
+            contact_phone: contactPhone,
+            appointment_date: appointmentDate.toISOString(),
+            duration,
+            appointment_type: appointmentType,
+            source,
+            status,
+            priority,
+            zoom_link: zoomLink,
+            notes
+          })
+        } catch (error) {
+          errors.push(`Ligne ${i + 1}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+        }
+      }
+
+      if (appointments.length === 0) {
+        alert('Aucun rendez-vous valide trouvé dans le fichier CSV')
+        return
+      }
+
+      // Créer les rendez-vous
+      let successCount = 0
+      let errorCount = 0
+
+      for (const appointment of appointments) {
+        try {
+          const response = await fetch('/api/admin/commercial-calls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...appointment,
+              timezone: 'Europe/Paris'
+            })
+          })
+
+          const data = await response.json()
+          if (data.success) {
+            successCount++
+          } else {
+            errorCount++
+            errors.push(`${appointment.contact_name}: ${data.error || 'Erreur inconnue'}`)
+          }
+        } catch (error) {
+          errorCount++
+          errors.push(`${appointment.contact_name}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+        }
+      }
+
+      // Afficher les résultats
+      let message = `Import terminé: ${successCount} rendez-vous créé(s)`
+      if (errorCount > 0 || errors.length > 0) {
+        message += `, ${errorCount} erreur(s)`
+        if (errors.length > 0) {
+          console.error('Erreurs détaillées:', errors)
+        }
+      }
+      alert(message)
+
+      // Recharger les rendez-vous et fermer le modal
+      loadAppointments()
       setShowImportModal(false)
       setCsvFile(null)
       setImportStep(1)
     } catch (error) {
       console.error('Erreur:', error)
-      alert('Erreur lors de l\'import CSV')
+      alert(`Erreur lors de l'import CSV: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
     } finally {
       setIsSaving(false)
     }
+  }
+
+  // Fonction helper pour parser une ligne CSV (gère les guillemets)
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = []
+    let current = ''
+    let inQuotes = false
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i]
+      
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          // Double guillemet échappé
+          current += '"'
+          i++
+        } else {
+          // Toggle guillemets
+          inQuotes = !inQuotes
+        }
+      } else if (char === ',' && !inQuotes) {
+        // Nouvelle colonne
+        result.push(current.trim())
+        current = ''
+      } else {
+        current += char
+      }
+    }
+    
+    // Ajouter la dernière colonne
+    result.push(current.trim())
+    
+    return result
+  }
+
+  // Fonction helper pour mapper les types de rendez-vous
+  const mapAppointmentType = (type: string): string => {
+    if (!type) return 'analysis'
+    
+    const typeLower = type.toLowerCase().trim()
+    
+    const typeMap: { [key: string]: string } = {
+      'analyse financière': 'analysis',
+      'analyse': 'analysis',
+      'analysis': 'analysis',
+      'consultation': 'consultation',
+      'suivi': 'followup',
+      'capsule 1': 'capsule1',
+      'capsule 2': 'capsule2',
+      'capsule 3': 'capsule3',
+      'capsule 4': 'capsule4',
+      'capsule 5': 'capsule5',
+      'pack complet': 'pack',
+      'pack': 'pack',
+      'autre': 'other',
+      'other': 'other'
+    }
+    
+    return typeMap[typeLower] || 'analysis'
+  }
+
+  // Fonction helper pour mapper les sources
+  const mapSource = (source: string): string => {
+    if (!source) return 'calendly'
+    
+    const sourceLower = source.toLowerCase().trim()
+    
+    const sourceMap: { [key: string]: string } = {
+      'calendly': 'calendly',
+      'manuel': 'manual',
+      'manual': 'manual',
+      'whatsapp': 'whatsapp',
+      'tiktok': 'tiktok',
+      'autre': 'other',
+      'other': 'other'
+    }
+    
+    return sourceMap[sourceLower] || 'calendly'
+  }
+
+  // Fonction helper pour mapper les statuts
+  const mapStatus = (status: string): string => {
+    if (!status) return 'nouveau'
+    
+    const statusLower = status.toLowerCase().trim()
+    
+    const statusMap: { [key: string]: string } = {
+      'nouveau': 'nouveau',
+      'new': 'nouveau',
+      'confirmé': 'confirme',
+      'confirme': 'confirme',
+      'confirmed': 'confirme',
+      'en cours': 'en_cours',
+      'en_cours': 'en_cours',
+      'in progress': 'en_cours',
+      'terminé': 'termine',
+      'termine': 'termine',
+      'completed': 'termine',
+      'annulé': 'annule',
+      'annule': 'annule',
+      'cancelled': 'annule'
+    }
+    
+    return statusMap[statusLower] || 'nouveau'
+  }
+
+  // Fonction helper pour mapper la priorité
+  const mapPriority = (priority: string): boolean => {
+    if (!priority) return false
+    
+    const priorityLower = priority.toLowerCase().trim()
+    
+    return priorityLower === 'oui' || 
+           priorityLower === 'yes' || 
+           priorityLower === 'true' || 
+           priorityLower === '1' || 
+           priorityLower === 'prioritaire'
+  }
+
+  const handleExportCSV = () => {
+    // Filtrer les rendez-vous selon les filtres actifs
+    let filteredAppointments = appointments
+    
+    if (statusFilter !== 'all') {
+      filteredAppointments = filteredAppointments.filter(apt => apt.status === statusFilter)
+    }
+    
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      filteredAppointments = filteredAppointments.filter(apt =>
+        apt.contact_name?.toLowerCase().includes(searchLower) ||
+        apt.contact_email?.toLowerCase().includes(searchLower) ||
+        apt.contact_phone?.toLowerCase().includes(searchLower)
+      )
+    }
+
+    const headers = [
+      'Client',
+      'Email',
+      'Téléphone',
+      'Date',
+      'Heure',
+      'Durée (min)',
+      'Type',
+      'Source',
+      'Statut',
+      'Priorité',
+      'Lien Zoom',
+      'Notes',
+      'Date de création',
+      'Dernière modification'
+    ]
+    
+    const rows = filteredAppointments.map((appointment: Appointment) => {
+      const appointmentDate = appointment.appointment_date ? new Date(appointment.appointment_date) : null
+      const createdDate = appointment.created_at ? new Date(appointment.created_at) : null
+      const updatedDate = appointment.updated_at ? new Date(appointment.updated_at) : null
+      
+      // Formatage de la date et heure
+      const dateStr = appointmentDate ? appointmentDate.toLocaleDateString('fr-FR') : ''
+      const timeStr = appointmentDate ? appointmentDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''
+      
+      // Labels pour le type et le statut
+      const typeLabels: { [key: string]: string } = {
+        'analysis': 'Analyse financière',
+        'consultation': 'Consultation',
+        'followup': 'Suivi',
+        'other': 'Autre'
+      }
+      
+      const statusLabels: { [key: string]: string } = {
+        'nouveau': 'Nouveau',
+        'confirme': 'Confirmé',
+        'en_cours': 'En cours',
+        'termine': 'Terminé',
+        'annule': 'Annulé'
+      }
+      
+      return [
+        appointment.contact_name || '',
+        appointment.contact_email || '',
+        appointment.contact_phone || '',
+        dateStr,
+        timeStr,
+        appointment.duration?.toString() || '30',
+        typeLabels[appointment.appointment_type] || appointment.appointment_type || '',
+        appointment.source || '',
+        statusLabels[appointment.status] || appointment.status || '',
+        appointment.priority ? 'Oui' : 'Non',
+        appointment.zoom_link || '',
+        appointment.notes || '',
+        createdDate ? createdDate.toLocaleString('fr-FR') : '',
+        updatedDate ? updatedDate.toLocaleString('fr-FR') : ''
+      ]
+    })
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `appels_rdv_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const getStatusColor = (status: string) => {
@@ -349,8 +725,8 @@ export default function CommercialCallsPage() {
                 </button>
               </div>
               
-              {/* Informations de connexion */}
-              <div className="flex items-center gap-1 sm:gap-4 mr-2 sm:mr-20">
+              {/* Theme & Informations de connexion */}
+              <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">
                     <div className="relative admin-menu-container z-[9999]">
@@ -415,6 +791,15 @@ export default function CommercialCallsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
               Importer CSV
+            </button>
+            <button
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Exporter CSV
             </button>
             <button
               onClick={() => setShowAddModal(true)}

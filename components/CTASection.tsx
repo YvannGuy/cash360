@@ -45,7 +45,7 @@ export default function CTASection() {
     {
       id: 2,
       image: '/images/logo/capsule2.jpg',
-      title: "Les combats liés à la prospérité",
+      title: "La mentalité de pauvreté",
       content: [
         "Démasquer les forces qui combattent la prospérité",
         "Briser les blocages spirituels et psychologiques pour entrer dans l'abondance",
@@ -65,7 +65,7 @@ export default function CTASection() {
     {
       id: 4,
       image: '/images/logo/capsule4.jpg',
-      title: "La mentalité de Pauvre",
+      title: "Les combats liés à la prospérité",
       content: [
         "Briser les limites intérieures",
         "Mon entourage, mon influence, ma richesse",

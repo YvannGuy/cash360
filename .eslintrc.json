@@ -6,6 +6,16 @@
     "react/no-unescaped-entities": "off",
     "react-hooks/exhaustive-deps": "warn"
   },
+  "overrides": [
+    {
+      "files": ["scripts/**/*.js"],
+      "env": { "node": true },
+      "rules": {
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/no-var-requires": "off"
+      }
+    }
+  ],
   "ignorePatterns": [
     "out/**/*",
     ".next/**/*",

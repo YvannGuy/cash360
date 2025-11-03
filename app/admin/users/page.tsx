@@ -317,8 +317,8 @@ export default function AdminUsersPage() {
                 </button>
               </div>
               
-              {/* Informations de connexion */}
-              <div className="flex items-center gap-1 sm:gap-4 mr-2 sm:mr-20">
+              {/* Theme & Informations de connexion */}
+              <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">
                     <div className="relative admin-menu-container z-[9999]">

@@ -126,7 +126,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      <nav style={{ top: `${bannerHeight}px` }} className="fixed left-0 right-0 z-[9998] bg-white/95 backdrop-blur-md shadow-lg border-t-0 transition-all duration-300">
+      <nav style={{ top: `${bannerHeight}px` }} className="fixed left-0 right-0 z-[9998] bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-t-0 border-gray-200 dark:border-gray-700 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
@@ -233,7 +233,7 @@ export default function Navbar() {
             </a>
           </div>
 
-          {/* Mobile menu button & Language Switch */}
+          {/* Mobile menu button & Theme & Language Switch */}
           <div className="md:hidden flex items-center gap-3">
             {/* Language Selector */}
             <LanguageSwitch />
@@ -255,16 +255,16 @@ export default function Navbar() {
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/95 backdrop-blur-md rounded-lg mt-2 shadow-lg">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-lg mt-2 shadow-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200">
               <button
                 onClick={() => scrollToSection('accueil')}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors duration-200"
               >
                 Accueil
               </button>
               <button
                 onClick={() => scrollToSection('apropos')}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors duration-200"
               >
                 À propos
               </button>
@@ -273,7 +273,7 @@ export default function Navbar() {
                   scrollToSection('section-analyse')
                   setIsMenuOpen(false)
                 }}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors duration-200"
               >
                 Analyse personnalisée
               </button>
@@ -283,9 +283,9 @@ export default function Navbar() {
                 <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
                   <div className="flex items-center space-x-2 mb-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Connecté en tant que {getInitials(user.email)}
-                    </span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Connecté en tant que {getInitials(user.email)}
+                      </span>
                   </div>
                   <div className="space-y-2">
                     <button

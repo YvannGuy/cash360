@@ -8,6 +8,7 @@ export interface CartItem {
   img: string
   price: number
   quantity: number
+  category?: string // Catégorie du produit pour limiter les quantités
 }
 
 interface CartContextType {
@@ -28,10 +29,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     setCartItems(prev => {
       const existingItem = prev.find(cartItem => cartItem.id === item.id)
+      const itemCategory = (item as any).category || 'capsules'
+      
+      // Pour capsules, pack, ebook, abonnement : maximum 1 quantité
+      // Pour analyse-financiere : quantités illimitées
       if (existingItem) {
-        return prev.map(cartItem =>
-          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
-        )
+        if (itemCategory === 'analyse-financiere') {
+          // Analyse financière : quantités illimitées, on peut toujours augmenter
+          return prev.map(cartItem =>
+            cartItem.id === item.id 
+              ? { ...cartItem, quantity: cartItem.quantity + 1 } 
+              : cartItem
+          )
+        } else {
+          // Autres produits : maximum 1 quantité
+          if (existingItem.quantity >= 1) {
+            return prev // Déjà à 1, ne rien faire
+          }
+        }
       }
       return [...prev, { ...item, quantity: 1 }]
     })
@@ -43,9 +58,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const updateQuantity = (id: string, quantity: number) => {
     if (quantity < 1) return
-    setCartItems(prev => prev.map(item =>
-      item.id === id ? { ...item, quantity } : item
-    ))
+    
+    setCartItems(prev => prev.map(item => {
+      if (item.id === id) {
+        const itemCategory = item.category || 'capsules'
+        // Pour capsules, pack, ebook, abonnement : maximum 1 quantité
+        // Pour analyse-financiere : quantités illimitées
+        const maxQuantity = itemCategory === 'analyse-financiere' ? Infinity : 1
+        return { ...item, quantity: Math.min(quantity, maxQuantity) }
+      }
+      return item
+    }))
   }
 
   const clearCart = () => {

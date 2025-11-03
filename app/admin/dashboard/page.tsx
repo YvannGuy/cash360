@@ -51,10 +51,14 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (adminSession?.isAdmin) {
-      loadAllAnalyses()
-      loadAllUsers()
-      loadPayments()
-      loadFormations()
+      // Charger les données de façon séquentielle pour éviter la surcharge
+      const loadData = async () => {
+        await loadAllAnalyses()
+        await loadAllUsers()
+        await loadPayments()
+        await loadFormations()
+      }
+      loadData()
     }
   }, [adminSession])
 
@@ -75,10 +79,13 @@ export default function AdminDashboardPage() {
   const loadAllAnalyses = async () => {
     try {
       const response = await fetch('/api/admin/analyses')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       const data = await response.json()
       
       if (data.success) {
-        setAnalyses(data.analyses)
+        setAnalyses(data.analyses || [])
       } else {
         console.error('Erreur lors du chargement des analyses:', data.error)
       }
@@ -90,10 +97,13 @@ export default function AdminDashboardPage() {
   const loadAllUsers = async () => {
     try {
       const response = await fetch('/api/admin/users')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       const data = await response.json()
       
       if (data.success) {
-        setUsers(data.users)
+        setUsers(data.users || [])
       } else {
         console.error('Erreur lors du chargement des utilisateurs:', data.error)
       }
@@ -105,11 +115,17 @@ export default function AdminDashboardPage() {
   const loadPayments = async () => {
     try {
       const response = await fetch('/api/admin/paiements')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       const data = await response.json()
       
       if (data.success) {
+        console.log(`[ADMIN DASHBOARD] ${data.payments?.length || 0} paiements chargés`)
         setPayments(data.payments || [])
         setPaymentStats(data.stats || {})
+      } else {
+        console.error('Erreur lors du chargement des paiements:', data.error)
       }
     } catch (error) {
       console.error('Erreur lors du chargement des paiements:', error)
@@ -119,6 +135,9 @@ export default function AdminDashboardPage() {
   const loadFormations = async () => {
     try {
       const response = await fetch('/api/admin/formations')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       const data = await response.json()
       
       if (data.success) {
@@ -317,8 +336,8 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
               
-              {/* Informations de connexion */}
-              <div className="flex items-center gap-1 sm:gap-4 mr-2 sm:mr-20">
+              {/* Theme & Informations de connexion */}
+              <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">
                     <div className="relative admin-menu-container z-[9999]">
