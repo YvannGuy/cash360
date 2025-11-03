@@ -55,7 +55,6 @@ export default function AdminFormationsPage() {
   const itemsPerPage = 10
   const [formData, setFormData] = useState({
     capsuleId: '',
-    sessionName: '',
     sessionType: 'Capsule',
     duration: 60,
     date: '',
@@ -63,11 +62,7 @@ export default function AdminFormationsPage() {
     description: '',
     zoomLink: '',
     maxParticipants: 50,
-    timezone: 'Europe/Paris',
-    accessType: 'tous',
-    price: 0,
-    requirePayment: false,
-    sendNotification: false
+    timezone: 'Europe/Paris'
   })
 
   useEffect(() => {
@@ -145,7 +140,6 @@ export default function AdminFormationsPage() {
       setEditingCapsule(capsuleId)
       setFormData({
         capsuleId: capsuleId,
-        sessionName: existingFormation.title,
         sessionType: 'Capsule',
         duration: 60,
         date: existingFormation.date.split('T')[0], // Convertir YYYY-MM-DD
@@ -153,11 +147,7 @@ export default function AdminFormationsPage() {
         description: '',
         zoomLink: existingFormation.zoom_link || '',
         maxParticipants: 50,
-        timezone: 'Europe/Paris',
-        accessType: 'tous',
-        price: 0,
-        requirePayment: false,
-        sendNotification: false
+        timezone: 'Europe/Paris'
       })
     } else {
       // Création : juste la capsule
@@ -172,8 +162,8 @@ export default function AdminFormationsPage() {
 
   const handleSaveSession = async () => {
     try {
-      if (!formData.capsuleId || !formData.sessionName || !formData.date || !formData.time) {
-        alert('Veuillez remplir tous les champs obligatoires (Capsule, Nom, Date, Heure)')
+      if (!formData.capsuleId || !formData.date || !formData.time) {
+        alert('Veuillez remplir tous les champs obligatoires (Capsule, Date, Heure)')
         return
       }
 
@@ -208,7 +198,6 @@ export default function AdminFormationsPage() {
       // Reset form
       setFormData({
         capsuleId: '',
-        sessionName: '',
         sessionType: 'Capsule',
         duration: 60,
         date: '',
@@ -216,11 +205,7 @@ export default function AdminFormationsPage() {
         description: '',
         zoomLink: '',
         maxParticipants: 50,
-        timezone: 'Europe/Paris',
-        accessType: 'tous',
-        price: 0,
-        requirePayment: false,
-        sendNotification: false
+        timezone: 'Europe/Paris'
       })
       
       loadFormations()
@@ -651,17 +636,6 @@ export default function AdminFormationsPage() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nom de la session</label>
-                  <input
-                    type="text"
-                    value={formData.sessionName}
-                    onChange={(e) => setFormData({...formData, sessionName: e.target.value})}
-                    placeholder="Ex: La mentalité de la pauvreté"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
-                  />
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Type de session</label>
@@ -776,95 +750,6 @@ export default function AdminFormationsPage() {
                   </div>
                 </div>
 
-                {/* Accès et tarification */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-[#FEBE02] rounded-full flex items-center justify-center">
-                    <span className="text-white text-xl font-bold">€</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-[#012F4E]">Accès et tarification</h3>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Accès réservé à</label>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="accessType"
-                        value="tous"
-                        checked={formData.accessType === 'tous'}
-                        onChange={(e) => setFormData({...formData, accessType: e.target.value})}
-                        className="text-[#00A1C6] focus:ring-[#00A1C6]"
-                      />
-                      <span>Tous les utilisateurs</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="accessType"
-                        value="capsule"
-                        checked={formData.accessType === 'capsule'}
-                        onChange={(e) => setFormData({...formData, accessType: e.target.value})}
-                        className="text-[#00A1C6] focus:ring-[#00A1C6]"
-                      />
-                      <span>Utilisateurs ayant acheté une capsule</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="accessType"
-                        value="custom"
-                        checked={formData.accessType === 'custom'}
-                        onChange={(e) => setFormData({...formData, accessType: e.target.value})}
-                        className="text-[#00A1C6] focus:ring-[#00A1C6]"
-                      />
-                      <span>Groupe personnalisé</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tarif (optionnel)</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value)})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
-                    />
-                    <span className="text-gray-600">€</span>
-                  </div>
-                </div>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.requirePayment}
-                    onChange={(e) => setFormData({...formData, requirePayment: e.target.checked})}
-                    className="rounded border-gray-300 text-[#00A1C6] focus:ring-[#00A1C6]"
-                  />
-                  <span className="text-sm text-gray-700">Activer paiement avant inscription</span>
-                </label>
-
-                {/* Notification */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-[#00A1C6] rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-[#012F4E]">Notification</h3>
-                </div>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.sendNotification}
-                    onChange={(e) => setFormData({...formData, sendNotification: e.target.checked})}
-                    className="rounded border-gray-300 text-[#00A1C6] focus:ring-[#00A1C6]"
-                  />
-                  <span className="text-sm text-gray-700">Envoyer une notification automatique</span>
-                </label>
               </div>
 
               {/* Modal Actions */}
