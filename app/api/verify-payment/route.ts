@@ -133,23 +133,24 @@ export async function POST(request: NextRequest) {
     for (const item of items) {
       const product = products.find(p => p.id === item.id)
       
-      // Si c'est un pack, on ajoute toutes les capsules individuelles
-      if (product?.is_pack) {
-        const { data: allCapsules } = await supabase
-          .from('products')
-          .select('id')
-          .eq('is_pack', false)
+        // Si c'est un pack, on ajoute toutes les capsules individuelles
+        if (product?.is_pack) {
+          const { data: allCapsules } = await supabase
+            .from('products')
+            .select('id')
+            .eq('is_pack', false)
+            .neq('id', 'analyse-financiere') // Exclure l'analyse financière des capsules pack
         
-        if (allCapsules && allCapsules.length > 0) {
-          for (const capsule of allCapsules) {
-            capsuleEntries.push({
-              user_id: user.id,
-              capsule_id: capsule.id,
-              created_at: new Date().toISOString()
-            })
+          if (allCapsules && allCapsules.length > 0) {
+            for (const capsule of allCapsules) {
+              capsuleEntries.push({
+                user_id: user.id,
+                capsule_id: capsule.id,
+                created_at: new Date().toISOString()
+              })
+            }
           }
-        }
-      } else {
+        } else {
         // Sinon, on ajoute juste la capsule achetée
         capsuleEntries.push({
           user_id: user.id,

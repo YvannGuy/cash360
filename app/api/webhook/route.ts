@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
             .from('products')
             .select('id')
             .eq('is_pack', false)
+            .neq('id', 'analyse-financiere') // Exclure l'analyse financière des capsules pack
           
           if (allCapsules && allCapsules.length > 0) {
             for (const capsule of allCapsules) {
