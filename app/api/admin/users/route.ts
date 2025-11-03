@@ -16,80 +16,57 @@ export async function GET(request: NextRequest) {
 
     if (authUsersError) {
       console.error('Erreur lors de la récupération des utilisateurs auth:', authUsersError)
-    }
-
-    // Récupérer tous les emails uniques des analyses
-    const { data: analysisEmails, error: analysisEmailsError } = await supabaseAdmin
-      .from('analyses')
-      .select('client_email, client_name, created_at')
-      .order('created_at', { ascending: false })
-
-    if (analysisEmailsError) {
-      console.error('Erreur lors de la récupération des emails d\'analyses:', analysisEmailsError)
       return NextResponse.json(
         { error: 'Erreur lors de la récupération des utilisateurs' },
         { status: 500 }
       )
     }
 
-    // Créer une map des emails uniques avec leurs analyses
-    const emailMap = new Map()
+    // Récupérer toutes les analyses pour compter par utilisateur
+    const { data: analysisEmails, error: analysisEmailsError } = await supabaseAdmin
+      .from('analyses')
+      .select('client_email, client_name, created_at')
+
+    if (analysisEmailsError) {
+      console.error('Erreur lors de la récupération des emails d\'analyses:', analysisEmailsError)
+    }
+
+    // Compter les analyses par email
+    const analysisCountMap = new Map<string, number>()
+    const nameMap = new Map<string, string>()
     
     analysisEmails?.forEach(analysis => {
       const email = analysis.client_email
-      if (!emailMap.has(email)) {
-        emailMap.set(email, {
-          email: email,
-          name: analysis.client_name,
-          first_analysis_date: analysis.created_at,
-          analysis_count: 0,
-          analyses: []
-        })
+      analysisCountMap.set(email, (analysisCountMap.get(email) || 0) + 1)
+      if (analysis.client_name) {
+        nameMap.set(email, analysis.client_name)
       }
-      const userData = emailMap.get(email)
-      userData.analysis_count++
-      userData.analyses.push(analysis)
     })
 
-    // Combiner avec les utilisateurs authentifiés
-    const allUsers = Array.from(emailMap.values()).map(emailUser => {
-      // Chercher si cet email correspond à un utilisateur authentifié
-      const authUser = authUsers?.users.find(u => u.email === emailUser.email)
-      
-      if (authUser) {
-        // Utilisateur authentifié
+    // Transformer tous les utilisateurs authentifiés
+    const allUsers = (authUsers?.users || [])
+      .filter(authUser => authUser.email) // Filtrer les utilisateurs sans email
+      .map(authUser => {
         const role = authUser.user_metadata?.role || 'user'
+        const analysisCount = analysisCountMap.get(authUser.email || '') || 0
+        const name = nameMap.get(authUser.email || '') || authUser.user_metadata?.first_name + ' ' + authUser.user_metadata?.last_name || ''
+        
         return {
           id: authUser.id,
-          email: emailUser.email,
-          name: emailUser.name,
+          email: authUser.email,
+          name: name.trim() || undefined,
           created_at: authUser.created_at,
           last_sign_in_at: authUser.last_sign_in_at,
           email_confirmed_at: authUser.email_confirmed_at,
-          first_analysis_date: emailUser.first_analysis_date,
-          analysis_count: emailUser.analysis_count,
+          first_analysis_date: null, // Peut être enrichi si nécessaire
+          analysis_count: analysisCount,
           is_authenticated: true,
           role: role
         }
-      } else {
-        // Utilisateur non authentifié (juste email dans analyse)
-        return {
-          id: null,
-          email: emailUser.email,
-          name: emailUser.name,
-          created_at: emailUser.first_analysis_date,
-          last_sign_in_at: null,
-          email_confirmed_at: null,
-          first_analysis_date: emailUser.first_analysis_date,
-          analysis_count: emailUser.analysis_count,
-          is_authenticated: false,
-          role: 'user'
-        }
-      }
-    })
+      })
 
-    // Trier par date de première analyse (plus récent en premier)
-    allUsers.sort((a, b) => new Date(b.first_analysis_date).getTime() - new Date(a.first_analysis_date).getTime())
+    // Trier par date de création (plus récent en premier)
+    allUsers.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
     return NextResponse.json({
       success: true,
