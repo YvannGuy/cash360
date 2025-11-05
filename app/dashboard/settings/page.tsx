@@ -165,7 +165,7 @@ export default function SettingsPage() {
               {user && (
                 <div className="flex items-center gap-1 sm:gap-3">
                   {/* Icône Panier */}
-                  <div className="relative cart-container">
+                  <div className="relative cart-container z-[10000]">
                     <button
                       onClick={() => setShowCartDropdown(!showCartDropdown)}
                       className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -182,7 +182,7 @@ export default function SettingsPage() {
 
                     {/* Dropdown du panier */}
                     {showCartDropdown && (
-                      <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[10000] animate-fadeIn">
+                      <div className="fixed sm:absolute top-16 sm:top-auto right-1 sm:right-0 left-1 sm:left-auto mt-0 sm:mt-2 w-[calc(100vw-0.5rem)] sm:w-80 max-w-sm bg-white rounded-lg shadow-xl border border-gray-200 z-[10000] animate-fadeIn max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-8rem)] overflow-hidden flex flex-col">
                         {/* Header */}
                         <div className="px-4 py-3 border-b border-gray-200">
                           <h3 className="font-bold text-[#012F4E]" style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}>
@@ -191,10 +191,12 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Liste des articles */}
-                        <div className="max-h-64 overflow-y-auto">
+                        <div className="flex-1 overflow-y-auto min-h-0">
                           {cartItems.length === 0 ? (
                             <div className="px-4 py-8 text-center text-gray-500">
+                              <span className="mr-2">👋</span>
                               Votre panier est vide
+                              <p className="text-xs text-gray-400 mt-2">Ajoutez des produits dans votre panier depuis votre boutique.</p>
                             </div>
                           ) : (
                             <div className="px-4 py-2">

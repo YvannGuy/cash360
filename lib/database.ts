@@ -81,14 +81,39 @@ export class AnalysisService {
       if (!user) throw new Error('Utilisateur non authentifié')
 
       // Récupérer les analyses par user_id ET par email client (pour les analyses créées via l'API)
-      const { data: analyses, error } = await this.supabase
-        .from('analyses')
-        .select('*')
-        .or(`user_id.eq.${user.id},client_email.eq.${user.email}`)
-        .order('created_at', { ascending: false })
+      // On fait deux requêtes séparées pour être sûr de récupérer toutes les analyses
+      const [analysesByUserId, analysesByEmail] = await Promise.all([
+        this.supabase
+          .from('analyses')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+        this.supabase
+          .from('analyses')
+          .select('*')
+          .eq('client_email', user.email || '')
+          .order('created_at', { ascending: false })
+      ])
 
-      if (error) throw error
-      return analyses || []
+      // Fusionner les résultats et supprimer les doublons
+      const allAnalyses = [
+        ...(analysesByUserId.data || []),
+        ...(analysesByEmail.data || [])
+      ]
+      
+      // Supprimer les doublons basés sur l'ID
+      const uniqueAnalyses = allAnalyses.filter((analysis, index, self) =>
+        index === self.findIndex((a) => a.id === analysis.id)
+      )
+
+      if (analysesByUserId.error) {
+        console.error('[ANALYSIS_SERVICE] Erreur récupération analyses par user_id:', analysesByUserId.error)
+      }
+      if (analysesByEmail.error) {
+        console.error('[ANALYSIS_SERVICE] Erreur récupération analyses par email:', analysesByEmail.error)
+      }
+      
+      return uniqueAnalyses
     } catch (error) {
       console.error('Erreur lors de la récupération des analyses:', error)
       return []

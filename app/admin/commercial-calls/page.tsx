@@ -45,6 +45,7 @@ export default function CommercialCallsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [showDetailPanel, setShowDetailPanel] = useState(false)
   const [appointmentFormData, setAppointmentFormData] = useState({
@@ -702,13 +703,24 @@ export default function CommercialCallsPage() {
 
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
-      <AdminSidebar activeTab="commercial-calls" />
+      <AdminSidebar activeTab="commercial-calls" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="flex-1 ml-64">
+      <div className="flex-1 md:ml-64">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 relative z-[9998]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
+              {/* Bouton hamburger pour mobile */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mr-2"
+                aria-label="Ouvrir le menu"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
               {/* Logo */}
               <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
                 <button
@@ -725,7 +737,7 @@ export default function CommercialCallsPage() {
                 </button>
               </div>
               
-              {/* Theme & Informations de connexion */}
+              {/* Informations de connexion */}
               <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">

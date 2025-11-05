@@ -15,6 +15,7 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [showAdminMenu, setShowAdminMenu] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   
   const [firstName, setFirstName] = useState('Jean')
   const [lastName, setLastName] = useState('Dupont')
@@ -94,11 +95,22 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
-      <AdminSidebar activeTab="settings" />
-      <div className="flex-1 ml-64">
+      <AdminSidebar activeTab="settings" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex-1 md:ml-64">
         <header className="bg-white shadow-sm border-b border-gray-200 relative z-[9998]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
+              {/* Bouton hamburger pour mobile */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mr-2"
+                aria-label="Ouvrir le menu"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
               <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
                 <button onClick={() => router.push('/')} className="cursor-pointer">
                   <Image src="/images/logo/logofinal.png" alt="Cash360" width={540} height={540} className="h-16 sm:h-32 md:h-42 w-auto hover:opacity-80 transition-opacity duration-200" />

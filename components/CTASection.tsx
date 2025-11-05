@@ -31,66 +31,19 @@ export default function CTASection() {
     }
   }, [])
 
-  const capsules = [
-    {
-      id: 1,
-      image: '/images/logo/capsule1.jpg',
-      title: "L'éducation financière",
-      content: [
-        "Tout ce qu'il faut savoir sur l'argent",
-        "Les bases de la gestion financière",
-        "Deviens maître de tes finances, pas esclave de tes dépenses"
-      ]
-    },
-    {
-      id: 2,
-      image: '/images/logo/capsule2.jpg',
-      title: "La mentalité de pauvreté",
-      content: [
-        "Démasquer les forces qui combattent la prospérité",
-        "Briser les blocages spirituels et psychologiques pour entrer dans l'abondance",
-        "Triompher des résistances invisibles à la prospérité"
-      ]
-    },
-    {
-      id: 3,
-      image: '/images/logo/capsule3.jpg',
-      title: "Les lois spirituelles liées à l'argent",
-      content: [
-        "L'anatomie financière : Comprendre les portes du corps qui influencent la prospérité",
-        "les 3 niveaux de l'argent",
-        "les principes éternels qui gouvernent la prospérité selon Dieu"
-      ]
-    },
-    {
-      id: 4,
-      image: '/images/logo/capsule4.jpg',
-      title: "Les combats liés à la prospérité",
-      content: [
-        "Briser les limites intérieures",
-        "Mon entourage, mon influence, ma richesse",
-        "pourquoi le diable veut que les chrétiens restent pauvres"
-      ]
-    },
-    {
-      id: 5,
-      image: '/images/logo/capsule5.jpg',
-      title: "Épargne et Investissement",
-      content: [
-        "Trouver l'épargne qui te correspond",
-        "Comment faire fructifier ton argent",
-        "Comment garder ton épargne et te préparer pour l'avenir"
-      ]
-    },
-    {
-      id: 6,
-      image: '/images/pack.png',
-      title: "Pack complet des capsules",
-      content: [
-        "Retrouvez l'ensemble des capsules et bénéficiez de -15%"
-      ]
-    }
+  const images = [
+    '/images/logo/capsule1.jpg',
+    '/images/logo/capsule2.jpg',
+    '/images/logo/capsule3.jpg',
+    '/images/logo/capsule4.jpg',
+    '/images/logo/capsule5.jpg',
+    '/images/pack.png'
   ]
+  
+  const capsules = (t.ctaSection?.capsules || []).map((capsule: any, index: number) => ({
+    ...capsule,
+    image: images[index] || '/images/logo/capsule1.jpg'
+  }))
 
   return (
     <section id="cta" className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
@@ -147,7 +100,7 @@ export default function CTASection() {
                       </h3>
                       
                       <ul className="space-y-2 mb-6 flex-grow">
-                        {capsule.content.map((item, index) => (
+                        {capsule.content.map((item: string, index: number) => (
                           <li key={index} className="text-sm text-gray-600 flex items-start">
                             <span className="text-yellow-500 mr-2 mt-1">•</span>
                             <span>{item}</span>
@@ -160,7 +113,7 @@ export default function CTASection() {
                         href="/login"
                         className="block w-full text-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg mt-auto"
                       >
-                        Je m'inscris
+                        {t.ctaSection?.ctaButton || t.nav.nosFormations}
                       </Link>
                     </div>
                   </div>

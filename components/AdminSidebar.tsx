@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react'
 
 interface AdminSidebarProps {
   activeTab?: string
+  isOpen?: boolean
+  onClose?: () => void
 }
 
 const Icons = {
@@ -68,14 +70,30 @@ const Icons = {
   ),
 }
 
-export default function AdminSidebar({ activeTab = 'overview' }: AdminSidebarProps) {
+export default function AdminSidebar({ activeTab = 'overview', isOpen: controlledIsOpen, onClose }: AdminSidebarProps) {
   const router = useRouter()
   const [userRole, setUserRole] = useState<'admin' | 'commercial' | null>(null)
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+
+  // Utiliser l'état contrôlé si fourni, sinon utiliser l'état interne
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen
+  const setIsOpen = controlledIsOpen !== undefined ? (onClose || (() => {})) : setInternalIsOpen
 
   useEffect(() => {
     const role = localStorage.getItem('admin_role') as 'admin' | 'commercial' | null
     setUserRole(role)
   }, [])
+
+  // Fermer la sidebar sur mobile après redimensionnement si elle dépasse la largeur de l'écran
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && internalIsOpen) {
+        setInternalIsOpen(false)
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [internalIsOpen])
 
   const allMenuItems = [
     { id: 'overview', label: 'Overview', icon: 'home', route: '/admin/dashboard', adminOnly: true },
@@ -85,6 +103,7 @@ export default function AdminSidebar({ activeTab = 'overview' }: AdminSidebarPro
     { id: 'boutique', label: 'Boutique', icon: 'store', route: '/admin/boutique', adminOnly: true },
     { id: 'formations', label: 'Formations & sessions', icon: 'chalkboard', route: '/admin/formations', adminOnly: true },
     { id: 'paiements', label: 'Paiements', icon: 'creditCard', route: '/admin/paiements', adminOnly: true },
+    { id: 'mes-achats-utilisateurs', label: 'Mes achats utilisateurs', icon: 'store', route: '/admin/mes-achats-utilisateurs', adminOnly: true },
     { id: 'fichiers', label: 'Fichiers & relevés', icon: 'folder', route: '/admin/fichiers', adminOnly: true },
     { id: 'settings', label: 'Paramètres', icon: 'cog', route: '/admin/settings', adminOnly: false },
   ]
@@ -100,40 +119,82 @@ export default function AdminSidebar({ activeTab = 'overview' }: AdminSidebarPro
 
   const handleMenuClick = (route: string) => {
     router.push(route)
+    // Fermer la sidebar sur mobile après avoir cliqué sur un élément
+    if (window.innerWidth < 768) {
+      setIsOpen(false)
+      if (onClose) onClose()
+    }
   }
 
   return (
-    <div className="w-64 bg-white shadow-sm border-r border-gray-200 fixed h-full z-[100]">
-      <div className="p-6">
-        <div className="flex items-center space-x-3 mb-8">
-          <div className="w-8 h-8 bg-[#012F4E] rounded-lg flex items-center justify-center">
-            {Icons.coins}
-          </div>
-          <span className="text-xl font-bold text-[#012F4E]">Cash360</span>
-        </div>
+    <>
+      {/* Overlay pour mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[99] md:hidden transition-opacity duration-300"
+          onClick={() => {
+            setIsOpen(false)
+            if (onClose) onClose()
+          }}
+        />
+      )}
 
-        <nav className="space-y-2">
-          {menuItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleMenuClick(item.route)}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${
-                activeTab === item.id
-                  ? 'bg-[#00A1C6]/10 border-l-4 border-[#FEBE02]'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <span className={activeTab === item.id ? 'text-[#00A1C6]' : ''}>
-                {Icons[item.icon as keyof typeof Icons]}
-              </span>
-              <span className={activeTab === item.id ? 'font-medium text-[#012F4E]' : ''}>
-                {item.label}
-              </span>
+      {/* Sidebar */}
+      <div
+        className={`
+          fixed top-0 left-0 h-full z-[100] bg-white shadow-sm border-r border-gray-200
+          transition-transform duration-300 ease-in-out
+          w-64
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:translate-x-0
+        `}
+      >
+        <div className="p-6 h-full overflow-y-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-[#012F4E] rounded-lg flex items-center justify-center">
+                {Icons.coins}
+              </div>
+              <span className="text-xl font-bold text-[#012F4E]">Cash360</span>
             </div>
-          ))}
-        </nav>
+            {/* Bouton fermer pour mobile */}
+            <button
+              onClick={() => {
+                setIsOpen(false)
+                if (onClose) onClose()
+              }}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Fermer le menu"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <nav className="space-y-2">
+            {menuItems.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleMenuClick(item.route)}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${
+                  activeTab === item.id
+                    ? 'bg-[#00A1C6]/10 border-l-4 border-[#FEBE02]'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <span className={activeTab === item.id ? 'text-[#00A1C6]' : ''}>
+                  {Icons[item.icon as keyof typeof Icons]}
+                </span>
+                <span className={activeTab === item.id ? 'font-medium text-[#012F4E]' : ''}>
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </nav>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

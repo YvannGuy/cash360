@@ -4,12 +4,13 @@ export const translations = {
     nav: {
       home: "Accueil",
       about: "À propos",
-      analysis: "Analyse personnalisée",
+      analysis: "À la une",
       login: "Connexion",
       bookCall: "Je m'inscris",
       nosFormations: "Nos formations",
       myAccount: "Mon compte",
-      signOut: "Se déconnecter"
+      signOut: "Se déconnecter",
+      connectedAs: "Connecté en tant que"
     },
     
     // Header
@@ -125,6 +126,15 @@ export const translations = {
       scrollToTop: "Remonter en haut"
     },
     
+    // Cookie Consent Banner
+    cookieConsent: {
+      message: "Nous utilisons des cookies pour améliorer votre expérience sur notre site, analyser le trafic et personnaliser le contenu. En continuant à naviguer, vous acceptez notre",
+      privacyLink: "politique de confidentialité",
+      andCookies: "et notre utilisation des cookies.",
+      decline: "Refuser",
+      accept: "Accepter"
+    },
+    
     // CTA Section
     cta: {
       title: "Prêt à transformer votre vie financière ?",
@@ -185,21 +195,21 @@ export const translations = {
           ]
         },
         {
-          title: "Envoyer vos relevés",
-          description: "Transmettez vos 3 derniers relevés bancaires de manière sécurisée et confidentielle.",
+          title: "Choisir votre formule",
+          description: "Explorez notre boutique et sélectionnez la solution qui correspond à vos besoins : analyses financières, capsules de formation, packs ou ebooks.",
           details: [
-            "Upload sécurisé et chiffré",
-            "Analyse de vos habitudes de dépenses",
-            "Identification des points d'amélioration"
+            "Large choix de produits adaptés",
+            "Paiement sécurisé (Stripe ou Mobile Money)",
+            "Accès immédiat après validation"
           ]
         },
         {
-          title: "Recevoir votre plan d'action",
-          description: "Obtenez un rapport personnalisé avec des recommandations concrètes sous 48-72h.",
+          title: "Utiliser vos produits",
+          description: "Accédez immédiatement à vos contenus achetés : téléchargez vos capsules, lancez vos analyses ou participez aux sessions depuis votre espace personnel.",
           details: [
-            "Rapport détaillé et personnalisé",
-            "Plan d'action étape par étape",
-            "Suivi et accompagnement continu"
+            "Accès immédiat à tous vos achats",
+            "Téléchargement des PDF et contenus",
+            "Suivi de vos progrès en temps réel"
           ]
         }
       ],
@@ -234,10 +244,26 @@ export const translations = {
     
     // About Section
     about: {
-      title: "À propos de",
-      titleHighlight: "Pasteur Myriam Konan",
-      subtitle: "Professionnelle bancaire et accompagnatrice spirituelle, j'aide aujourd'hui les particuliers, entrepreneurs et églises à rétablir la santé de leurs finances.",
-      description: "Forte de 10 ans d'expérience dans le secteur bancaire et d'une vocation spirituelle profonde, j'ai développé une méthode unique qui combine expertise financière et accompagnement spirituel pour vous aider à retrouver l'équilibre et la prospérité.",
+      title: "Qu'est-ce que",
+      titleHighlight: "Cash360",
+      intro1: "Cash360 est une plateforme d'éducation et d'analyse financière unique qui aide les particuliers, entrepreneurs et églises à reprendre le contrôle de leurs finances, avec une approche qui unit intelligence pratique et principes spirituels.",
+      intro2: "Dans un monde où beaucoup vivent dans la confusion financière, entre dettes, dépenses incontrôlées et culpabilité vis-à-vis de l'argent, Cash360 apporte une méthode claire, bienveillante et transformatrice.",
+      missionTitle: "Notre mission",
+      missionIntro: "Aider chaque personne à retrouver l'équilibre, la clarté et la paix financière, grâce à un accompagnement qui allie :",
+      missionPoints: [
+        "L'analyse financière personnalisée de vos relevés bancaires,",
+        "Des capsules et formations sur la gestion de l'argent, l'investissement et la prospérité,",
+        "Une approche spirituelle ancrée dans la foi, pour comprendre les lois spirituelles qui gouvernent les finances."
+      ],
+      forWhoTitle: "Pour qui est fait Cash360 ?",
+      forWhoPoints: [
+        "Pour ceux qui veulent comprendre où part leur argent et reprendre la maîtrise de leurs dépenses.",
+        "Pour les entrepreneurs, les couples et les familles qui veulent bâtir une stabilité durable.",
+        "Pour les croyants qui veulent concilier foi et finances sans culpabilité ni excès.",
+        "Pour les églises et ministères souhaitant former leurs membres à la bonne gestion financière."
+      ],
+      pastorTitle: "À propos du Pasteur Myriam Konan",
+      pastorIntro: "Forte de 10 ans d'expérience dans le secteur bancaire et d'une vocation spirituelle profonde, j'ai développé une méthode unique qui combine expertise financière et accompagnement spirituel pour vous aider à retrouver l'équilibre et la prospérité.",
       achievements: [
         {
           title: "Expertise bancaire",
@@ -256,8 +282,6 @@ export const translations = {
           description: "Certifications en gestion financière"
         }
       ],
-      missionTitle: "Ma mission",
-      mission: "\"Aider chaque personne à reprendre le contrôle de ses finances avec sagesse, intégrité et foi, en appliquant les principes bibliques à la gestion financière moderne.\"",
       ctaButton: "Rencontrer Myriam",
       followMe: "Suivez-moi sur :"
     },
@@ -363,7 +387,61 @@ export const translations = {
       mainTitle: "Le début de votre liberté financière",
       ctaButton: "Je m'inscris",
       quote: "\"La prospérité financière commence par une relation saine avec l'argent. Laissez-moi vous accompagner sur ce chemin de transformation.\"",
-      quoteAuthor: "— Pasteur Myriam Konan, Fondatrice de Cash360"
+      quoteAuthor: "— Pasteur Myriam Konan, Fondatrice de Cash360",
+      capsules: [
+        {
+          id: 1,
+          title: "L'éducation financière",
+          content: [
+            "Tout ce qu'il faut savoir sur l'argent",
+            "Les bases de la gestion financière",
+            "Deviens maître de tes finances, pas esclave de tes dépenses"
+          ]
+        },
+        {
+          id: 2,
+          title: "La mentalité de pauvreté",
+          content: [
+            "Démasquer les forces qui combattent la prospérité",
+            "Briser les blocages spirituels et psychologiques pour entrer dans l'abondance",
+            "Triompher des résistances invisibles à la prospérité"
+          ]
+        },
+        {
+          id: 3,
+          title: "Les lois spirituelles liées à l'argent",
+          content: [
+            "L'anatomie financière : Comprendre les portes du corps qui influencent la prospérité",
+            "les 3 niveaux de l'argent",
+            "les principes éternels qui gouvernent la prospérité selon Dieu"
+          ]
+        },
+        {
+          id: 4,
+          title: "Les combats liés à la prospérité",
+          content: [
+            "Briser les limites intérieures",
+            "Mon entourage, mon influence, ma richesse",
+            "pourquoi le diable veut que les chrétiens restent pauvres"
+          ]
+        },
+        {
+          id: 5,
+          title: "Épargne et Investissement",
+          content: [
+            "Trouver l'épargne qui te correspond",
+            "Comment faire fructifier ton argent",
+            "Comment garder ton épargne et te préparer pour l'avenir"
+          ]
+        },
+        {
+          id: 6,
+          title: "Pack complet des capsules",
+          content: [
+            "Retrouvez l'ensemble des capsules et bénéficiez de -15%"
+          ]
+        }
+      ]
     },
     
     // CTA Box
@@ -378,7 +456,28 @@ export const translations = {
       title: "Analyse personnalisée de vos relevés bancaires",
       description: "Découvrez où part votre argent et identifiez les points à améliorer grâce à une analyse claire et confidentielle de vos relevés bancaires.",
       button: "Envoyer mes relevés",
-      imageAlt: "Analyse financière"
+      imageAlt: "Analyse financière",
+      featuredTitle: "Produit à la une",
+      featuredDescription: "Découvrez nos produits phares pour transformer votre vie financière",
+      ctaButton: "Je m'inscris",
+      launchButton: "Je lance mon analyse",
+      featuredProducts: [
+        {
+          title: "De zéro à la stabilité financière",
+          category: "Formation",
+          description: "Découvrez comment transformer votre situation financière et atteindre la stabilité."
+        },
+        {
+          title: "Les combats liés à la prospérité",
+          category: "Capsule",
+          description: "Identifier et vaincre les résistances à la prospérité."
+        },
+        {
+          title: "Analyse financière",
+          category: "Analyse",
+          description: "Analyse personnalisée de vos relevés bancaires pour identifier les points d'amélioration."
+        }
+      ]
     },
     
     // Live TikTok
@@ -522,15 +621,20 @@ export const translations = {
         to: "à",
         of: "sur",
         analyses: "analyses",
+        products: "produits",
+        purchases: "achats",
         previous: "Précédent",
-        next: "Suivant"
+        next: "Suivant",
+        page: "Page",
+        on: "sur"
       },
       // New translations for new design
       welcomeGreeting: "Bonjour, 👋",
       welcomeMessage: "Bienvenue dans votre espace Cash360. Suivez vos analyses, vos progrès et vos prochaines étapes.",
+      welcomeSubtitle: "Découvrez votre tableau de bord et gérez toutes vos activités en un seul endroit.",
       pathCompleted: "Parcours complété",
       suggestedStep: "Étape suggérée : Lancez votre première analyse",
-      myAnalyses: "Vos analyses financières",
+      myAnalyses: "Mes Analyses",
       seeAll: "Voir tout",
       noAnalysis: "Aucune analyse pour le moment",
       noAnalysisDescription: "Commencez par lancer votre première analyse pour obtenir un diagnostic personnalisé.",
@@ -548,6 +652,154 @@ export const translations = {
         pillars: "Les 7 piliers d'une gestion saine",
         optimization: "Optimisation fiscale avancée",
         retirement: "Planification de retraite"
+      },
+      // Predefined capsules translations
+      capsules: {
+        capsule1: {
+          title: "L'éducation financière",
+          blurb: "Tout ce qu'il faut savoir sur l'argent et la gestion."
+        },
+        capsule2: {
+          title: "La mentalité de pauvreté",
+          blurb: "Briser les limites intérieures et changer de mindset."
+        },
+        capsule3: {
+          title: "Les lois spirituelles liées à l'argent",
+          blurb: "Principes et lois qui gouvernent la prospérité."
+        },
+        capsule4: {
+          title: "Les combats liés à la prospérité",
+          blurb: "Identifier et vaincre les résistances à la prospérité."
+        },
+        capsule5: {
+          title: "Épargne et Investissement",
+          blurb: "Faire fructifier ton argent et préparer l'avenir."
+        }
+      },
+      // Cart translations
+      cart: {
+        title: "Mon panier",
+        empty: "Votre panier est vide",
+        emptyDescription: "Ajoutez des produits dans votre panier depuis votre boutique.",
+        subtotal: "Sous-total :",
+        viewCart: "Voir le panier",
+        continueShopping: "Continuer vos achats",
+        quantity: "Qté:"
+      },
+      // Payment success
+      paymentSuccess: {
+        title: "Paiement effectué avec succès !",
+        message: "Vos capsules sont maintenant disponibles dans l'onglet \"Mes achats\"."
+      },
+      // Settings
+      settings: "Paramètres",
+      // Tabs
+      tabs: {
+        myAnalyses: "Mes Analyses",
+        boutique: "Boutique",
+        myPurchases: "Mes achats"
+      },
+      // Analysis section
+      analysis: {
+        title: "Mes Analyses",
+        subtitle: "Retrouvez ici toutes vos analyses financières réalisées avec Cash360.",
+        newAnalysisTitle: "Faire une nouvelle analyse",
+        newAnalysisDesc: "Téléversez vos relevés et recevez votre diagnostic sous 48h.",
+        newAnalysisButton: "Lancer une nouvelle analyse",
+        unlockMessage: "Achetez l'analyse dans la boutique pour débloquer cette fonctionnalité",
+        analysisDate: "Analyse du",
+        status: {
+          completed: "Terminée",
+          analyzing: "En analyse",
+          inProgress: "En cours",
+          processing: "En traitement"
+        },
+        description: {
+          completed: "Analyse de vos 3 relevés bancaires – rapport disponible.",
+          analyzing: "Vos documents sont en cours d'analyse par nos experts.",
+          processing: "Traitement en cours de vos relevés bancaires."
+        },
+        downloadPdf: "Télécharger PDF",
+        newAnalysis: "Refaire une analyse",
+        noAnalyses: "Aucune analyse pour le moment"
+      },
+      // Boutique section
+      boutique: {
+        title: "Boutique",
+        subtitle: "Découvrez nos produits exclusifs Cash360 pour transformer votre vie financière et spirituelle.",
+        searchPlaceholder: "Rechercher un produit par nom...",
+        searchResults: "produit trouvé",
+        searchResultsPlural: "produits trouvés",
+        categories: {
+          capsules: "Capsules",
+          analysis: "Analyse financière",
+          pack: "Pack",
+          ebook: "Ebook",
+          subscription: "Abonnement"
+        },
+        comingSoon: "Bientôt",
+        buy: "Acheter",
+        buyPack: "Acheter le pack",
+        alreadyBought: "Déjà acheté",
+        alreadyInCart: "Déjà dans le panier"
+      },
+      // Purchases section
+      purchases: {
+        title: "Mes achats",
+        subtitle: "Accédez à vos achats et formations classés par catégorie.",
+        searchPlaceholder: "Rechercher un achat par nom...",
+        searchResults: "achat trouvé",
+        searchResultsPlural: "achats trouvés",
+        noPurchases: "Aucun achat pour le moment",
+        noPurchasesWithSearch: "Aucun achat trouvé",
+        noPurchasesDesc: "Explorez la boutique pour découvrir nos produits disponibles.",
+        noPurchasesSearchDesc: "Essayez avec d'autres mots-clés.",
+        downloadPdf: "Télécharger le PDF",
+        purchaseConfirmed: "Achat confirmé",
+        participate: "Participer",
+        pendingValidation: "En attente de validation",
+        sessionStatus: {
+          planning: "Session en cours de planification",
+          completed: "Terminée",
+          inProgress: "En cours",
+          pending: "En attente",
+          at: "à"
+        }
+      },
+      // Onboarding
+      onboarding: {
+        welcome: {
+          title: "Bienvenue sur votre dashboard !",
+          description: "Découvrez comment utiliser votre espace personnel Cash360. Ce guide rapide vous expliquera toutes les fonctionnalités disponibles."
+        },
+        tabs: {
+          title: "Les 2 onglets principaux",
+          description: "Naviguez entre la boutique et vos achats grâce aux onglets ci-dessus. Chaque onglet contient des fonctionnalités spécifiques pour gérer vos activités."
+        },
+        boutique: {
+          title: "La Boutique",
+          description: "Découvrez nos produits : capsules, analyses financières, packs, ebooks et abonnements. Utilisez les catégories pour filtrer les produits selon vos besoins."
+        },
+        purchases: {
+          title: "Mes achats",
+          description: "Accédez à tous vos achats et formations : capsules, analyses financières, packs, ebooks et abonnements. Vous pouvez télécharger vos PDF, lancer vos analyses et participer aux sessions planifiées."
+        },
+        categories: {
+          title: "Les catégories",
+          description: "Filtrez les produits par catégorie : Capsules, Analyse financière, Pack, Ebook, Abonnement. Cliquez sur une catégorie pour voir uniquement les produits correspondants."
+        },
+        cart: {
+          title: "Le panier",
+          description: "Cliquez sur l'icône du panier en haut à droite pour voir vos articles ajoutés. Vous pouvez modifier les quantités et procéder au paiement directement depuis le panier."
+        },
+        settings: {
+          title: "Paramètres",
+          description: "Cliquez sur votre nom ou l'icône de paramètres en haut à droite pour modifier vos informations personnelles, changer votre mot de passe et gérer vos préférences."
+        },
+        complete: {
+          title: "Parfait !",
+          description: "Vous êtes maintenant prêt à utiliser votre dashboard. N'hésitez pas à explorer toutes les fonctionnalités disponibles. Vous pouvez relancer ce guide depuis les paramètres."
+        }
       }
     },
 
@@ -652,12 +904,13 @@ export const translations = {
     nav: {
       home: "Home",
       about: "About",
-      analysis: "Personalized analysis",
+      analysis: "Featured",
       login: "Login",
       bookCall: "Sign up",
       nosFormations: "Our trainings",
       myAccount: "My account",
-      signOut: "Sign out"
+      signOut: "Sign out",
+      connectedAs: "Connected as"
     },
     
     // Header
@@ -773,6 +1026,15 @@ export const translations = {
       scrollToTop: "Back to top"
     },
     
+    // Cookie Consent Banner
+    cookieConsent: {
+      message: "We use cookies to improve your experience on our site, analyze traffic and personalize content. By continuing to browse, you accept our",
+      privacyLink: "privacy policy",
+      andCookies: "and our use of cookies.",
+      decline: "Decline",
+      accept: "Accept"
+    },
+    
     // CTA Section
     cta: {
       title: "Ready to transform your financial life?",
@@ -833,21 +1095,21 @@ export const translations = {
           ]
         },
         {
-          title: "Send your statements",
-          description: "Securely and confidentially transmit your last 3 bank statements.",
+          title: "Choose your formula",
+          description: "Explore our shop and select the solution that suits your needs: financial analyses, training capsules, packs or ebooks.",
           details: [
-            "Secure and encrypted upload",
-            "Analysis of your spending habits",
-            "Identification of improvement points"
+            "Wide range of adapted products",
+            "Secure payment (Stripe or Mobile Money)",
+            "Immediate access after validation"
           ]
         },
         {
-          title: "Receive your action plan",
-          description: "Get a personalized report with concrete recommendations within 48-72h.",
+          title: "Use your products",
+          description: "Immediately access your purchased content: download your capsules, launch your analyses or participate in sessions from your personal space.",
           details: [
-            "Detailed and personalized report",
-            "Step-by-step action plan",
-            "Ongoing follow-up and support"
+            "Immediate access to all your purchases",
+            "Download PDFs and content",
+            "Track your progress in real time"
           ]
         }
       ],
@@ -883,10 +1145,26 @@ export const translations = {
     
     // About Section
     about: {
-      title: "About",
-      titleHighlight: "Pastor Myriam Konan",
-      subtitle: "Banking professional and spiritual guide, I now help individuals, entrepreneurs and churches restore the health of their finances.",
-      description: "With 10 years of experience in the banking sector and a deep spiritual calling, I have developed a unique method that combines financial expertise and spiritual support to help you regain balance and prosperity.",
+      title: "What is",
+      titleHighlight: "Cash360",
+      intro1: "Cash360 is a unique financial education and analysis platform that helps individuals, entrepreneurs and churches regain control of their finances, with an approach that unites practical intelligence and spiritual principles.",
+      intro2: "In a world where many live in financial confusion, between debts, uncontrolled spending and guilt about money, Cash360 brings a clear, caring and transformative method.",
+      missionTitle: "Our mission",
+      missionIntro: "Help each person regain balance, clarity and financial peace, through support that combines:",
+      missionPoints: [
+        "Personalized financial analysis of your bank statements,",
+        "Capsules and training on money management, investment and prosperity,",
+        "A spiritual approach rooted in faith, to understand the spiritual laws that govern finances."
+      ],
+      forWhoTitle: "Who is Cash360 for?",
+      forWhoPoints: [
+        "For those who want to understand where their money goes and regain control of their spending.",
+        "For entrepreneurs, couples and families who want to build lasting stability.",
+        "For believers who want to reconcile faith and finances without guilt or excess.",
+        "For churches and ministries wishing to train their members in good financial management."
+      ],
+      pastorTitle: "About Pastor Myriam Konan",
+      pastorIntro: "With 10 years of experience in the banking sector and a deep spiritual calling, I have developed a unique method that combines financial expertise and spiritual support to help you regain balance and prosperity.",
       achievements: [
         {
           title: "Banking expertise",
@@ -905,8 +1183,6 @@ export const translations = {
           description: "Certifications in financial management"
         }
       ],
-      missionTitle: "My mission",
-      mission: "\"Help each person regain control of their finances with wisdom, integrity and faith, by applying biblical principles to modern financial management.\"",
       ctaButton: "Meet Myriam",
       followMe: "Follow me on:"
     },
@@ -1012,7 +1288,61 @@ export const translations = {
       mainTitle: "The beginning of your financial freedom",
       ctaButton: "Sign up",
       quote: "\"Financial prosperity begins with a healthy relationship with money. Let me accompany you on this path of transformation.\"",
-      quoteAuthor: "— Pastor Myriam Konan, Founder of Cash360"
+      quoteAuthor: "— Pastor Myriam Konan, Founder of Cash360",
+      capsules: [
+        {
+          id: 1,
+          title: "Financial education",
+          content: [
+            "Everything you need to know about money",
+            "The basics of financial management",
+            "Become master of your finances, not slave to your expenses"
+          ]
+        },
+        {
+          id: 2,
+          title: "The poverty mindset",
+          content: [
+            "Unmask the forces that fight prosperity",
+            "Break spiritual and psychological blocks to enter abundance",
+            "Triumph over invisible resistances to prosperity"
+          ]
+        },
+        {
+          id: 3,
+          title: "Spiritual laws related to money",
+          content: [
+            "Financial anatomy: Understanding the body's gates that influence prosperity",
+            "The 3 levels of money",
+            "The eternal principles that govern prosperity according to God"
+          ]
+        },
+        {
+          id: 4,
+          title: "Battles related to prosperity",
+          content: [
+            "Break inner limits",
+            "My surroundings, my influence, my wealth",
+            "why the devil wants Christians to stay poor"
+          ]
+        },
+        {
+          id: 5,
+          title: "Savings and Investment",
+          content: [
+            "Find the savings that suit you",
+            "How to make your money grow",
+            "How to keep your savings and prepare for the future"
+          ]
+        },
+        {
+          id: 6,
+          title: "Complete capsule pack",
+          content: [
+            "Find all capsules and benefit from -15%"
+          ]
+        }
+      ]
     },
     
     // CTA Box
@@ -1027,7 +1357,28 @@ export const translations = {
       title: "Personalized analysis of your bank statements",
       description: "Discover where your money goes and identify areas for improvement through a clear and confidential analysis of your bank statements.",
       button: "Send my statements",
-      imageAlt: "Financial analysis"
+      imageAlt: "Financial analysis",
+      featuredTitle: "Featured Products",
+      featuredDescription: "Discover our flagship products to transform your financial life",
+      ctaButton: "Sign up",
+      launchButton: "Launch my analysis",
+      featuredProducts: [
+        {
+          title: "From zero to financial stability",
+          category: "Training",
+          description: "Discover how to transform your financial situation and achieve stability."
+        },
+        {
+          title: "Battles related to prosperity",
+          category: "Capsule",
+          description: "Identify and overcome resistances to prosperity."
+        },
+        {
+          title: "Financial analysis",
+          category: "Analysis",
+          description: "Personalized analysis of your bank statements to identify areas for improvement."
+        }
+      ]
     },
     
     // Live TikTok
@@ -1171,15 +1522,20 @@ export const translations = {
         to: "to",
         of: "of",
         analyses: "analyses",
+        products: "products",
+        purchases: "purchases",
         previous: "Previous",
-        next: "Next"
+        next: "Next",
+        page: "Page",
+        on: "on"
       },
       // New translations for new design
       welcomeGreeting: "Hello, 👋",
       welcomeMessage: "Welcome to your Cash360 space. Track your analyses, your progress and your next steps.",
+      welcomeSubtitle: "Discover your dashboard and manage all your activities in one place.",
       pathCompleted: "Path completed",
       suggestedStep: "Suggested step: Launch your first analysis",
-      myAnalyses: "Your financial analyses",
+      myAnalyses: "My Analyses",
       seeAll: "See all",
       noAnalysis: "No analysis at the moment",
       noAnalysisDescription: "Start by launching your first analysis to get a personalized diagnosis.",
@@ -1197,6 +1553,154 @@ export const translations = {
         pillars: "The 7 pillars of healthy management",
         optimization: "Advanced tax optimization",
         retirement: "Retirement planning"
+      },
+      // Predefined capsules translations
+      capsules: {
+        capsule1: {
+          title: "Financial Education",
+          blurb: "Everything you need to know about money and management."
+        },
+        capsule2: {
+          title: "The Poverty Mindset",
+          blurb: "Break inner limitations and change your mindset."
+        },
+        capsule3: {
+          title: "Spiritual Laws Related to Money",
+          blurb: "Principles and laws that govern prosperity."
+        },
+        capsule4: {
+          title: "Battles Related to Prosperity",
+          blurb: "Identify and overcome resistance to prosperity."
+        },
+        capsule5: {
+          title: "Savings and Investment",
+          blurb: "Make your money grow and prepare for the future."
+        }
+      },
+      // Cart translations
+      cart: {
+        title: "My cart",
+        empty: "Your cart is empty",
+        emptyDescription: "Add products to your cart from your shop.",
+        subtotal: "Subtotal:",
+        viewCart: "View cart",
+        continueShopping: "Continue shopping",
+        quantity: "Qty:"
+      },
+      // Payment success
+      paymentSuccess: {
+        title: "Payment completed successfully!",
+        message: "Your capsules are now available in the \"My purchases\" tab."
+      },
+      // Settings
+      settings: "Settings",
+      // Tabs
+      tabs: {
+        myAnalyses: "My Analyses",
+        boutique: "Shop",
+        myPurchases: "My purchases"
+      },
+      // Analysis section
+      analysis: {
+        title: "My Analyses",
+        subtitle: "Find all your financial analyses performed with Cash360 here.",
+        newAnalysisTitle: "Create a new analysis",
+        newAnalysisDesc: "Upload your statements and receive your diagnosis within 48h.",
+        newAnalysisButton: "Launch a new analysis",
+        unlockMessage: "Buy the analysis in the shop to unlock this feature",
+        analysisDate: "Analysis of",
+        status: {
+          completed: "Completed",
+          analyzing: "Analyzing",
+          inProgress: "In progress",
+          processing: "Processing"
+        },
+        description: {
+          completed: "Analysis of your 3 bank statements – report available.",
+          analyzing: "Your documents are being analyzed by our experts.",
+          processing: "Your bank statements are being processed."
+        },
+        downloadPdf: "Download PDF",
+        newAnalysis: "Do another analysis",
+        noAnalyses: "No analyses at the moment"
+      },
+      // Boutique section
+      boutique: {
+        title: "Shop",
+        subtitle: "Discover our exclusive Cash360 products to transform your financial and spiritual life.",
+        searchPlaceholder: "Search for a product by name...",
+        searchResults: "product found",
+        searchResultsPlural: "products found",
+        categories: {
+          capsules: "Capsules",
+          analysis: "Financial analysis",
+          pack: "Pack",
+          ebook: "Ebook",
+          subscription: "Subscription"
+        },
+        comingSoon: "Coming soon",
+        buy: "Buy",
+        buyPack: "Buy pack",
+        alreadyBought: "Already purchased",
+        alreadyInCart: "Already in cart"
+      },
+      // Purchases section
+      purchases: {
+        title: "My purchases",
+        subtitle: "Access your purchases and training sorted by category.",
+        searchPlaceholder: "Search for a purchase by name...",
+        searchResults: "purchase found",
+        searchResultsPlural: "purchases found",
+        noPurchases: "No purchases at the moment",
+        noPurchasesWithSearch: "No purchases found",
+        noPurchasesDesc: "Explore the shop to discover our available products.",
+        noPurchasesSearchDesc: "Try with other keywords.",
+        downloadPdf: "Download PDF",
+        purchaseConfirmed: "Purchase confirmed",
+        participate: "Participate",
+        pendingValidation: "Pending validation",
+        sessionStatus: {
+          planning: "Session being planned",
+          completed: "Completed",
+          inProgress: "In progress",
+          pending: "Pending",
+          at: "at"
+        }
+      },
+      // Onboarding
+      onboarding: {
+        welcome: {
+          title: "Welcome to your dashboard!",
+          description: "Discover how to use your personal Cash360 space. This quick guide will explain all available features."
+        },
+        tabs: {
+          title: "The 2 main tabs",
+          description: "Navigate between the shop and your purchases using the tabs above. Each tab contains specific features to manage your activities."
+        },
+        boutique: {
+          title: "The Shop",
+          description: "Discover our products: capsules, financial analyses, packs, ebooks and subscriptions. Use categories to filter products according to your needs."
+        },
+        purchases: {
+          title: "My purchases",
+          description: "Access all your purchases and training: capsules, financial analyses, packs, ebooks and subscriptions. You can download your PDFs, launch your analyses and participate in scheduled sessions."
+        },
+        categories: {
+          title: "The categories",
+          description: "Filter products by category: Capsules, Financial Analysis, Pack, Ebook, Subscription. Click on a category to see only the corresponding products."
+        },
+        cart: {
+          title: "The cart",
+          description: "Click on the cart icon in the top right to see your added items. You can modify quantities and proceed to payment directly from the cart."
+        },
+        settings: {
+          title: "Settings",
+          description: "Click on your name or the settings icon in the top right to modify your personal information, change your password and manage your preferences."
+        },
+        complete: {
+          title: "Perfect!",
+          description: "You are now ready to use your dashboard. Feel free to explore all available features. You can restart this guide from the settings."
+        }
       }
     },
 
@@ -1301,12 +1805,13 @@ export const translations = {
     nav: {
       home: "Inicio",
       about: "Acerca de",
-      analysis: "Análisis personalizado",
+      analysis: "Destacados",
       login: "Iniciar sesión",
       bookCall: "Inscribirse",
       nosFormations: "Nuestras formaciones",
       myAccount: "Mi cuenta",
-      signOut: "Cerrar sesión"
+      signOut: "Cerrar sesión",
+      connectedAs: "Conectado como"
     },
     
     // Header
@@ -1421,6 +1926,15 @@ export const translations = {
       scrollToTop: "Volver arriba"
     },
     
+    // Cookie Consent Banner
+    cookieConsent: {
+      message: "Utilizamos cookies para mejorar su experiencia en nuestro sitio, analizar el tráfico y personalizar el contenido. Al continuar navegando, acepta nuestra",
+      privacyLink: "política de privacidad",
+      andCookies: "y nuestro uso de cookies.",
+      decline: "Rechazar",
+      accept: "Aceptar"
+    },
+    
     // CTA Section
     cta: {
       title: "¿Listo para transformar tu vida financiera?",
@@ -1481,21 +1995,21 @@ export const translations = {
           ]
         },
         {
-          title: "Enviar tus extractos",
-          description: "Transmite tus últimos 3 extractos bancarios de manera segura y confidencial.",
+          title: "Elegir tu fórmula",
+          description: "Explora nuestra tienda y selecciona la solución que se adapte a tus necesidades: análisis financieros, cápsulas de formación, packs o ebooks.",
           details: [
-            "Carga segura y cifrada",
-            "Análisis de tus hábitos de gasto",
-            "Identificación de puntos de mejora"
+            "Amplia gama de productos adaptados",
+            "Pago seguro (Stripe o Mobile Money)",
+            "Acceso inmediato tras la validación"
           ]
         },
         {
-          title: "Recibir tu plan de acción",
-          description: "Obtén un informe personalizado con recomendaciones concretas en 48-72h.",
+          title: "Usar tus productos",
+          description: "Accede inmediatamente a tus contenidos comprados: descarga tus cápsulas, lanza tus análisis o participa en sesiones desde tu espacio personal.",
           details: [
-            "Informe detallado y personalizado",
-            "Plan de acción paso a paso",
-            "Seguimiento y apoyo continuo"
+            "Acceso inmediato a todas tus compras",
+            "Descarga de PDFs y contenidos",
+            "Seguimiento de tu progreso en tiempo real"
           ]
         }
       ],
@@ -1531,10 +2045,26 @@ export const translations = {
     
     // About Section
     about: {
-      title: "Acerca de",
-      titleHighlight: "Pastora Myriam Konan",
-      subtitle: "Profesional bancaria y guía espiritual, ahora ayudo a particulares, emprendedores e iglesias a restablecer la salud de sus finanzas.",
-      description: "Con 10 años de experiencia en el sector bancario y una vocación espiritual profunda, he desarrollado un método único que combina experiencia financiera y apoyo espiritual para ayudarte a recuperar el equilibrio y la prosperidad.",
+      title: "¿Qué es",
+      titleHighlight: "Cash360",
+      intro1: "Cash360 es una plataforma única de educación y análisis financiero que ayuda a particulares, emprendedores e iglesias a recuperar el control de sus finanzas, con un enfoque que une inteligencia práctica y principios espirituales.",
+      intro2: "En un mundo donde muchos viven en confusión financiera, entre deudas, gastos descontrolados y culpa hacia el dinero, Cash360 aporta un método claro, benevolente y transformador.",
+      missionTitle: "Nuestra misión",
+      missionIntro: "Ayudar a cada persona a recuperar el equilibrio, la claridad y la paz financiera, gracias a un acompañamiento que combina:",
+      missionPoints: [
+        "El análisis financiero personalizado de tus extractos bancarios,",
+        "Cápsulas y formaciones sobre gestión del dinero, inversión y prosperidad,",
+        "Un enfoque espiritual arraigado en la fe, para comprender las leyes espirituales que gobiernan las finanzas."
+      ],
+      forWhoTitle: "¿Para quién está hecho Cash360?",
+      forWhoPoints: [
+        "Para quienes quieren entender dónde va su dinero y recuperar el control de sus gastos.",
+        "Para emprendedores, parejas y familias que quieren construir una estabilidad duradera.",
+        "Para creyentes que quieren conciliar fe y finanzas sin culpa ni exceso.",
+        "Para iglesias y ministerios que desean formar a sus miembros en la buena gestión financiera."
+      ],
+      pastorTitle: "Acerca de la Pastora Myriam Konan",
+      pastorIntro: "Con 10 años de experiencia en el sector bancario y una vocación espiritual profunda, he desarrollado un método único que combina experiencia financiera y apoyo espiritual para ayudarte a recuperar el equilibrio y la prosperidad.",
       achievements: [
         {
           title: "Experiencia bancaria",
@@ -1553,8 +2083,6 @@ export const translations = {
           description: "Certificaciones en gestión financiera"
         }
       ],
-      missionTitle: "Mi misión",
-      mission: "\"Ayudar a cada persona a retomar el control de sus finanzas con sabiduría, integridad y fe, aplicando principios bíblicos a la gestión financiera moderna.\"",
       ctaButton: "Conocer a Myriam",
       followMe: "Sígueme en:"
     },
@@ -1660,7 +2188,61 @@ export const translations = {
       mainTitle: "El comienzo de tu libertad financiera",
       ctaButton: "Inscribirse",
       quote: "\"La prosperidad financiera comienza con una relación sana con el dinero. Déjame acompañarte en este camino de transformación.\"",
-      quoteAuthor: "— Pastora Myriam Konan, Fundadora de Cash360"
+      quoteAuthor: "— Pastora Myriam Konan, Fundadora de Cash360",
+      capsules: [
+        {
+          id: 1,
+          title: "La educación financiera",
+          content: [
+            "Todo lo que necesitas saber sobre el dinero",
+            "Las bases de la gestión financiera",
+            "Conviértete en dueño de tus finanzas, no esclavo de tus gastos"
+          ]
+        },
+        {
+          id: 2,
+          title: "La mentalidad de pobreza",
+          content: [
+            "Desenmascarar las fuerzas que combaten la prosperidad",
+            "Romper los bloqueos espirituales y psicológicos para entrar en la abundancia",
+            "Triunfar sobre las resistencias invisibles a la prosperidad"
+          ]
+        },
+        {
+          id: 3,
+          title: "Las leyes espirituales relacionadas con el dinero",
+          content: [
+            "La anatomía financiera: Comprender las puertas del cuerpo que influyen en la prosperidad",
+            "Los 3 niveles del dinero",
+            "Los principios eternos que gobiernan la prosperidad según Dios"
+          ]
+        },
+        {
+          id: 4,
+          title: "Las batallas relacionadas con la prosperidad",
+          content: [
+            "Romper los límites interiores",
+            "Mi entorno, mi influencia, mi riqueza",
+            "por qué el diablo quiere que los cristianos se queden pobres"
+          ]
+        },
+        {
+          id: 5,
+          title: "Ahorro e Inversión",
+          content: [
+            "Encuentra el ahorro que te corresponde",
+            "Cómo hacer fructificar tu dinero",
+            "Cómo mantener tu ahorro y prepararte para el futuro"
+          ]
+        },
+        {
+          id: 6,
+          title: "Pack completo de cápsulas",
+          content: [
+            "Encuentra todas las cápsulas y benefíciate de -15%"
+          ]
+        }
+      ]
     },
     
     // CTA Box
@@ -1675,7 +2257,28 @@ export const translations = {
       title: "Análisis personalizado de tus extractos bancarios",
       description: "Descubre dónde va tu dinero e identifica los puntos a mejorar gracias a un análisis claro y confidencial de tus extractos bancarios.",
       button: "Enviar mis extractos",
-      imageAlt: "Análisis financiero"
+      imageAlt: "Análisis financiero",
+      featuredTitle: "Productos destacados",
+      featuredDescription: "Descubre nuestros productos estrella para transformar tu vida financiera",
+      ctaButton: "Registrarse",
+      launchButton: "Lanzar mi análisis",
+      featuredProducts: [
+        {
+          title: "De cero a la estabilidad financiera",
+          category: "Formación",
+          description: "Descubre cómo transformar tu situación financiera y alcanzar la estabilidad."
+        },
+        {
+          title: "Las batallas relacionadas con la prosperidad",
+          category: "Cápsula",
+          description: "Identificar y vencer las resistencias a la prosperidad."
+        },
+        {
+          title: "Análisis financiero",
+          category: "Análisis",
+          description: "Análisis personalizado de tus extractos bancarios para identificar los puntos de mejora."
+        }
+      ]
     },
     
     // Live TikTok
@@ -1819,15 +2422,20 @@ export const translations = {
         to: "a",
         of: "de",
         analyses: "análisis",
+        products: "productos",
+        purchases: "compras",
         previous: "Anterior",
-        next: "Siguiente"
+        next: "Siguiente",
+        page: "Página",
+        on: "de"
       },
       // New translations for new design
       welcomeGreeting: "Hola, 👋",
       welcomeMessage: "Bienvenido a tu espacio Cash360. Sigue tus análisis, tu progreso y tus próximos pasos.",
+      welcomeSubtitle: "Descubre tu panel de control y gestiona todas tus actividades en un solo lugar.",
       pathCompleted: "Ruta completada",
       suggestedStep: "Paso sugerido: Lanza tu primer análisis",
-      myAnalyses: "Tus análisis financieros",
+      myAnalyses: "Mis Análisis",
       seeAll: "Ver todo",
       noAnalysis: "Ningún análisis en este momento",
       noAnalysisDescription: "Comienza lanzando tu primer análisis para obtener un diagnóstico personalizado.",
@@ -1845,6 +2453,154 @@ export const translations = {
         pillars: "Los 7 pilares de una gestión sana",
         optimization: "Optimización fiscal avanzada",
         retirement: "Planificación de jubilación"
+      },
+      // Predefined capsules translations
+      capsules: {
+        capsule1: {
+          title: "La educación financiera",
+          blurb: "Todo lo que necesitas saber sobre el dinero y la gestión."
+        },
+        capsule2: {
+          title: "La mentalidad de pobreza",
+          blurb: "Romper las limitaciones internas y cambiar de mentalidad."
+        },
+        capsule3: {
+          title: "Las leyes espirituales relacionadas con el dinero",
+          blurb: "Principios y leyes que gobiernan la prosperidad."
+        },
+        capsule4: {
+          title: "Las batallas relacionadas con la prosperidad",
+          blurb: "Identificar y vencer las resistencias a la prosperidad."
+        },
+        capsule5: {
+          title: "Ahorro e Inversión",
+          blurb: "Hacer crecer tu dinero y preparar el futuro."
+        }
+      },
+      // Cart translations
+      cart: {
+        title: "Mi carrito",
+        empty: "Tu carrito está vacío",
+        emptyDescription: "Agrega productos a tu carrito desde tu tienda.",
+        subtotal: "Subtotal:",
+        viewCart: "Ver carrito",
+        continueShopping: "Continuar comprando",
+        quantity: "Cant:"
+      },
+      // Payment success
+      paymentSuccess: {
+        title: "¡Pago realizado con éxito!",
+        message: "Tus cápsulas ahora están disponibles en la pestaña \"Mis compras\"."
+      },
+      // Settings
+      settings: "Configuración",
+      // Tabs
+      tabs: {
+        myAnalyses: "Mis Análisis",
+        boutique: "Tienda",
+        myPurchases: "Mis compras"
+      },
+      // Analysis section
+      analysis: {
+        title: "Mis Análisis",
+        subtitle: "Encuentra aquí todos tus análisis financieros realizados con Cash360.",
+        newAnalysisTitle: "Hacer un nuevo análisis",
+        newAnalysisDesc: "Sube tus estados de cuenta y recibe tu diagnóstico en 48h.",
+        newAnalysisButton: "Iniciar un nuevo análisis",
+        unlockMessage: "Compra el análisis en la tienda para desbloquear esta función",
+        analysisDate: "Análisis del",
+        status: {
+          completed: "Completado",
+          analyzing: "Analizando",
+          inProgress: "En curso",
+          processing: "En proceso"
+        },
+        description: {
+          completed: "Análisis de tus 3 estados bancarios – informe disponible.",
+          analyzing: "Tus documentos están siendo analizados por nuestros expertos.",
+          processing: "Tus estados bancarios están siendo procesados."
+        },
+        downloadPdf: "Descargar PDF",
+        newAnalysis: "Hacer otro análisis",
+        noAnalyses: "Ningún análisis por el momento"
+      },
+      // Boutique section
+      boutique: {
+        title: "Tienda",
+        subtitle: "Descubre nuestros productos exclusivos Cash360 para transformar tu vida financiera y espiritual.",
+        searchPlaceholder: "Buscar un producto por nombre...",
+        searchResults: "producto encontrado",
+        searchResultsPlural: "productos encontrados",
+        categories: {
+          capsules: "Cápsulas",
+          analysis: "Análisis financiero",
+          pack: "Pack",
+          ebook: "Ebook",
+          subscription: "Suscripción"
+        },
+        comingSoon: "Próximamente",
+        buy: "Comprar",
+        buyPack: "Comprar pack",
+        alreadyBought: "Ya comprado",
+        alreadyInCart: "Ya en el carrito"
+      },
+      // Purchases section
+      purchases: {
+        title: "Mis compras",
+        subtitle: "Accede a tus compras y formaciones clasificadas por categoría.",
+        searchPlaceholder: "Buscar una compra por nombre...",
+        searchResults: "compra encontrada",
+        searchResultsPlural: "compras encontradas",
+        noPurchases: "Ninguna compra por el momento",
+        noPurchasesWithSearch: "Ninguna compra encontrada",
+        noPurchasesDesc: "Explora la tienda para descubrir nuestros productos disponibles.",
+        noPurchasesSearchDesc: "Prueba con otras palabras clave.",
+        downloadPdf: "Descargar PDF",
+        purchaseConfirmed: "Compra confirmada",
+        participate: "Participar",
+        pendingValidation: "Pendiente de validación",
+        sessionStatus: {
+          planning: "Sesión en planificación",
+          completed: "Completada",
+          inProgress: "En curso",
+          pending: "Pendiente",
+          at: "a"
+        }
+      },
+      // Onboarding
+      onboarding: {
+        welcome: {
+          title: "¡Bienvenido a tu panel de control!",
+          description: "Descubre cómo usar tu espacio personal Cash360. Esta guía rápida te explicará todas las funciones disponibles."
+        },
+        tabs: {
+          title: "Las 2 pestañas principales",
+          description: "Navega entre la tienda y tus compras usando las pestañas de arriba. Cada pestaña contiene funciones específicas para gestionar tus actividades."
+        },
+        boutique: {
+          title: "La Tienda",
+          description: "Descubre nuestros productos: cápsulas, análisis financieros, paquetes, ebooks y suscripciones. Usa las categorías para filtrar productos según tus necesidades."
+        },
+        purchases: {
+          title: "Mis compras",
+          description: "Accede a todas tus compras y formaciones: cápsulas, análisis financieros, paquetes, ebooks y suscripciones. Puedes descargar tus PDF, lanzar tus análisis y participar en sesiones planificadas."
+        },
+        categories: {
+          title: "Las categorías",
+          description: "Filtra productos por categoría: Cápsulas, Análisis financiero, Paquete, Ebook, Suscripción. Haz clic en una categoría para ver solo los productos correspondientes."
+        },
+        cart: {
+          title: "El carrito",
+          description: "Haz clic en el icono del carrito en la parte superior derecha para ver tus artículos añadidos. Puedes modificar las cantidades y proceder al pago directamente desde el carrito."
+        },
+        settings: {
+          title: "Configuración",
+          description: "Haz clic en tu nombre o el icono de configuración en la parte superior derecha para modificar tu información personal, cambiar tu contraseña y gestionar tus preferencias."
+        },
+        complete: {
+          title: "¡Perfecto!",
+          description: "Ya estás listo para usar tu panel de control. Siéntete libre de explorar todas las funciones disponibles. Puedes reiniciar esta guía desde la configuración."
+        }
       }
     },
 
@@ -1949,12 +2705,13 @@ export const translations = {
     nav: {
       home: "Início",
       about: "Sobre",
-      analysis: "Análise personalizada",
+      analysis: "Em destaque",
       login: "Entrar",
       bookCall: "Inscrever-se",
       nosFormations: "Nossas formações",
       myAccount: "Minha conta",
-      signOut: "Sair"
+      signOut: "Sair",
+      connectedAs: "Conectado como"
     },
     
     // Header
@@ -2069,6 +2826,15 @@ export const translations = {
       scrollToTop: "Voltar ao topo"
     },
     
+    // Cookie Consent Banner
+    cookieConsent: {
+      message: "Utilizamos cookies para melhorar sua experiência em nosso site, analisar o tráfego e personalizar o conteúdo. Ao continuar navegando, você aceita nossa",
+      privacyLink: "política de privacidade",
+      andCookies: "e nosso uso de cookies.",
+      decline: "Recusar",
+      accept: "Aceitar"
+    },
+    
     // CTA Section
     cta: {
       title: "Pronto para transformar sua vida financeira?",
@@ -2129,21 +2895,21 @@ export const translations = {
           ]
         },
         {
-          title: "Enviar seus extratos",
-          description: "Transmita seus últimos 3 extratos bancários de forma segura e confidencial.",
+          title: "Escolher sua fórmula",
+          description: "Explore nossa loja e selecione a solução que atende às suas necessidades: análises financeiras, cápsulas de formação, packs ou ebooks.",
           details: [
-            "Upload seguro e criptografado",
-            "Análise de seus hábitos de gastos",
-            "Identificação de pontos de melhoria"
+            "Ampla variedade de produtos adaptados",
+            "Pagamento seguro (Stripe ou Mobile Money)",
+            "Acesso imediato após validação"
           ]
         },
         {
-          title: "Receber seu plano de ação",
-          description: "Obtenha um relatório personalizado com recomendações concretas em 48-72h.",
+          title: "Usar seus produtos",
+          description: "Acesse imediatamente seus conteúdos comprados: baixe suas cápsulas, lance suas análises ou participe de sessões a partir do seu espaço pessoal.",
           details: [
-            "Relatório detalhado e personalizado",
-            "Plano de ação passo a passo",
-            "Acompanhamento e suporte contínuo"
+            "Acesso imediato a todas as suas compras",
+            "Download de PDFs e conteúdos",
+            "Acompanhe seu progresso em tempo real"
           ]
         }
       ],
@@ -2179,10 +2945,26 @@ export const translations = {
     
     // About Section
     about: {
-      title: "Sobre",
-      titleHighlight: "Pastora Myriam Konan",
-      subtitle: "Profissional bancária e guia espiritual, agora ajudo particulares, empreendedores e igrejas a restabelecer a saúde de suas finanças.",
-      description: "Com 10 anos de experiência no setor bancário e uma vocação espiritual profunda, desenvolvi um método único que combina experiência financeira e apoio espiritual para ajudá-lo a recuperar o equilíbrio e a prosperidade.",
+      title: "O que é",
+      titleHighlight: "Cash360",
+      intro1: "Cash360 é uma plataforma única de educação e análise financeira que ajuda particulares, empreendedores e igrejas a recuperar o controle de suas finanças, com uma abordagem que une inteligência prática e princípios espirituais.",
+      intro2: "Em um mundo onde muitos vivem em confusão financeira, entre dívidas, gastos descontrolados e culpa em relação ao dinheiro, Cash360 traz um método claro, acolhedor e transformador.",
+      missionTitle: "Nossa missão",
+      missionIntro: "Ajudar cada pessoa a recuperar o equilíbrio, a clareza e a paz financeira, através de um acompanhamento que combina:",
+      missionPoints: [
+        "A análise financeira personalizada de seus extratos bancários,",
+        "Cápsulas e formações sobre gestão de dinheiro, investimento e prosperidade,",
+        "Uma abordagem espiritual enraizada na fé, para compreender as leis espirituais que governam as finanças."
+      ],
+      forWhoTitle: "Para quem é feito o Cash360?",
+      forWhoPoints: [
+        "Para quem quer entender para onde vai seu dinheiro e recuperar o controle de seus gastos.",
+        "Para empreendedores, casais e famílias que querem construir uma estabilidade duradoura.",
+        "Para crentes que querem conciliar fé e finanças sem culpa nem excesso.",
+        "Para igrejas e ministérios que desejam formar seus membros na boa gestão financeira."
+      ],
+      pastorTitle: "Sobre a Pastora Myriam Konan",
+      pastorIntro: "Com 10 anos de experiência no setor bancário e uma vocação espiritual profunda, desenvolvi um método único que combina experiência financeira e apoio espiritual para ajudá-lo a recuperar o equilíbrio e a prosperidade.",
       achievements: [
         {
           title: "Experiência bancária",
@@ -2201,8 +2983,6 @@ export const translations = {
           description: "Certificações em gestão financeira"
         }
       ],
-      missionTitle: "Minha missão",
-      mission: "\"Ajudar cada pessoa a retomar o controle de suas finanças com sabedoria, integridade e fé, aplicando princípios bíblicos à gestão financeira moderna.\"",
       ctaButton: "Conhecer Myriam",
       followMe: "Siga-me em:"
     },
@@ -2308,7 +3088,61 @@ export const translations = {
       mainTitle: "O início de sua liberdade financeira",
       ctaButton: "Inscrever-se",
       quote: "\"A prosperidade financeira começa com uma relação saudável com o dinheiro. Deixe-me acompanhá-lo neste caminho de transformação.\"",
-      quoteAuthor: "— Pastora Myriam Konan, Fundadora da Cash360"
+      quoteAuthor: "— Pastora Myriam Konan, Fundadora da Cash360",
+      capsules: [
+        {
+          id: 1,
+          title: "A educação financeira",
+          content: [
+            "Tudo o que você precisa saber sobre dinheiro",
+            "Os fundamentos da gestão financeira",
+            "Torne-se dono de suas finanças, não escravo de suas despesas"
+          ]
+        },
+        {
+          id: 2,
+          title: "A mentalidade de pobreza",
+          content: [
+            "Desmascarar as forças que combatem a prosperidade",
+            "Quebrar bloqueios espirituais e psicológicos para entrar na abundância",
+            "Triunfar sobre as resistências invisíveis à prosperidade"
+          ]
+        },
+        {
+          id: 3,
+          title: "As leis espirituais relacionadas ao dinheiro",
+          content: [
+            "A anatomia financeira: Compreender as portas do corpo que influenciam a prosperidade",
+            "Os 3 níveis do dinheiro",
+            "Os princípios eternos que governam a prosperidade segundo Deus"
+          ]
+        },
+        {
+          id: 4,
+          title: "As batalhas relacionadas à prosperidade",
+          content: [
+            "Quebrar limites interiores",
+            "Meu entorno, minha influência, minha riqueza",
+            "por que o diabo quer que os cristãos permaneçam pobres"
+          ]
+        },
+        {
+          id: 5,
+          title: "Poupança e Investimento",
+          content: [
+            "Encontre a poupança que corresponde a você",
+            "Como fazer seu dinheiro render",
+            "Como manter sua poupança e se preparar para o futuro"
+          ]
+        },
+        {
+          id: 6,
+          title: "Pack completo de cápsulas",
+          content: [
+            "Encontre todas as cápsulas e beneficie-se de -15%"
+          ]
+        }
+      ]
     },
     
     // CTA Box
@@ -2323,7 +3157,28 @@ export const translations = {
       title: "Análise personalizada de seus extratos bancários",
       description: "Descubra para onde vai seu dinheiro e identifique os pontos a melhorar através de uma análise clara e confidencial de seus extratos bancários.",
       button: "Enviar meus extratos",
-      imageAlt: "Análise financeira"
+      imageAlt: "Análise financeira",
+      featuredTitle: "Produtos em destaque",
+      featuredDescription: "Descubra nossos produtos principais para transformar sua vida financeira",
+      ctaButton: "Inscrever-se",
+      launchButton: "Iniciar minha análise",
+      featuredProducts: [
+        {
+          title: "Do zero à estabilidade financeira",
+          category: "Formação",
+          description: "Descubra como transformar sua situação financeira e alcançar a estabilidade."
+        },
+        {
+          title: "As batalhas relacionadas à prosperidade",
+          category: "Cápsula",
+          description: "Identificar e vencer as resistências à prosperidade."
+        },
+        {
+          title: "Análise financeira",
+          category: "Análise",
+          description: "Análise personalizada de seus extratos bancários para identificar os pontos de melhoria."
+        }
+      ]
     },
     
     // Live TikTok
@@ -2467,15 +3322,20 @@ export const translations = {
         to: "a",
         of: "de",
         analyses: "análises",
+        products: "produtos",
+        purchases: "compras",
         previous: "Anterior",
-        next: "Próximo"
+        next: "Próximo",
+        page: "Página",
+        on: "de"
       },
       // New translations for new design
       welcomeGreeting: "Olá, 👋",
       welcomeMessage: "Bem-vindo ao seu espaço Cash360. Acompanhe suas análises, seu progresso e seus próximos passos.",
+      welcomeSubtitle: "Descubra seu painel de controle e gerencie todas as suas atividades em um só lugar.",
       pathCompleted: "Caminho concluído",
       suggestedStep: "Passo sugerido: Lance sua primeira análise",
-      myAnalyses: "Suas análises financeiras",
+      myAnalyses: "Minhas Análises",
       seeAll: "Ver tudo",
       noAnalysis: "Nenhuma análise no momento",
       noAnalysisDescription: "Comece lançando sua primeira análise para obter um diagnóstico personalizado.",
@@ -2493,6 +3353,154 @@ export const translations = {
         pillars: "Os 7 pilares de uma gestão saudável",
         optimization: "Otimização fiscal avançada",
         retirement: "Planejamento de aposentadoria"
+      },
+      // Predefined capsules translations
+      capsules: {
+        capsule1: {
+          title: "Educação Financeira",
+          blurb: "Tudo o que você precisa saber sobre dinheiro e gestão."
+        },
+        capsule2: {
+          title: "A Mentalidade de Pobreza",
+          blurb: "Quebrar limitações internas e mudar sua mentalidade."
+        },
+        capsule3: {
+          title: "As Leis Espirituais Relacionadas ao Dinheiro",
+          blurb: "Princípios e leis que governam a prosperidade."
+        },
+        capsule4: {
+          title: "As Batalhas Relacionadas à Prosperidade",
+          blurb: "Identificar e superar resistências à prosperidade."
+        },
+        capsule5: {
+          title: "Poupança e Investimento",
+          blurb: "Fazer seu dinheiro crescer e preparar o futuro."
+        }
+      },
+      // Cart translations
+      cart: {
+        title: "Meu carrinho",
+        empty: "Seu carrinho está vazio",
+        emptyDescription: "Adicione produtos ao seu carrinho a partir da sua loja.",
+        subtotal: "Subtotal:",
+        viewCart: "Ver carrinho",
+        continueShopping: "Continuar comprando",
+        quantity: "Qtd:"
+      },
+      // Payment success
+      paymentSuccess: {
+        title: "Pagamento realizado com sucesso!",
+        message: "Suas cápsulas agora estão disponíveis na aba \"Minhas compras\"."
+      },
+      // Settings
+      settings: "Configurações",
+      // Tabs
+      tabs: {
+        myAnalyses: "Minhas Análises",
+        boutique: "Loja",
+        myPurchases: "Minhas compras"
+      },
+      // Analysis section
+      analysis: {
+        title: "Minhas Análises",
+        subtitle: "Encontre aqui todas as suas análises financeiras realizadas com Cash360.",
+        newAnalysisTitle: "Fazer uma nova análise",
+        newAnalysisDesc: "Envie seus extratos e receba seu diagnóstico em 48h.",
+        newAnalysisButton: "Iniciar uma nova análise",
+        unlockMessage: "Compre a análise na loja para desbloquear este recurso",
+        analysisDate: "Análise de",
+        status: {
+          completed: "Concluída",
+          analyzing: "Analisando",
+          inProgress: "Em andamento",
+          processing: "Em processamento"
+        },
+        description: {
+          completed: "Análise de seus 3 extratos bancários – relatório disponível.",
+          analyzing: "Seus documentos estão sendo analisados por nossos especialistas.",
+          processing: "Seus extratos bancários estão sendo processados."
+        },
+        downloadPdf: "Baixar PDF",
+        newAnalysis: "Fazer outra análise",
+        noAnalyses: "Nenhuma análise no momento"
+      },
+      // Boutique section
+      boutique: {
+        title: "Loja",
+        subtitle: "Descubra nossos produtos exclusivos Cash360 para transformar sua vida financeira e espiritual.",
+        searchPlaceholder: "Buscar um produto por nome...",
+        searchResults: "produto encontrado",
+        searchResultsPlural: "produtos encontrados",
+        categories: {
+          capsules: "Cápsulas",
+          analysis: "Análise financeira",
+          pack: "Pacote",
+          ebook: "Ebook",
+          subscription: "Assinatura"
+        },
+        comingSoon: "Em breve",
+        buy: "Comprar",
+        buyPack: "Comprar pacote",
+        alreadyBought: "Já comprado",
+        alreadyInCart: "Já no carrinho"
+      },
+      // Purchases section
+      purchases: {
+        title: "Minhas compras",
+        subtitle: "Acesse suas compras e formações classificadas por categoria.",
+        searchPlaceholder: "Buscar uma compra por nome...",
+        searchResults: "compra encontrada",
+        searchResultsPlural: "compras encontradas",
+        noPurchases: "Nenhuma compra no momento",
+        noPurchasesWithSearch: "Nenhuma compra encontrada",
+        noPurchasesDesc: "Explore a loja para descobrir nossos produtos disponíveis.",
+        noPurchasesSearchDesc: "Tente com outras palavras-chave.",
+        downloadPdf: "Baixar PDF",
+        purchaseConfirmed: "Compra confirmada",
+        participate: "Participar",
+        pendingValidation: "Aguardando validação",
+        sessionStatus: {
+          planning: "Sessão em planejamento",
+          completed: "Concluída",
+          inProgress: "Em andamento",
+          pending: "Pendente",
+          at: "às"
+        }
+      },
+      // Onboarding
+      onboarding: {
+        welcome: {
+          title: "Bem-vindo ao seu painel!",
+          description: "Descubra como usar seu espaço pessoal Cash360. Este guia rápido explicará todos os recursos disponíveis."
+        },
+        tabs: {
+          title: "As 2 abas principais",
+          description: "Navegue entre a loja e suas compras usando as abas acima. Cada aba contém recursos específicos para gerenciar suas atividades."
+        },
+        boutique: {
+          title: "A Loja",
+          description: "Descubra nossos produtos: cápsulas, análises financeiras, pacotes, ebooks e assinaturas. Use as categorias para filtrar produtos de acordo com suas necessidades."
+        },
+        purchases: {
+          title: "Minhas compras",
+          description: "Acesse todas as suas compras e formações: cápsulas, análises financeiras, pacotes, ebooks e assinaturas. Você pode baixar seus PDFs, lançar suas análises e participar de sessões agendadas."
+        },
+        categories: {
+          title: "As categorias",
+          description: "Filtre produtos por categoria: Cápsulas, Análise Financeira, Pacote, Ebook, Assinatura. Clique em uma categoria para ver apenas os produtos correspondentes."
+        },
+        cart: {
+          title: "O carrinho",
+          description: "Clique no ícone do carrinho no canto superior direito para ver seus itens adicionados. Você pode modificar as quantidades e prosseguir para o pagamento diretamente do carrinho."
+        },
+        settings: {
+          title: "Configurações",
+          description: "Clique no seu nome ou no ícone de configurações no canto superior direito para modificar suas informações pessoais, alterar sua senha e gerenciar suas preferências."
+        },
+        complete: {
+          title: "Perfeito!",
+          description: "Você está pronto para usar seu painel. Sinta-se à vontade para explorar todos os recursos disponíveis. Você pode reiniciar este guia nas configurações."
+        }
       }
     },
 

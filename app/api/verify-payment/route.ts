@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabase'
+import { sendMail } from '@/lib/mail'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-10-29.clover',
@@ -355,6 +356,63 @@ export async function POST(request: NextRequest) {
         return acc
       }, {})
       console.log('[VERIFY-PAYMENT] Paiements insérés par type:', byType)
+      
+      // Créer une entrée dans analyses pour chaque NOUVEAU paiement d'analyse financière
+      // Fonction helper pour générer un ticket court
+      const generateShortTicket = (): string => {
+        const numbers = Math.floor(10000 + Math.random() * 90000) // 10000-99999
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        const letter = letters[Math.floor(Math.random() * letters.length)]
+        return `${numbers}${letter}`
+      }
+      
+      for (const payment of insertedPayments) {
+        // Vérifier si c'est un paiement d'analyse financière
+        const isAnalysis = payment.product_id === 'analyse-financiere' || 
+                          payment.payment_type === 'analysis' ||
+                          (products?.find(p => p.id === payment.product_id) as any)?.category === 'analyse-financiere'
+        
+        if (isAnalysis) {
+          try {
+            // Récupérer les informations utilisateur
+            const userEmail = user.email || ''
+            const firstName = user.user_metadata?.first_name || ''
+            const lastName = user.user_metadata?.last_name || ''
+            const clientName = `${firstName} ${lastName}`.trim() || userEmail.split('@')[0] || 'Client'
+            
+            // Générer un ticket unique
+            const ticket = `CASH-${generateShortTicket()}`
+            
+            // Créer l'entrée dans analyses - TOUJOURS créer une nouvelle analyse pour chaque nouveau paiement
+            const { data: analysis, error: analysisError } = await supabaseAdmin!
+              .from('analyses')
+              .insert({
+                ticket: ticket,
+                client_name: clientName,
+                client_email: userEmail,
+                status: 'en_cours',
+                progress: 10,
+                mode_paiement: 'Stripe',
+                message: null,
+                user_id: user.id
+              })
+              .select()
+              .single()
+            
+            if (analysisError) {
+              console.error('[VERIFY-PAYMENT] ❌ Erreur création analyse:', analysisError)
+              // Si l'erreur est une contrainte unique ou doublon, c'est OK
+              if (analysisError.code === '23505' || analysisError.message?.includes('duplicate')) {
+                console.log('[VERIFY-PAYMENT] ⚠️ Analyse déjà existante (doublon détecté), on continue')
+              }
+            } else {
+              console.log(`[VERIFY-PAYMENT] ✅ Nouvelle analyse créée: ${ticket} pour utilisateur ${user.id} (paiement: ${payment.transaction_id})`)
+            }
+          } catch (error) {
+            console.error('[VERIFY-PAYMENT] ❌ Erreur lors de la création de l\'analyse:', error)
+          }
+        }
+      }
     }
 
     // Créer les capsules achetées (user_capsules)
@@ -452,7 +510,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier que les paiements ont bien été insérés avant de retourner success
-    if (paymentEntries.length > 0 && insertedPayments) {
+    if (paymentEntries.length > 0 && insertedPayments && insertedPayments.length > 0) {
       // Re-vérifier que les paiements existent bien dans la DB
       const { data: verificationPayments } = await supabaseAdmin
         .from('payments')
@@ -464,6 +522,144 @@ export async function POST(request: NextRequest) {
       
       if (!verificationPayments || verificationPayments.length === 0) {
         console.error('[VERIFY-PAYMENT] ⚠️ ATTENTION: Les paiements ont été créés mais ne sont pas retrouvés en DB')
+      } else {
+        // Envoyer les emails de confirmation de paiement
+        try {
+          const userEmail = user.email || ''
+          const userName = user.user_metadata?.full_name || 
+                          user.user_metadata?.name ||
+                          userEmail.split('@')[0] || 
+                          'Client'
+          const firstName = userName.split(' ')[0] || userName
+          
+          // Capsules prédéfinies
+          const capsuleNames: { [key: string]: string } = {
+            'capsule1': "L'éducation financière",
+            'capsule2': 'La mentalité de pauvreté',
+            'capsule3': "Les lois spirituelles liées à l'argent",
+            'capsule4': 'Les combats liés à la prospérité',
+            'capsule5': 'Épargne et Investissement'
+          }
+          
+          // Grouper les paiements par produit pour éviter les doublons
+          const productsMap = new Map()
+          
+          for (const payment of verificationPayments) {
+            const productId = payment.product_id
+            const paymentType = payment.payment_type
+            const amount = payment.amount
+            
+            // Récupérer le nom du produit
+            let productName = productId
+            
+            // Vérifier si c'est une capsule prédéfinie
+            if (/^capsule[1-5]$/.test(productId)) {
+              productName = capsuleNames[productId] || productId
+            } else {
+              // Chercher dans les produits récupérés
+              const product = products?.find(p => p.id === productId)
+              if (product) {
+                productName = product.name || productId
+              }
+            }
+            
+            // Déterminer le type de produit en français
+            let productTypeLabel = 'Produit'
+            switch (paymentType) {
+              case 'analysis':
+                productTypeLabel = 'Analyse financière'
+                break
+              case 'capsule':
+                productTypeLabel = 'Capsule'
+                break
+              case 'pack':
+                productTypeLabel = 'Pack'
+                break
+              case 'ebook':
+                productTypeLabel = 'Ebook'
+                break
+              case 'abonnement':
+                productTypeLabel = 'Abonnement'
+                break
+              default:
+                productTypeLabel = 'Produit'
+            }
+            
+            // Compter les quantités par produit
+            if (!productsMap.has(productId)) {
+              productsMap.set(productId, {
+                id: productId,
+                name: productName,
+                type: productTypeLabel,
+                quantity: 1,
+                totalAmount: amount
+              })
+            } else {
+              const existing = productsMap.get(productId)
+              existing.quantity += 1
+              existing.totalAmount += amount
+            }
+          }
+          
+          // Convertir la Map en tableau
+          const uniqueProducts = Array.from(productsMap.values())
+          
+          // Calculer le montant total
+          const totalAmount = uniqueProducts.reduce((sum, p) => sum + p.totalAmount, 0)
+          
+          // Vérifier si les emails ont déjà été envoyés (via webhook) en vérifiant dans les logs ou un flag
+          // Pour l'instant, on envoie toujours les emails pour garantir l'envoi
+          console.log('[VERIFY-PAYMENT] 📧 Préparation envoi emails pour paiement:', sessionId.replace(/^cs_test_/, '').substring(0, 8))
+          
+          // Générer et envoyer l'email admin
+          const adminEmailHtml = generatePaymentAdminEmailHtml(
+            firstName,
+            userName,
+            userEmail,
+            uniqueProducts,
+            totalAmount,
+            sessionId
+          )
+          
+          const adminEmail = process.env.MAIL_ADMIN || process.env.DESTINATION_EMAIL || 'cash@cash360.finance'
+          console.log('[VERIFY-PAYMENT] 📧 Envoi email admin à:', adminEmail)
+          try {
+            await sendMail({
+              to: adminEmail,
+              subject: `[Cash360] Nouveau paiement reçu – ${firstName} ${userName} – ${sessionId.replace(/^cs_test_/, '').substring(0, 8)}`,
+              html: adminEmailHtml
+            })
+            console.log('[VERIFY-PAYMENT] ✅ Email admin envoyé avec succès à:', adminEmail)
+          } catch (adminEmailError: any) {
+            console.error('[VERIFY-PAYMENT] ❌ Erreur envoi email admin:', adminEmailError)
+            console.error('[VERIFY-PAYMENT] Détails erreur admin email:', JSON.stringify(adminEmailError, null, 2))
+            // Continuer même si l'email admin échoue
+          }
+          
+          // Attendre 1 seconde pour respecter les limites de rate
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          // Générer et envoyer l'email client
+          const clientEmailHtml = generatePaymentClientEmailHtml(
+            firstName,
+            uniqueProducts,
+            totalAmount,
+            sessionId
+          )
+          
+          console.log('[VERIFY-PAYMENT] 📧 Envoi email client à:', userEmail)
+          await sendMail({
+            to: userEmail,
+            subject: `Cash360 – Confirmation de paiement – ${sessionId.replace(/^cs_test_/, '').substring(0, 8)}`,
+            html: clientEmailHtml
+          })
+          
+          console.log('[VERIFY-PAYMENT] ✅ Email client envoyé avec succès')
+        } catch (emailError: any) {
+          console.error('[VERIFY-PAYMENT] ❌ Erreur envoi emails:', emailError)
+          console.error('[VERIFY-PAYMENT] Détails erreur email:', JSON.stringify(emailError, null, 2))
+          // Ne pas bloquer le processus si les emails échouent
+        }
       }
     }
     
@@ -488,5 +684,190 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+// Fonction pour générer l'email admin de paiement
+function generatePaymentAdminEmailHtml(
+  firstName: string,
+  fullName: string,
+  userEmail: string,
+  products: Array<{ id: string; name: string; type: string; quantity: number; totalAmount: number }>,
+  totalAmount: number,
+  transactionId: string
+): string {
+  const timestamp = new Date().toLocaleString('fr-FR')
+  
+  // Générer la liste des produits
+  const productsList = products.map(product => `
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #3b82f6;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong style="color: #1f2937; font-size: 16px;">${product.name}</strong>
+          <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">${product.type}${product.quantity > 1 ? ` x${product.quantity}` : ''}</p>
+        </div>
+        <div style="text-align: right;">
+          <strong style="color: #1f2937; font-size: 16px;">${product.totalAmount.toFixed(2)} €</strong>
+        </div>
+      </div>
+    </div>
+  `).join('')
+  
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #1e293b, #1e40af); padding: 30px; border-radius: 10px; color: white; text-align: center; margin-bottom: 20px;">
+        <h1 style="margin: 0; font-size: 24px;">💳 Nouveau paiement reçu - Cash360</h1>
+        <p style="margin: 10px 0 0 0; opacity: 0.9;">${transactionId.replace(/^cs_test_/, '').substring(0, 8)}</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">Paiement validé avec succès</p>
+      </div>
+      
+      <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #1e293b; margin-top: 0;">Informations client</h2>
+        
+        <div style="margin-bottom: 15px;">
+          <strong>Nom complet:</strong> ${fullName}
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong>Email:</strong> ${userEmail}
+        </div>
+        
+        <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin-top: 20px;">
+          <h3 style="color: #065f46; margin-top: 0; font-size: 18px;">💳 Produits achetés</h3>
+          ${productsList}
+          <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #10b981;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong style="color: #065f46; font-size: 18px;">Total:</strong>
+              <strong style="color: #065f46; font-size: 20px;">${totalAmount.toFixed(2)} €</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
+        <p>Email généré automatiquement le ${timestamp}</p>
+      </div>
+    </div>
+  `
+}
+
+// Fonction pour générer l'email client de paiement
+function generatePaymentClientEmailHtml(
+  firstName: string,
+  products: Array<{ id: string; name: string; type: string; quantity: number; totalAmount: number }>,
+  totalAmount: number,
+  transactionId: string
+): string {
+  // Générer la liste des produits
+  const productsList = products.map(product => `
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb;">
+      <div>
+        <span style="color: #1f2937; font-weight: 500; font-size: 15px;">${product.name}</span>
+        <span style="color: #6b7280; font-size: 13px; margin-left: 8px;">(${product.type}${product.quantity > 1 ? ` x${product.quantity}` : ''})</span>
+      </div>
+      <span style="color: #1f2937; font-weight: 600; font-size: 15px;">${product.totalAmount.toFixed(2)} €</span>
+    </div>
+  `).join('')
+  
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
+      
+      <!-- Header avec logo -->
+      <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center;">
+        <div style="width: 60px; height: 60px; background: #10b981; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="color: white; font-size: 24px; font-weight: bold;">✓</span>
+        </div>
+        <h1 style="margin: 0; font-size: 28px; color: #1f2937; font-weight: 600;">Merci pour votre achat !</h1>
+        <p style="margin: 10px 0 0 0; color: #6b7280; font-size: 16px;"><strong style="color: #1f2937;">${transactionId.replace(/^cs_test_/, '').substring(0, 8)}</strong></p>
+      </div>
+
+      <!-- Contenu principal -->
+      <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        
+        <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+          Bonjour <strong>${firstName}</strong>,<br><br>
+          Merci pour votre confiance ! Votre paiement a été validé avec succès.
+        </p>
+
+        <!-- Produits achetés -->
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin-bottom: 20px; text-align: center;">Vos achats</h2>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            ${productsList}
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e5e7eb;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: #1f2937; font-size: 18px;">Total:</strong>
+                <strong style="color: #1f2937; font-size: 20px;">${totalAmount.toFixed(2)} €</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prochaines étapes -->
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 30px;">
+          <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; margin-right: 12px; color: #3b82f6;">
+              <svg style="width: 100%; height: 100%;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 600;">Accédez à vos achats</h3>
+              <p style="margin: 8px 0 0 0; color: #1e40af; font-size: 14px; line-height: 1.5;">
+                Vous pouvez maintenant accéder à vos produits dans votre <strong>dashboard</strong> dans l'onglet <strong>"Mes achats"</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Besoin d'aide ?</h3>
+          <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 14px;">
+            Pour toute question concernant votre achat :
+          </p>
+          <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; margin-right: 8px; color: #6b7280;">
+              <svg style="width: 100%; height: 100%;" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+              </svg>
+            </div>
+            <a href="mailto:cash@cash360.finance" style="color: #3b82f6; text-decoration: none; font-weight: 500;">cash@cash360.finance</a>
+          </div>
+          <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 12px;">
+            Référencez <strong>${transactionId.replace(/^cs_test_/, '').substring(0, 8)}</strong> dans votre email
+          </p>
+        </div>
+
+        <!-- Récapitulatif -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+          <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Récapitulatif</h3>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Nombre de produits:</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px;">${products.length}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Montant total:</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px;">${totalAmount.toFixed(2)} €</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">ID:</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px; font-family: monospace;">${transactionId.replace(/^cs_test_/, '').substring(0, 8)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #6b7280; font-size: 14px;">Statut :</span>
+            <span style="color: #10b981; font-weight: 500; font-size: 14px;">✓ Payé</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
+        <p style="margin: 0;">Cash360 - Transformation financière et spirituelle</p>
+      </div>
+    </div>
+  `
 }
 

@@ -27,8 +27,11 @@ export async function GET(request: Request) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
+    const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!error && user) {
+      // L'email de bienvenue sera envoyé lors de la première connexion au dashboard
+      // via l'API /api/welcome-email
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

@@ -49,6 +49,14 @@ export async function POST(request: NextRequest) {
     const {
       name,
       description,
+      nameFr,
+      nameEn,
+      nameEs,
+      namePt,
+      descriptionFr,
+      descriptionEn,
+      descriptionEs,
+      descriptionPt,
       price,
       originalPrice,
       isPack,
@@ -61,10 +69,11 @@ export async function POST(request: NextRequest) {
       pdfUrl
     } = body
 
-    // Validation
-    if (!name || !price) {
+    // Validation - au moins le nom français doit être fourni
+    const productName = nameFr || name || nameEn || nameEs || namePt
+    if (!productName || !price) {
       return NextResponse.json(
-        { error: 'Nom et prix sont obligatoires' },
+        { error: 'Nom (au moins en français) et prix sont obligatoires' },
         { status: 400 }
       )
     }
@@ -84,14 +93,22 @@ export async function POST(request: NextRequest) {
       return `${baseId}-${timestamp}`
     }
 
-    const autoId = generateProductId(name)
+    const autoId = generateProductId(productName)
 
     const { data, error } = await supabaseAdmin!
       .from('products')
       .insert({
         id: autoId,
-        name,
-        description: description || null,
+        name: name || nameFr || productName, // Fallback pour compatibilité
+        description: description || descriptionFr || null, // Fallback pour compatibilité
+        name_fr: nameFr || name || null,
+        name_en: nameEn || null,
+        name_es: nameEs || null,
+        name_pt: namePt || null,
+        description_fr: descriptionFr || description || null,
+        description_en: descriptionEn || null,
+        description_es: descriptionEs || null,
+        description_pt: descriptionPt || null,
         price,
         original_price: originalPrice || null,
         is_pack: isPack || false,
@@ -134,12 +151,12 @@ export async function POST(request: NextRequest) {
       // date_scheduled et time_scheduled sont maintenant optionnels grâce à la migration
       const formationDataToInsert = {
         capsule_id: formationCapsuleId,
-        session_name: name,
+        session_name: productName, // Utiliser le nom traduit
         session_type: sessionType,
         duration: 60,
         date_scheduled: null, // Laisser vide pour "Session en cours de planification"
         time_scheduled: null, // Laisser vide pour "Session en cours de planification"
-        description: description || null,
+        description: descriptionFr || description || null,
         zoom_link: null,
         max_participants: 50,
         timezone: 'Europe/Paris',
@@ -226,6 +243,14 @@ export async function PUT(request: NextRequest) {
     const {
       name,
       description,
+      nameFr,
+      nameEn,
+      nameEs,
+      namePt,
+      descriptionFr,
+      descriptionEn,
+      descriptionEs,
+      descriptionPt,
       price,
       originalPrice,
       isPack,
@@ -239,10 +264,11 @@ export async function PUT(request: NextRequest) {
       pdfUrl
     } = body
 
-    // Validation
-    if (!name || !price) {
+    // Validation - au moins le nom français doit être fourni
+    const productName = nameFr || name || nameEn || nameEs || namePt
+    if (!productName || !price) {
       return NextResponse.json(
-        { error: 'Nom et prix sont obligatoires' },
+        { error: 'Nom (au moins en français) et prix sont obligatoires' },
         { status: 400 }
       )
     }
@@ -250,8 +276,16 @@ export async function PUT(request: NextRequest) {
     const { data, error } = await supabaseAdmin!
       .from('products')
       .update({
-        name,
-        description: description || null,
+        name: name || nameFr || productName, // Fallback pour compatibilité
+        description: description || descriptionFr || null, // Fallback pour compatibilité
+        name_fr: nameFr !== undefined ? nameFr : null,
+        name_en: nameEn !== undefined ? nameEn : null,
+        name_es: nameEs !== undefined ? nameEs : null,
+        name_pt: namePt !== undefined ? namePt : null,
+        description_fr: descriptionFr !== undefined ? descriptionFr : null,
+        description_en: descriptionEn !== undefined ? descriptionEn : null,
+        description_es: descriptionEs !== undefined ? descriptionEs : null,
+        description_pt: descriptionPt !== undefined ? descriptionPt : null,
         price,
         original_price: originalPrice || null,
         is_pack: isPack || false,
@@ -286,9 +320,9 @@ export async function PUT(request: NextRequest) {
         .from('formations')
         .update({
           capsule_id: capsuleId || productId,
-          session_name: name,
+          session_name: productName, // Utiliser le nom traduit
           session_type: sessionType,
-          description: description || null,
+          description: descriptionFr || description || null,
           price: price
         })
         .eq('capsule_id', productId)

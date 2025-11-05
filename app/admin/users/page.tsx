@@ -20,6 +20,8 @@ interface User {
   analyses_count?: number
   capsules_count?: number
   role?: 'user' | 'admin' | 'commercial'
+  city?: string
+  profession?: string
 }
 
 export default function AdminUsersPage() {
@@ -30,6 +32,7 @@ export default function AdminUsersPage() {
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [activitySort, setActivitySort] = useState<string>('recent')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [editingRole, setEditingRole] = useState<string | null>(null)
@@ -94,7 +97,9 @@ export default function AdminUsersPage() {
           last_activity: user.last_sign_in_at || user.first_analysis_date,
           analyses_count: user.analysis_count || 0,
           capsules_count: 0, // TODO: récupérer depuis la table user_capsules
-          role: user.role || 'user'
+          role: user.role || 'user',
+          city: user.user_metadata?.city || '',
+          profession: user.user_metadata?.profession || ''
         }))
         setUsers(adaptedUsers)
       } else {
@@ -293,14 +298,25 @@ export default function AdminUsersPage() {
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
       {/* Sidebar */}
-      <AdminSidebar activeTab="users" />
+      <AdminSidebar activeTab="users" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 md:ml-64">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 relative z-[9998]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
+              {/* Bouton hamburger pour mobile */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mr-2"
+                aria-label="Ouvrir le menu"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
               {/* Logo */}
               <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
                 <button
@@ -317,7 +333,7 @@ export default function AdminUsersPage() {
                 </button>
               </div>
               
-              {/* Theme & Informations de connexion */}
+              {/* Informations de connexion */}
               <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">
@@ -432,6 +448,8 @@ export default function AdminUsersPage() {
                   <tr>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Utilisateur</th>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Email</th>
+                    <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Ville</th>
+                    <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Métier</th>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Rôle</th>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Analyses</th>
                     <th className="text-left py-4 px-6 text-sm font-medium text-gray-600">Capsules</th>
@@ -442,7 +460,7 @@ export default function AdminUsersPage() {
                 <tbody className="divide-y divide-gray-200">
                   {currentUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="text-center py-12 text-gray-500">
+                      <td colSpan={9} className="text-center py-12 text-gray-500">
                         Aucun utilisateur trouvé
                       </td>
                     </tr>
@@ -463,6 +481,12 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-600">{user.email}</td>
+                        <td className="py-4 px-6 text-sm text-gray-600">
+                          {user.city || <span className="text-gray-400">-</span>}
+                        </td>
+                        <td className="py-4 px-6 text-sm text-gray-600">
+                          {user.profession || <span className="text-gray-400">-</span>}
+                        </td>
                         <td className="py-4 px-6 text-sm text-gray-600">
                           <div className="relative inline-block role-dropdown">
                             <button

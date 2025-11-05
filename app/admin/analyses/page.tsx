@@ -37,6 +37,8 @@ export default function AdminAnalysesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -82,14 +84,20 @@ export default function AdminAnalysesPage() {
   }, [showAdminMenu, editingStatus])
 
   const loadAllAnalyses = async () => {
+    setRefreshing(true)
     try {
       const response = await fetch('/api/admin/analyses')
       const data = await response.json()
       
       if (data.success) {
-        setAnalyses(data.analyses || [])
+        const allAnalyses = data.analyses || []
+        // Dédupliquer les analyses par ID (au cas où il y aurait des doublons)
+        const uniqueAnalyses = Array.from(
+          new Map(allAnalyses.map((a: Analysis) => [a.id, a])).values()
+        ) as Analysis[]
+        setAnalyses(uniqueAnalyses)
         // Charger les fichiers relevés pour chaque analyse
-        data.analyses?.forEach((analysis: any) => {
+        allAnalyses.forEach((analysis: any) => {
           if (analysis.ticket) {
             loadRelevesFiles(analysis.ticket)
           }
@@ -99,6 +107,8 @@ export default function AdminAnalysesPage() {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des analyses:', error)
+    } finally {
+      setRefreshing(false)
     }
   }
 
@@ -268,14 +278,25 @@ export default function AdminAnalysesPage() {
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
       {/* Sidebar */}
-      <AdminSidebar activeTab="analyses" />
+      <AdminSidebar activeTab="analyses" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 md:ml-64">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 relative z-[9998]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
+              {/* Bouton hamburger pour mobile */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mr-2"
+                aria-label="Ouvrir le menu"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
               {/* Logo */}
               <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
                 <button
@@ -292,7 +313,7 @@ export default function AdminAnalysesPage() {
                 </button>
               </div>
               
-              {/* Theme & Informations de connexion */}
+              {/* Informations de connexion */}
               <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">
@@ -343,9 +364,27 @@ export default function AdminAnalysesPage() {
         {/* Main Content */}
         <main className="p-6">
           {/* Page Title */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-[#012F4E] mb-2">Analyses financières</h1>
-            <p className="text-gray-600">Suivez les demandes d'analyse, téléversez les rapports PDF et assurez la qualité des suivis utilisateurs.</p>
+          <div className="mb-6 flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-[#012F4E] mb-2">Analyses financières</h1>
+              <p className="text-gray-600">Suivez les demandes d'analyse, téléversez les rapports PDF et assurez la qualité des suivis utilisateurs.</p>
+            </div>
+            <button
+              onClick={loadAllAnalyses}
+              disabled={refreshing}
+              className={`flex items-center gap-2 px-4 py-2 bg-[#00A1C6] text-white rounded-lg hover:bg-[#012F4E] transition-colors duration-200 shadow-sm ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title="Actualiser la liste des analyses"
+            >
+              <svg 
+                className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span className="hidden sm:inline">{refreshing ? 'Actualisation...' : 'Actualiser'}</span>
+            </button>
           </div>
 
           {/* Search and Filters */}

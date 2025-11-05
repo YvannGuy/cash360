@@ -36,10 +36,18 @@ export default function AdminBoutiquePage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const productsPerPage = 9 // 3 colonnes × 3 lignes
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    // Traductions optionnelles
+    nameEn: '',
+    nameEs: '',
+    namePt: '',
+    descriptionEn: '',
+    descriptionEs: '',
+    descriptionPt: '',
     price: '',
     originalPrice: '',
     isPack: false,
@@ -51,6 +59,7 @@ export default function AdminBoutiquePage() {
     category: 'capsules', // Catégorie du produit
     pdfFile: null as File | null // Fichier PDF pour ebook
   })
+  const [showTranslations, setShowTranslations] = useState(false)
   const [uploadingPdf, setUploadingPdf] = useState(false)
 
   useEffect(() => {
@@ -130,6 +139,12 @@ export default function AdminBoutiquePage() {
     setFormData({
       name: '',
       description: '',
+      nameEn: '',
+      nameEs: '',
+      namePt: '',
+      descriptionEn: '',
+      descriptionEs: '',
+      descriptionPt: '',
       price: '',
       originalPrice: '',
       isPack: false,
@@ -141,6 +156,7 @@ export default function AdminBoutiquePage() {
       category: 'capsules', // Catégorie par défaut
       pdfFile: null
     })
+    setShowTranslations(false)
     setShowProductModal(true)
   }
 
@@ -149,6 +165,13 @@ export default function AdminBoutiquePage() {
     setFormData({
       name: product.name,
       description: product.description || '',
+      // Charger les traductions existantes
+      nameEn: (product as any).name_en || '',
+      nameEs: (product as any).name_es || '',
+      namePt: (product as any).name_pt || '',
+      descriptionEn: (product as any).description_en || '',
+      descriptionEs: (product as any).description_es || '',
+      descriptionPt: (product as any).description_pt || '',
       price: product.price.toString(),
       originalPrice: product.original_price?.toString() || '',
       isPack: product.is_pack,
@@ -160,6 +183,10 @@ export default function AdminBoutiquePage() {
       category: (product as any).category || 'capsules', // Récupérer la catégorie du produit
       pdfFile: null // Reset le fichier PDF lors de l'édition
     })
+    // Afficher la section traductions si des traductions existent
+    const hasTranslations = (product as any).name_en || (product as any).name_es || (product as any).name_pt || 
+                            (product as any).description_en || (product as any).description_es || (product as any).description_pt
+    setShowTranslations(hasTranslations || false)
     setShowProductModal(true)
   }
 
@@ -198,6 +225,15 @@ export default function AdminBoutiquePage() {
         body: JSON.stringify({
           name: formData.name,
           description: formData.description || null,
+          // Envoyer les traductions
+          nameFr: formData.name,
+          nameEn: formData.nameEn || null,
+          nameEs: formData.nameEs || null,
+          namePt: formData.namePt || null,
+          descriptionFr: formData.description || null,
+          descriptionEn: formData.descriptionEn || null,
+          descriptionEs: formData.descriptionEs || null,
+          descriptionPt: formData.descriptionPt || null,
           price: parseFloat(formData.price),
           originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
           isPack: formData.isPack,
@@ -247,6 +283,15 @@ export default function AdminBoutiquePage() {
             body: JSON.stringify({
               name: formData.name,
               description: formData.description || null,
+              // Envoyer les traductions
+              nameFr: formData.name,
+              nameEn: formData.nameEn || null,
+              nameEs: formData.nameEs || null,
+              namePt: formData.namePt || null,
+              descriptionFr: formData.description || null,
+              descriptionEn: formData.descriptionEn || null,
+              descriptionEs: formData.descriptionEs || null,
+              descriptionPt: formData.descriptionPt || null,
               price: parseFloat(formData.price),
               originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
               isPack: formData.isPack,
@@ -293,6 +338,12 @@ export default function AdminBoutiquePage() {
       setFormData({
         name: '',
         description: '',
+        nameEn: '',
+        nameEs: '',
+        namePt: '',
+        descriptionEn: '',
+        descriptionEs: '',
+        descriptionPt: '',
         price: '',
         originalPrice: '',
         isPack: false,
@@ -361,14 +412,25 @@ export default function AdminBoutiquePage() {
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
       {/* Sidebar */}
-      <AdminSidebar activeTab="boutique" />
+      <AdminSidebar activeTab="boutique" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 md:ml-64">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 relative z-[9998]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
+              {/* Bouton hamburger pour mobile */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mr-2"
+                aria-label="Ouvrir le menu"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
               {/* Logo */}
               <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
                 <button
@@ -385,7 +447,7 @@ export default function AdminBoutiquePage() {
                 </button>
               </div>
               
-              {/* Theme & Informations de connexion */}
+              {/* Informations de connexion */}
               <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">
@@ -481,23 +543,31 @@ export default function AdminBoutiquePage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                   {currentProducts.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
                 {/* Image */}
                 <div className="relative h-48 w-full overflow-hidden">
-                  {product.image_url ? (
-                    <Image
-                      src={product.image_url}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  )}
+                  {(() => {
+                    // Remplacer l'image pour le produit "Comment partir de zéro jusqu'à la stabilité financière?"
+                    let productImage = product.image_url
+                    if (product.name && product.name.toLowerCase().includes('stabilité financière') && product.name.toLowerCase().includes('zéro')) {
+                      productImage = '/images/stab.jpg'
+                    }
+                    
+                    return productImage ? (
+                      <Image
+                        src={productImage}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )
+                  })()}
                   {!product.available && (
                     <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                       Indisponible
@@ -506,7 +576,7 @@ export default function AdminBoutiquePage() {
                 </div>
 
                 {/* Content */}
-                <div className="p-4">
+                <div className="p-4 flex flex-col flex-1">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
                     <div className="flex gap-1">
@@ -548,7 +618,7 @@ export default function AdminBoutiquePage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-auto">
                     <button
                       onClick={() => handleOpenModalForEdit(product)}
                       className="flex-1 px-4 py-2 bg-[#00A1C6] text-white rounded-lg hover:bg-[#0089a3] transition-colors font-medium"
@@ -659,7 +729,7 @@ export default function AdminBoutiquePage() {
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nom du produit *
+                    Nom du produit (Français) *
                   </label>
                   <input
                     type="text"
@@ -673,7 +743,7 @@ export default function AdminBoutiquePage() {
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
+                    Description (Français)
                   </label>
                   <textarea
                     value={formData.description}
@@ -682,6 +752,113 @@ export default function AdminBoutiquePage() {
                     rows={4}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
                   />
+                </div>
+
+                {/* Traductions optionnelles */}
+                <div className="border-t border-gray-200 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowTranslations(!showTranslations)}
+                    className="flex items-center justify-between w-full text-left mb-4"
+                  >
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Traductions (optionnelles)</h3>
+                      <p className="text-sm text-gray-500">Ajoutez des traductions pour les autres langues. Si une traduction est manquante, le français sera utilisé.</p>
+                    </div>
+                    <svg 
+                      className={`w-5 h-5 text-gray-500 transition-transform ${showTranslations ? 'rotate-180' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {showTranslations && (
+                    <div className="space-y-6 bg-gray-50 p-4 rounded-lg">
+                      {/* Anglais */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <span className="text-base">🇬🇧</span> Anglais (English)
+                        </h4>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Nom</label>
+                          <input
+                            type="text"
+                            value={formData.nameEn}
+                            onChange={(e) => setFormData({...formData, nameEn: e.target.value})}
+                            placeholder="Product name (English)"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                          <textarea
+                            value={formData.descriptionEn}
+                            onChange={(e) => setFormData({...formData, descriptionEn: e.target.value})}
+                            placeholder="Product description (English)"
+                            rows={3}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Espagnol */}
+                      <div className="space-y-3 border-t border-gray-300 pt-4">
+                        <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <span className="text-base">🇪🇸</span> Espagnol (Español)
+                        </h4>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Nombre</label>
+                          <input
+                            type="text"
+                            value={formData.nameEs}
+                            onChange={(e) => setFormData({...formData, nameEs: e.target.value})}
+                            placeholder="Nombre del producto (Español)"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Descripción</label>
+                          <textarea
+                            value={formData.descriptionEs}
+                            onChange={(e) => setFormData({...formData, descriptionEs: e.target.value})}
+                            placeholder="Descripción del producto (Español)"
+                            rows={3}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Portugais */}
+                      <div className="space-y-3 border-t border-gray-300 pt-4">
+                        <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <span className="text-base">🇵🇹</span> Portugais (Português)
+                        </h4>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Nome</label>
+                          <input
+                            type="text"
+                            value={formData.namePt}
+                            onChange={(e) => setFormData({...formData, namePt: e.target.value})}
+                            placeholder="Nome do produto (Português)"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Descrição</label>
+                          <textarea
+                            value={formData.descriptionPt}
+                            onChange={(e) => setFormData({...formData, descriptionPt: e.target.value})}
+                            placeholder="Descrição do produto (Português)"
+                            rows={3}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Price & Original Price */}

@@ -70,9 +70,9 @@ export default function LiveTikTok() {
             <div className="bg-gradient-to-r from-slate-900 to-blue-900 p-6 text-white text-center">
               <div className="flex items-center justify-center space-x-4 mb-4">
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-semibold">{t.liveTikTok.liveBadge}</span>
+                <span className="text-sm font-semibold text-white">{t.liveTikTok.liveBadge}</span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">{t.liveTikTok.eventTitle}</h3>
+              <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">{t.liveTikTok.eventTitle}</h3>
               <p className="text-blue-100">{t.liveTikTok.eventSubtitle}</p>
             </div>
 
@@ -88,9 +88,9 @@ export default function LiveTikTok() {
                     />
                   </div>
                   {/* Live Badge */}
-                  <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center">
+                  <div className="absolute top-4 left-4 bg-red-500 px-3 py-1 rounded-full text-sm font-bold flex items-center">
                     <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
-                    {t.liveTikTok.liveBadge}
+                    <span className="text-white">{t.liveTikTok.liveBadge}</span>
                   </div>
                 </div>
 

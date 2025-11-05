@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
@@ -26,6 +26,7 @@ export default function AdminDashboardPage() {
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -255,6 +256,217 @@ export default function AdminDashboardPage() {
     loadAllAnalyses()
   }
 
+  // Fonction pour déduire le pays à partir de la ville
+  const getCountryFromCity = (city: string): string => {
+    if (!city) return 'Non renseigné'
+    const cityLower = city.toLowerCase().trim()
+    
+    // Mapping des villes vers les pays/régions
+    const cityToCountry: { [key: string]: string } = {
+      // France
+      'paris': 'France', 'lyon': 'France', 'marseille': 'France', 'toulouse': 'France', 'nice': 'France',
+      'nantes': 'France', 'strasbourg': 'France', 'montpellier': 'France', 'bordeaux': 'France', 'lille': 'France',
+      'rennes': 'France', 'reims': 'France', 'saint-étienne': 'France', 'toulon': 'France', 'grenoble': 'France',
+      'dijon': 'France', 'angers': 'France', 'nîmes': 'France', 'villeurbanne': 'France', 'saint-denis': 'France',
+      // Côte d'Ivoire
+      'abidjan': 'Côte d\'Ivoire', 'yamoussoukro': 'Côte d\'Ivoire', 'bouaké': 'Côte d\'Ivoire', 'daloa': 'Côte d\'Ivoire',
+      'san-pédro': 'Côte d\'Ivoire', 'korhogo': 'Côte d\'Ivoire', 'man': 'Côte d\'Ivoire',
+      // Sénégal
+      'dakar': 'Sénégal', 'thiès': 'Sénégal', 'rufisque': 'Sénégal', 'kaolack': 'Sénégal', 'ziguinchor': 'Sénégal',
+      'saint-louis': 'Sénégal', 'touba': 'Sénégal', 'mbour': 'Sénégal',
+      // Cameroun
+      'douala': 'Cameroun', 'yaoundé': 'Cameroun', 'garoua': 'Cameroun', 'bafoussam': 'Cameroun', 'bamenda': 'Cameroun',
+      // Gabon
+      'libreville': 'Gabon', 'port-gentil': 'Gabon', 'franceville': 'Gabon',
+      // Burkina Faso
+      'ouagadougou': 'Burkina Faso', 'bobo-dioulasso': 'Burkina Faso',
+      // Mali
+      'bamako': 'Mali', 'sikasso': 'Mali', 'mopti': 'Mali',
+      // Bénin
+      'cotonou': 'Bénin', 'porto-novo': 'Bénin',
+      // Togo
+      'lomé': 'Togo',
+      // Guinée
+      'conakry': 'Guinée',
+      // Niger
+      'niamey': 'Niger',
+      // Tchad
+      'n\'djamena': 'Tchad',
+      // République Centrafricaine
+      'bangui': 'République Centrafricaine',
+      // Congo
+      'brazzaville': 'Congo', 'pointe-noire': 'Congo',
+      // RD Congo
+      'kinshasa': 'RD Congo', 'lubumbashi': 'RD Congo', 'mbuji-mayi': 'RD Congo',
+      // Autres pays
+      'casablanca': 'Maroc', 'rabat': 'Maroc', 'marrakech': 'Maroc', 'fès': 'Maroc', 'tanger': 'Maroc',
+      'tunis': 'Tunisie', 'sfax': 'Tunisie',
+      'alger': 'Algérie', 'oran': 'Algérie', 'constantine': 'Algérie',
+      'bruxelles': 'Belgique', 'anvers': 'Belgique', 'gand': 'Belgique',
+      'genève': 'Suisse', 'zurich': 'Suisse', 'bâle': 'Suisse',
+      'montréal': 'Canada', 'toronto': 'Canada', 'vancouver': 'Canada',
+      'new york': 'États-Unis', 'los angeles': 'États-Unis', 'chicago': 'États-Unis', 'houston': 'États-Unis',
+      'londres': 'Royaume-Uni', 'manchester': 'Royaume-Uni', 'birmingham': 'Royaume-Uni',
+      'madrid': 'Espagne', 'barcelone': 'Espagne', 'valence': 'Espagne',
+      'rome': 'Italie', 'milan': 'Italie', 'naples': 'Italie',
+      'lisbonne': 'Portugal', 'porto': 'Portugal',
+      'pékin': 'Chine', 'shanghai': 'Chine', 'guangzhou': 'Chine', 'shenzhen': 'Chine'
+    }
+    
+    // Vérifier les correspondances exactes
+    if (cityToCountry[cityLower]) {
+      return cityToCountry[cityLower]
+    }
+    
+    // Vérifier les correspondances partielles
+    for (const [key, country] of Object.entries(cityToCountry)) {
+      if (cityLower.includes(key) || key.includes(cityLower)) {
+        return country
+      }
+    }
+    
+    // Si la ville contient des mots-clés de pays
+    if (cityLower.includes('france') || cityLower.includes('français')) return 'France'
+    if (cityLower.includes('belgique') || cityLower.includes('belge')) return 'Belgique'
+    if (cityLower.includes('suisse') || cityLower.includes('swiss')) return 'Suisse'
+    if (cityLower.includes('canada') || cityLower.includes('canadian')) return 'Canada'
+    if (cityLower.includes('usa') || cityLower.includes('united states')) return 'États-Unis'
+    if (cityLower.includes('uk') || cityLower.includes('britain')) return 'Royaume-Uni'
+    if (cityLower.includes('espagne') || cityLower.includes('spain')) return 'Espagne'
+    if (cityLower.includes('italie') || cityLower.includes('italy')) return 'Italie'
+    if (cityLower.includes('portugal')) return 'Portugal'
+    if (cityLower.includes('chine') || cityLower.includes('china')) return 'Chine'
+    
+    // Détecter les pays d'Afrique de l'Ouest/Centrale par patterns communs
+    if (cityLower.match(/abidjan|yamoussoukro|bouaké|daloa/i)) return 'Côte d\'Ivoire'
+    if (cityLower.match(/dakar|thiès|rufisque|kaolack/i)) return 'Sénégal'
+    if (cityLower.match(/douala|yaoundé|garoua|bafoussam/i)) return 'Cameroun'
+    if (cityLower.match(/libreville|port-gentil|franceville/i)) return 'Gabon'
+    if (cityLower.match(/ouagadougou|bobo-dioulasso/i)) return 'Burkina Faso'
+    if (cityLower.match(/bamako|sikasso|mopti/i)) return 'Mali'
+    if (cityLower.match(/cotonou|porto-novo/i)) return 'Bénin'
+    if (cityLower.match(/lomé/i)) return 'Togo'
+    if (cityLower.match(/conakry/i)) return 'Guinée'
+    if (cityLower.match(/niamey/i)) return 'Niger'
+    if (cityLower.match(/n\'djamena/i)) return 'Tchad'
+    if (cityLower.match(/bangui/i)) return 'République Centrafricaine'
+    if (cityLower.match(/kinshasa|lubumbashi|mbuji-mayi/i)) return 'RD Congo'
+    if (cityLower.match(/brazzaville|pointe-noire/i)) return 'Congo'
+    
+    return 'Non renseigné'
+  }
+
+  // Analyser les données géographiques (doit être avant les retours conditionnels)
+  const geographicAnalysis = useMemo(() => {
+    const cityCount: { [key: string]: number } = {}
+    const countryCount: { [key: string]: number } = {}
+    const regionCount: { [key: string]: number } = {}
+    
+    // Mapping des pays vers les régions
+    const countryToRegion: { [key: string]: string } = {
+      'France': 'Europe',
+      'Belgique': 'Europe',
+      'Suisse': 'Europe',
+      'Espagne': 'Europe',
+      'Italie': 'Europe',
+      'Portugal': 'Europe',
+      'Royaume-Uni': 'Europe',
+      'Côte d\'Ivoire': 'Afrique de l\'Ouest',
+      'Sénégal': 'Afrique de l\'Ouest',
+      'Burkina Faso': 'Afrique de l\'Ouest',
+      'Mali': 'Afrique de l\'Ouest',
+      'Bénin': 'Afrique de l\'Ouest',
+      'Togo': 'Afrique de l\'Ouest',
+      'Guinée': 'Afrique de l\'Ouest',
+      'Niger': 'Afrique de l\'Ouest',
+      'Cameroun': 'Afrique Centrale',
+      'Gabon': 'Afrique Centrale',
+      'Tchad': 'Afrique Centrale',
+      'République Centrafricaine': 'Afrique Centrale',
+      'Congo': 'Afrique Centrale',
+      'RD Congo': 'Afrique Centrale',
+      'Maroc': 'Afrique du Nord',
+      'Tunisie': 'Afrique du Nord',
+      'Algérie': 'Afrique du Nord',
+      'Canada': 'Amérique du Nord',
+      'États-Unis': 'Amérique du Nord',
+      'Chine': 'Asie'
+    }
+    
+    users.forEach((user: any) => {
+      const city = user.user_metadata?.city || ''
+      if (city) {
+        cityCount[city] = (cityCount[city] || 0) + 1
+        const country = getCountryFromCity(city)
+        countryCount[country] = (countryCount[country] || 0) + 1
+        const region = countryToRegion[country] || 'Autre'
+        regionCount[region] = (regionCount[region] || 0) + 1
+      }
+    })
+    
+    return {
+      cities: Object.entries(cityCount)
+        .map(([city, count]) => ({ city, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+      countries: Object.entries(countryCount)
+        .map(([country, count]) => ({ country, count }))
+        .sort((a, b) => b.count - a.count),
+      regions: Object.entries(regionCount)
+        .map(([region, count]) => ({ region, count }))
+        .sort((a, b) => b.count - a.count)
+    }
+  }, [users])
+
+  // Analyser les professions
+  const professionAnalysis = useMemo(() => {
+    const professionCount: { [key: string]: number } = {}
+    
+    users.forEach((user: any) => {
+      const profession = user.user_metadata?.profession || ''
+      if (profession) {
+        professionCount[profession] = (professionCount[profession] || 0) + 1
+      }
+    })
+    
+    return Object.entries(professionCount)
+      .map(([profession, count]) => ({ profession, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 15)
+  }, [users])
+
+  // Composant pour afficher un graphique en barres
+  const BarChart = ({ data, maxValue, color = 'bg-[#00A1C6]' }: { data: Array<{ [key: string]: any, count: number }>, maxValue: number, color?: string }) => {
+    return (
+      <div className="space-y-3">
+        {data.map((item, index) => {
+          const label = item.city || item.country || item.region || item.profession || 'Inconnu'
+          const percentage = maxValue > 0 ? (item.count / maxValue) * 100 : 0
+          return (
+            <div key={index} className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700 truncate">{label}</span>
+                  <span className="text-sm font-bold text-gray-900 ml-2">{item.count}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                  <div
+                    className={`${color} h-6 rounded-full transition-all duration-500 flex items-center justify-end pr-2`}
+                    style={{ width: `${percentage}%` }}
+                  >
+                    {percentage > 15 && (
+                      <span className="text-xs font-medium text-white">{item.count}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   const filteredAnalyses = analyses.filter(analysis => {
     if (statusFilter !== 'all' && analysis.status !== statusFilter) {
       return false
@@ -271,21 +483,6 @@ export default function AdminDashboardPage() {
   const recentAnalyses = filteredAnalyses
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 4)
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Vérification des permissions...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!adminSession?.isAdmin) {
-    return null
-  }
 
   // Calculer les KPIs
   const totalUsers = users.length
@@ -309,17 +506,43 @@ export default function AdminDashboardPage() {
     return formationDate.toDateString() === today.toDateString()
   })
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Vérification des permissions...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!adminSession?.isAdmin) {
+    return null
+  }
+
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
       {/* Sidebar */}
-      <AdminSidebar activeTab="overview" />
+      <AdminSidebar activeTab="overview" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 md:ml-64">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 relative z-[9998]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
+              {/* Bouton hamburger pour mobile */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mr-2"
+                aria-label="Ouvrir le menu"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
               {/* Logo */}
               <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
                 <button
@@ -336,7 +559,7 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
               
-              {/* Theme & Informations de connexion */}
+              {/* Informations de connexion */}
               <div className="flex items-center gap-3 mr-2 sm:mr-20">
                 {adminSession && (
                   <div className="flex items-center gap-1 sm:gap-3">
@@ -539,17 +762,114 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Chart Section */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-xl font-bold text-[#012F4E] mb-6">Évolution hebdomadaire</h3>
-            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
-                </svg>
-                <p className="text-gray-600">Graphique d'évolution</p>
-                <p className="text-sm text-gray-500">Analyses / Ventes de capsules (7-30j)</p>
+          {/* Analytics Section - Répartition géographique et professionnelle */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Répartition par régions */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-[#012F4E] mb-1">Répartition géographique</h3>
+                  <p className="text-sm text-gray-600">Par région du monde</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
               </div>
+              {geographicAnalysis.regions.length > 0 ? (
+                <BarChart 
+                  data={geographicAnalysis.regions} 
+                  maxValue={Math.max(...geographicAnalysis.regions.map(r => r.count))}
+                  color="bg-blue-600"
+                />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Aucune donnée géographique disponible</p>
+                </div>
+              )}
+            </div>
+
+            {/* Répartition par pays */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-[#012F4E] mb-1">Top 10 pays</h3>
+                  <p className="text-sm text-gray-600">Déduits à partir des villes</p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+              </div>
+              {geographicAnalysis.countries.length > 0 ? (
+                <BarChart 
+                  data={geographicAnalysis.countries.slice(0, 10)} 
+                  maxValue={Math.max(...geographicAnalysis.countries.slice(0, 10).map(c => c.count))}
+                  color="bg-green-600"
+                />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Aucune donnée de pays disponible</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Deuxième ligne - Top villes et professions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Top villes */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-[#012F4E] mb-1">Top 10 villes</h3>
+                  <p className="text-sm text-gray-600">Villes les plus représentées</p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+              </div>
+              {geographicAnalysis.cities.length > 0 ? (
+                <BarChart 
+                  data={geographicAnalysis.cities} 
+                  maxValue={Math.max(...geographicAnalysis.cities.map(c => c.count))}
+                  color="bg-purple-600"
+                />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Aucune donnée de ville disponible</p>
+                </div>
+              )}
+            </div>
+
+            {/* Répartition des professions */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-[#012F4E] mb-1">Top 10 professions</h3>
+                  <p className="text-sm text-gray-600">Métiers les plus représentés</p>
+                </div>
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              {professionAnalysis.length > 0 ? (
+                <BarChart 
+                  data={professionAnalysis.slice(0, 10)} 
+                  maxValue={Math.max(...professionAnalysis.slice(0, 10).map(p => p.count))}
+                  color="bg-orange-600"
+                />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Aucune donnée de profession disponible</p>
+                </div>
+              )}
             </div>
           </div>
         </main>

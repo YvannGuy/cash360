@@ -1,69 +1,114 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, Suspense } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientBrowser } from '@/lib/supabase'
 import { analysisService, type AnalysisRecord, capsulesService } from '@/lib/database'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCart } from '@/lib/CartContext'
+import { useCurrency } from '@/lib/CurrencyContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
+import CurrencySelector from '@/components/CurrencySelector'
 import LegalModal from '@/components/LegalModal'
+import AnalysisCard from '@/components/AnalysisCard'
+import DashboardOnboarding from '@/components/DashboardOnboarding'
 
 function DashboardPageContent() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { cartItems, addToCart, removeFromCart, getSubtotal } = useCart()
+  const { format: formatPrice, currency: currentCurrency } = useCurrency()
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [analyses, setAnalyses] = useState<AnalysisRecord[]>([])
-  const [activeTab, setActiveTab] = useState<'analyses' | 'boutique' | 'formations'>('analyses')
-  const [availableCapsules] = useState(() => ([
+  const [userAnalyses, setUserAnalyses] = useState<AnalysisRecord[]>([])
+  const [activeTab, setActiveTab] = useState<'boutique' | 'formations'>('boutique')
+  
+  // Capsules prédéfinies - utiliser les traductions
+  const availableCapsules = useMemo(() => [
     {
       id: 'capsule1',
-      title: "L'éducation financière",
+      title: t.dashboard.capsules.capsule1.title,
       img: '/images/logo/capsule1.jpg',
-      blurb: "Tout ce qu'il faut savoir sur l'argent et la gestion."
+      blurb: t.dashboard.capsules.capsule1.blurb
     },
     {
       id: 'capsule2',
-      title: 'La mentalité de pauvreté',
+      title: t.dashboard.capsules.capsule2.title,
       img: '/images/logo/capsule2.jpg',
-      blurb: 'Briser les limites intérieures et changer de mindset.'
+      blurb: t.dashboard.capsules.capsule2.blurb
     },
     {
       id: 'capsule3',
-      title: "Les lois spirituelles liées à l'argent",
+      title: t.dashboard.capsules.capsule3.title,
       img: '/images/logo/capsule3.jpg',
-      blurb: 'Principes et lois qui gouvernent la prospérité.'
+      blurb: t.dashboard.capsules.capsule3.blurb
     },
     {
       id: 'capsule4',
-      title: 'Les combats liés à la prospérité',
+      title: t.dashboard.capsules.capsule4.title,
       img: '/images/logo/capsule4.jpg',
-      blurb: 'Identifier et vaincre les résistances à la prospérité.'
+      blurb: t.dashboard.capsules.capsule4.blurb
     },
     {
       id: 'capsule5',
-      title: 'Épargne et Investissement',
+      title: t.dashboard.capsules.capsule5.title,
       img: '/images/logo/capsule5.jpg',
-      blurb: "Faire fructifier ton argent et préparer l'avenir."
+      blurb: t.dashboard.capsules.capsule5.blurb
     }
-  ]))
+  ], [t])
+
+  // Fonction helper pour obtenir le nom traduit d'un produit
+  const getProductName = useCallback((product: any): string => {
+    if (!product) return ''
+    // Si c'est une capsule prédéfinie, utiliser les traductions depuis availableCapsules
+    const predefinedCapsule = availableCapsules.find((c: any) => c.id === product.id)
+    if (predefinedCapsule) return predefinedCapsule.title
+    
+    // Sinon, utiliser les traductions multilingues selon la langue
+    switch (language) {
+      case 'en':
+        return product.name_en || product.name_fr || product.name || ''
+      case 'es':
+        return product.name_es || product.name_fr || product.name || ''
+      case 'pt':
+        return product.name_pt || product.name_fr || product.name || ''
+      default:
+        return product.name_fr || product.name || ''
+    }
+  }, [availableCapsules, language])
+
+  // Fonction helper pour obtenir la description traduite d'un produit
+  const getProductDescription = useCallback((product: any): string => {
+    if (!product) return ''
+    // Si c'est une capsule prédéfinie, utiliser les traductions depuis availableCapsules
+    const predefinedCapsule = availableCapsules.find((c: any) => c.id === product.id)
+    if (predefinedCapsule) return predefinedCapsule.blurb
+    
+    // Sinon, utiliser les traductions multilingues selon la langue
+    switch (language) {
+      case 'en':
+        return product.description_en || product.description_fr || product.description || ''
+      case 'es':
+        return product.description_es || product.description_fr || product.description || ''
+      case 'pt':
+        return product.description_pt || product.description_fr || product.description || ''
+      default:
+        return product.description_fr || product.description || ''
+    }
+  }, [availableCapsules, language])
   
   const [boutiqueCapsules, setBoutiqueCapsules] = useState<any[]>([])
   const [allProducts, setAllProducts] = useState<any[]>([]) // Tous les produits (y compris non disponibles) pour les formations
-  const [selectedCapsules, setSelectedCapsules] = useState<string[]>([])
   const [userCapsules, setUserCapsules] = useState<string[]>([])
+  const [userOrders, setUserOrders] = useState<any[]>([]) // Stocker les commandes pour vérifier le statut
   const [formationsData, setFormationsData] = useState<any[]>([])
   const [searchBoutique, setSearchBoutique] = useState('')
   const [searchFormations, setSearchFormations] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('capsules') // Catégorie sélectionnée dans la boutique
   const [selectedCategoryAchats, setSelectedCategoryAchats] = useState<string>('capsules') // Catégorie sélectionnée dans Mes achats
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const [hasPaidAnalysis, setHasPaidAnalysis] = useState(false)
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [legalModalOpen, setLegalModalOpen] = useState(false)
@@ -71,11 +116,9 @@ function DashboardPageContent() {
   const [showCartDropdown, setShowCartDropdown] = useState(false)
   
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1)
   const [currentPageBoutique, setCurrentPageBoutique] = useState(1)
   const [currentPageFormations, setCurrentPageFormations] = useState(1)
   const itemsPerPage = 6
-  const analysesPerPage = 6
   const formationsPerPage = 3
   
   const [supabase, setSupabase] = useState<any>(null)
@@ -104,8 +147,24 @@ function DashboardPageContent() {
     return localPart.substring(0, 2).toUpperCase()
   }
 
-  // Fonction pour extraire un prénom depuis l'email
-  const getFirstNameFromEmail = (email: string | undefined): string => {
+  // Fonction pour obtenir le nom d'affichage de l'utilisateur
+  const getUserDisplayName = (user: any): string => {
+    if (!user) return ''
+    
+    // Utiliser le prénom et nom depuis user_metadata
+    const firstName = user.user_metadata?.first_name || ''
+    const lastName = user.user_metadata?.last_name || ''
+    
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`
+    } else if (firstName) {
+      return firstName
+    } else if (lastName) {
+      return lastName
+    }
+    
+    // Fallback sur l'email si pas de nom/prénom
+    const email = user.email || ''
     if (!email) return 'bienvenue'
     const localPart = email.split('@')[0] // Partie avant @
     const parts = localPart.split('.') // Séparer par les points
@@ -118,11 +177,6 @@ function DashboardPageContent() {
     return localPart.substring(0, 1).toUpperCase() + localPart.substring(1, 2)
   }
 
-  // Calculs de pagination pour Analyses
-  const totalPagesAnalyses = Math.ceil(analyses.length / analysesPerPage)
-  const startIndexAnalyses = (currentPage - 1) * analysesPerPage
-  const endIndexAnalyses = startIndexAnalyses + analysesPerPage
-  const currentAnalyses = analyses.slice(startIndexAnalyses, endIndexAnalyses)
 
   // Filtrage des produits de la boutique par catégorie et recherche
   // Vérifier si les catégories ebook et abonnement ont des produits
@@ -172,20 +226,172 @@ function DashboardPageContent() {
   // Les APIs de paiement ont déjà filtré selon appears_in_formations et exclu "analyse-financiere"
   // On affiche donc directement ce qui est dans userCapsules
   const filteredFormations = useMemo(() => {
-    if (!userCapsules || userCapsules.length === 0) {
-      return []
-    }
-    
     const result: any[] = []
     
-    // Pour chaque capsule/produit dans userCapsules (déjà filtré par les APIs)
-    for (const capsuleId of userCapsules) {
+    // Fonction pour obtenir le statut d'une commande
+    const getOrderStatus = (productId: string) => {
+      const order = userOrders.find((o: any) => o.product_id === productId && o.status === 'pending_review')
+      if (order) {
+        return { status: 'pending_review', paymentMethod: order.payment_method }
+      }
+      return null
+    }
+    
+    // D'abord, créer une carte pour chaque analyse financière
+    // Chaque analyse a son propre ticket et statut
+    let produitAnalyse = allProducts.find(p => p.id === 'analyse-financiere')
+    
+    if (!produitAnalyse) {
+      console.warn('[FILTERED_FORMATIONS] ⚠️ Produit "analyse-financiere" non trouvé dans allProducts, utilisation des valeurs par défaut')
+      // Valeurs par défaut pour le produit analyse-financiere
+      produitAnalyse = {
+        id: 'analyse-financiere',
+        title: 'Analyse financière personnalisée',
+        img: '/images/Firefly-2.jpg',
+        blurb: 'Analyse complète de votre situation financière',
+        category: 'analyse-financiere'
+      }
+    }
+    
+    // Vérifier si l'utilisateur a payé pour une analyse financière
+    const hasAnalysisPayment = userCapsules?.includes('analyse-financiere') || 
+                               userOrders.some((o: any) => o.product_id === 'analyse-financiere')
+    
+    // TOUJOURS afficher les analyses existantes, même si hasAnalysisPayment est false
+    // (car une analyse peut exister sans être dans userCapsules ou userOrders)
+    if (userAnalyses.length > 0) {
+      // Créer une carte pour chaque analyse existante
+      for (const analysis of userAnalyses) {
+        // Si l'analyse existe déjà, c'est qu'elle a été validée (pas de commande en attente)
+        // orderStatus reste null pour toutes les analyses existantes
+        // (l'état "en attente" est géré par AnalysisCard en fonction de la présence de fichiers)
+        const card = {
+          id: `analyse-${analysis.id}`, // ID unique pour chaque analyse
+          analysisId: analysis.id, // Garder une référence à l'ID de l'analyse
+          ticket: analysis.ticket,
+          title: produitAnalyse?.title || 'Analyse financière',
+          img: produitAnalyse?.img || '/images/pack.png',
+          blurb: produitAnalyse?.blurb || 'Analyse complète de votre situation financière',
+          category: 'analyse-financiere',
+          pdfUrl: null,
+          orderStatus: null, // Analyse existante = déjà validée, pas d'attente
+          analysis: analysis // Passer l'analyse complète pour AnalysisCard
+        }
+        result.push(card)
+      }
+    }
+    
+    // Ensuite, créer des cartes pour les paiements qui n'ont pas encore d'analyse
+    if (hasAnalysisPayment) {
+      
+      // Créer une carte pour chaque commande Mobile Money en attente qui n'a pas encore d'analyse
+      // (c'est-à-dire les commandes pending_review qui n'ont pas encore été validées par l'admin)
+      const pendingMobileMoneyOrders = userOrders.filter((o: any) => 
+        o.product_id === 'analyse-financiere' && 
+        o.status === 'pending_review' &&
+        o.payment_method === 'mobile_money'
+      )
+      
+      // AUSSI vérifier les commandes Mobile Money validées (paid) qui n'ont pas encore d'analyse
+      // (au cas où l'analyse n'a pas encore été créée ou récupérée)
+      const paidMobileMoneyOrders = userOrders.filter((o: any) => 
+        o.product_id === 'analyse-financiere' && 
+        o.status === 'paid' &&
+        o.payment_method === 'mobile_money'
+      )
+      
+      // Compter combien d'analyses Mobile Money existent déjà
+      const mobileMoneyAnalysesCount = userAnalyses.filter((a: any) => 
+        a.mode_paiement === 'Mobile Money' || a.mode_paiement === 'mobile_money'
+      ).length
+      
+      // Pour les commandes en attente (pending_review)
+      if (pendingMobileMoneyOrders.length > 0) {
+        // Créer une carte pour chaque commande en attente qui n'a pas encore d'analyse
+        const pendingCount = pendingMobileMoneyOrders.length - mobileMoneyAnalysesCount
+        
+        if (pendingCount > 0) {
+          for (let i = 0; i < pendingCount; i++) {
+            const pendingOrder = pendingMobileMoneyOrders[i]
+            result.push({
+              id: `analyse-pending-${pendingOrder.id}`, // ID unique basé sur l'ID de la commande
+              analysisId: null, // Pas encore d'analyse créée
+              ticket: null,
+              title: produitAnalyse?.title || 'Analyse financière',
+              img: produitAnalyse?.img || '/images/pack.png',
+              blurb: produitAnalyse?.blurb || 'Analyse complète de votre situation financière',
+              category: 'analyse-financiere',
+              pdfUrl: null,
+              orderStatus: { 
+                status: 'pending_review', 
+                paymentMethod: 'mobile_money' 
+              },
+              analysis: null // Pas encore d'analyse créée
+            })
+          }
+        }
+      }
+      
+      // Pour les commandes validées (paid) qui n'ont pas encore d'analyse correspondante
+      // (l'analyse devrait être créée mais peut-être pas encore récupérée, ou en cours de création)
+      if (paidMobileMoneyOrders.length > mobileMoneyAnalysesCount) {
+        const paidCount = paidMobileMoneyOrders.length - mobileMoneyAnalysesCount
+        
+        for (let i = 0; i < paidCount; i++) {
+          const paidOrder = paidMobileMoneyOrders[i]
+          result.push({
+            id: `analyse-paid-${paidOrder.id}`, // ID unique basé sur l'ID de la commande
+            analysisId: null, // Analyse en cours de création ou pas encore récupérée
+            ticket: null,
+            title: produitAnalyse?.title || 'Analyse financière',
+            img: produitAnalyse?.img || '/images/pack.png',
+            blurb: produitAnalyse?.blurb || 'Analyse complète de votre situation financière',
+            category: 'analyse-financiere',
+            pdfUrl: null,
+            orderStatus: null, // Commande validée, pas d'attente de validation
+            analysis: null // Analyse en cours de création ou pas encore récupérée
+          })
+        }
+      }
+      
+      // Si paiement Stripe existe mais pas encore d'analyse créée (webhook en retard)
+      // Créer une carte temporaire pour permettre l'upload
+      const hasStripePayment = userOrders.some((o: any) => 
+        o.product_id === 'analyse-financiere' && 
+        (o.payment_method === 'stripe' || o.payment_method === 'Stripe')
+      ) || userCapsules?.includes('analyse-financiere')
+      
+      if (hasStripePayment && userAnalyses.length === 0) {
+        // Pas encore d'analyse créée pour Stripe
+        result.push({
+          id: 'analyse-financiere-stripe-pending',
+          analysisId: null,
+          ticket: null,
+          title: produitAnalyse?.title || 'Analyse financière',
+          img: produitAnalyse?.img || '/images/pack.png',
+          blurb: produitAnalyse?.blurb || 'Analyse complète de votre situation financière',
+          category: 'analyse-financiere',
+          pdfUrl: null,
+          orderStatus: null, // Stripe est déjà payé, pas d'attente
+          analysis: null // Pas encore d'analyse créée
+        })
+      }
+    }
+    
+    // Ensuite, traiter les autres produits (en excluant analyse-financiere de userCapsules)
+    const otherCapsules = (userCapsules || []).filter((id: string) => id !== 'analyse-financiere')
+    
+    if (otherCapsules.length > 0) {
+      for (const capsuleId of otherCapsules) {
+        const orderStatus = getOrderStatus(capsuleId)
+      
       // 1. Chercher d'abord dans les capsules prédéfinies (capsule1-5)
       const capsulePredefinie = availableCapsules.find(c => c.id === capsuleId)
       if (capsulePredefinie) {
         result.push({
           ...capsulePredefinie,
-          category: 'capsules' // Les capsules prédéfinies vont dans "Capsules"
+          category: 'capsules', // Les capsules prédéfinies vont dans "Capsules"
+          orderStatus: orderStatus
         })
         continue
       }
@@ -199,7 +405,8 @@ function DashboardPageContent() {
            img: produit.img,
            blurb: produit.blurb || '',
            category: produit.category || 'capsules', // Récupérer la catégorie du produit depuis la boutique
-           pdfUrl: (produit as any).pdf_url || null // URL du PDF pour ebook
+           pdfUrl: (produit as any).pdf_url || null, // URL du PDF pour ebook
+           orderStatus: orderStatus
          })
          continue
        }
@@ -215,7 +422,8 @@ function DashboardPageContent() {
            img: '/images/pack.png',
            blurb: formation.description || '',
            category: produitFromAll?.category || 'capsules', // Récupérer la catégorie du produit depuis la boutique
-           pdfUrl: (produitFromAll as any)?.pdf_url || null // URL du PDF pour ebook
+           pdfUrl: (produitFromAll as any)?.pdf_url || null, // URL du PDF pour ebook
+           orderStatus: orderStatus
          })
          continue
        }
@@ -227,23 +435,20 @@ function DashboardPageContent() {
         title: capsuleId,
         img: '/images/pack.png',
         blurb: '',
-        category: 'capsules' // Par défaut
+        category: 'capsules', // Par défaut
+        orderStatus: orderStatus
       })
+      }
     }
     
     return result
-  }, [userCapsules, allProducts, availableCapsules, formationsData])
+  }, [userCapsules, allProducts, availableCapsules, formationsData, userOrders, userAnalyses])
 
   // Filtrage des achats par catégorie et recherche
   // Les produits gardent leur catégorie de la boutique
-  // Exclure explicitement les produits d'analyse financière
   const filteredFormationsByCategory = useMemo(() => {
     return filteredFormations.filter(item => {
       const itemCategory = (item as any).category || 'capsules'
-      // Exclure les produits d'analyse financière
-      if (itemCategory === 'analyse-financiere' || item.id === 'analyse-financiere') {
-        return false
-      }
       return itemCategory === selectedCategoryAchats
     })
   }, [filteredFormations, selectedCategoryAchats])
@@ -267,27 +472,70 @@ function DashboardPageContent() {
   const endIndexFormations = startIndexFormations + formationsPerPage
   const currentFormations = filteredFormationsBySearch.slice(startIndexFormations, endIndexFormations)
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handlePageChangeBoutique = (page: number) => {
-    setCurrentPageBoutique(page)
-  }
-
-  const handlePageChangeFormations = (page: number) => {
-    setCurrentPageFormations(page)
-  }
-
   useEffect(() => {
     setMounted(true)
     // Initialiser Supabase côté client uniquement
     setSupabase(createClientBrowser())
   }, [])
+  
+  // Recharger périodiquement les analyses et commandes pour détecter les nouveaux achats et validations
+  useEffect(() => {
+    if (!supabase || !user) return
+    
+    // Recharger les analyses et commandes toutes les 10 secondes (plus fréquent pour détecter plus vite)
+    const interval = setInterval(async () => {
+      try {
+        // Recharger les analyses
+        const analyses = await analysisService.getAnalysesByUser()
+        
+        setUserAnalyses(prevAnalyses => {
+          // Ne mettre à jour que si le nombre a changé ou si les IDs sont différents
+          const prevIds = new Set(prevAnalyses.map((a: any) => a.id))
+          const hasNewAnalyses = analyses.some((a: any) => !prevIds.has(a.id))
+          
+          // Vérifier aussi si le mode_paiement a changé (nouvelle analyse Mobile Money)
+          const prevMobileMoneyCount = prevAnalyses.filter((a: any) => 
+            a.mode_paiement === 'Mobile Money' || a.mode_paiement === 'mobile_money'
+          ).length
+          const newMobileMoneyCount = analyses.filter((a: any) => 
+            a.mode_paiement === 'Mobile Money' || a.mode_paiement === 'mobile_money'
+          ).length
+          
+          if (hasNewAnalyses || analyses.length !== prevAnalyses.length || prevMobileMoneyCount !== newMobileMoneyCount) {
+            return analyses
+          }
+          return prevAnalyses
+        })
+        
+        // Recharger aussi les commandes pour détecter les changements de statut (pending_review → paid)
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('orders')
+          .select('id, product_id, status, payment_method, created_at, validated_at')
+          .eq('user_id', user.id)
+          .in('status', ['pending_review', 'paid'])
+        
+        if (!ordersError && ordersData) {
+          setUserOrders(prevOrders => {
+            // Vérifier si le nombre ou les statuts ont changé
+            const prevPendingCount = prevOrders.filter((o: any) => o.status === 'pending_review' && o.product_id === 'analyse-financiere').length
+            const newPendingCount = ordersData.filter((o: any) => o.status === 'pending_review' && o.product_id === 'analyse-financiere').length
+            
+            if (prevPendingCount !== newPendingCount || ordersData.length !== prevOrders.length) {
+              return ordersData
+            }
+            return prevOrders
+          })
+        }
+      } catch (error) {
+        console.error('Erreur rechargement périodique analyses/commandes:', error)
+      }
+    }, 10000) // Toutes les 10 secondes (au lieu de 30)
+    
+    return () => clearInterval(interval)
+  }, [supabase, user])
 
   // Réinitialiser les pages et la recherche lors du changement d'onglet
   useEffect(() => {
-    setCurrentPage(1)
     setCurrentPageBoutique(1)
     setCurrentPageFormations(1)
     setSearchBoutique('')
@@ -332,7 +580,36 @@ function DashboardPageContent() {
         }
         setUser(user)
         if (Array.isArray(userAnalyses)) {
-          setAnalyses(userAnalyses as AnalysisRecord[])
+          setUserAnalyses(userAnalyses as AnalysisRecord[])
+        }
+        
+        // Envoyer l'email de bienvenue lors de la première connexion au dashboard
+        // Vérifier si l'email a déjà été envoyé (via localStorage pour éviter les appels multiples)
+        const welcomeEmailSent = localStorage.getItem(`welcome_email_sent_${user.id}`)
+        if (!welcomeEmailSent && user.id) {
+          try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session?.access_token) {
+              const response = await fetch('/api/welcome-email', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.access_token}`
+                }
+              })
+              
+              if (response.ok) {
+                // Marquer comme envoyé dans localStorage pour éviter les appels multiples
+                localStorage.setItem(`welcome_email_sent_${user.id}`, 'true')
+              } else {
+                const errorData = await response.json()
+                console.error('[DASHBOARD] ❌ Erreur envoi email de bienvenue:', errorData)
+              }
+            }
+          } catch (emailError) {
+            console.error('[DASHBOARD] ❌ Erreur envoi email de bienvenue:', emailError)
+            // Ne pas bloquer le chargement si l'email échoue
+          }
         }
         // Charger TOUS les produits (y compris non disponibles) pour les formations
         const { data: allProductsData } = await supabase
@@ -345,41 +622,91 @@ function DashboardPageContent() {
           const adaptedProducts = allProductsData
             .filter((p: any) => p.available !== false)
             .map((p: any) => {
-              // Si c'est une capsule prédéfinie (capsule1-5), utiliser le titre et blurb depuis availableCapsules
-              const predefinedCapsule = availableCapsules.find((c: any) => c.id === p.id)
+              // Utiliser les traductions multilingues
               return {
                 id: p.id,
-                title: predefinedCapsule ? predefinedCapsule.title : p.name,
+                title: getProductName(p),
                 img: p.image_url || '/images/pack.png',
-                blurb: predefinedCapsule ? predefinedCapsule.blurb : (p.description || ''),
+                blurb: getProductDescription(p),
                 price: parseFloat(p.price),
                 originalPrice: p.original_price ? parseFloat(p.original_price) : undefined,
                 isPack: p.is_pack,
                 isOneTime: p.is_one_time !== false,
-                category: p.category || 'capsules' // Ajouter la catégorie du produit
+                category: p.category || 'capsules', // Ajouter la catégorie du produit
+                _originalProduct: p // Garder une référence au produit original pour les traductions
               }
             })
           setBoutiqueCapsules(adaptedProducts)
           
           // Stocker TOUS les produits (y compris non disponibles) pour les achats
           const allProductsForFormations = allProductsData.map((p: any) => {
-            // Si c'est une capsule prédéfinie (capsule1-5), utiliser le titre et blurb depuis availableCapsules
-            const predefinedCapsule = availableCapsules.find((c: any) => c.id === p.id)
+            // Utiliser les traductions multilingues
             return {
               id: p.id,
-              title: predefinedCapsule ? predefinedCapsule.title : p.name,
+              title: getProductName(p),
               img: p.image_url || '/images/pack.png',
-              blurb: predefinedCapsule ? predefinedCapsule.blurb : (p.description || ''),
+              blurb: getProductDescription(p),
               category: p.category || 'capsules', // Ajouter la catégorie du produit depuis la boutique
-              pdf_url: p.pdf_url || null // URL du PDF pour ebook
+              pdf_url: p.pdf_url || null, // URL du PDF pour ebook
+              _originalProduct: p // Garder une référence au produit original pour les traductions
             }
           })
           setAllProducts(allProductsForFormations)
+          
+          // Vérifier si analyse-financiere est présent
+          const analyseProduct = allProductsForFormations.find((p: any) => p.id === 'analyse-financiere')
+          if (!analyseProduct) {
+            console.warn('[DASHBOARD] ⚠️ Produit "analyse-financiere" NON trouvé dans allProducts')
+          }
+        } else {
+          console.warn('[DASHBOARD] ⚠️ Aucun produit chargé depuis la base de données')
         }
         
-        // Charger capsules utilisateur
+        // Charger capsules utilisateur depuis user_capsules
         const myCaps = await capsulesService.getUserCapsules().catch(() => [])
-        const capsuleIds = Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : []
+        let capsuleIds = Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : []
+        
+        // Charger aussi les commandes depuis orders (pour inclure les commandes mobile money en attente)
+        // Inclure les statuts pending_review (en attente de validation) et paid (payées)
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('orders')
+          .select('id, product_id, status, payment_method, created_at, validated_at')
+          .eq('user_id', user.id)
+          .in('status', ['pending_review', 'paid'])
+        
+        if (ordersError) {
+          console.error('Erreur chargement commandes:', ordersError)
+        } else if (ordersData && ordersData.length > 0) {
+          // Stocker les commandes complètes pour vérifier le statut plus tard
+          setUserOrders(ordersData)
+          
+          // Ajouter les product_id des commandes qui ne sont pas déjà dans capsuleIds
+          const orderProductIds = ordersData
+            .map((o: any) => o.product_id)
+            .filter((productId: string) => productId && productId !== 'abonnement')
+          
+          // Fusionner sans doublons
+          const allProductIds = [...new Set([...capsuleIds, ...orderProductIds])]
+          capsuleIds = allProductIds
+        } else {
+          setUserOrders([])
+        }
+        
+        // Vérifier si l'utilisateur a payé pour une analyse financière
+        // Rechercher les paiements pour analyse-financiere OU payment_type = 'analysis'
+        // Utiliser une requête plus large pour être sûr de trouver les paiements
+        const { data: paymentAnalysis, error: paymentError } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'success')
+          .or('product_id.eq.analyse-financiere,product_id.ilike.%analyse-financiere%,payment_type.eq.analysis')
+        
+        // Ajouter "analyse-financiere" aux capsules si l'utilisateur a payé
+        if (paymentAnalysis && paymentAnalysis.length > 0 && !capsuleIds.includes('analyse-financiere')) {
+          capsuleIds = [...capsuleIds, 'analyse-financiere']
+        }
+        
         setUserCapsules(capsuleIds)
         
         // Charger formations pour ces capsules (capsules prédéfinies ET produits de la boutique)
@@ -394,61 +721,18 @@ function DashboardPageContent() {
           setFormationsData([])
         }
         
-        // Vérifier si l'utilisateur a payé pour une analyse financière
-        // Rechercher les paiements pour analyse-financiere OU payment_type = 'analysis'
-        // Utiliser une requête plus large pour être sûr de trouver les paiements
-        const { data: paymentAnalysis, error: paymentError } = await supabase
-          .from('payments')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'success')
-          .or('product_id.eq.analyse-financiere,product_id.ilike.%analyse-financiere%,payment_type.eq.analysis')
-        
         if (paymentError) {
           console.error('Erreur vérification paiements analyse:', paymentError)
         }
         
-        const nbPayments = paymentAnalysis?.length || 0
-        const nbAnalyses = userAnalyses?.length || 0
-        
-        // L'utilisateur peut lancer une analyse s'il a plus de paiements que d'analyses créées
-        // Par exemple : 3 paiements = 3 analyses possibles, si 1 analyse créée = 2 restantes
-        const canLaunch = nbPayments > nbAnalyses
-        
-        console.log('Vérification analyse financière:', {
-          userId: user.id,
-          nbPayments,
-          nbAnalyses,
-          canLaunch,
-          payments: paymentAnalysis?.map((p: any) => ({ 
-            id: p.id, 
-            product_id: p.product_id, 
-            payment_type: p.payment_type,
-            amount: p.amount,
-            transaction_id: p.transaction_id,
-            created_at: p.created_at
-          })),
-          analyses: userAnalyses?.map(a => ({ id: a.id, created_at: a.created_at }))
-        })
-        
-        // Debug supplémentaire si pas de paiements trouvés
-        if (nbPayments === 0) {
-          console.log('⚠️ Aucun paiement trouvé pour analyse financière. Vérification de tous les paiements:')
-          const { data: allPayments } = await supabase
-            .from('payments')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'success')
-          
-          console.log('Tous les paiements de l\'utilisateur:', allPayments?.map((p: any) => ({
-            id: p.id,
-            product_id: p.product_id,
-            payment_type: p.payment_type,
-            transaction_id: p.transaction_id
-          })))
+        // Charger les analyses de l'utilisateur
+        try {
+          const analyses = await analysisService.getAnalysesByUser()
+          setUserAnalyses(analyses)
+        } catch (error) {
+          console.error('Erreur chargement analyses:', error)
+          setUserAnalyses([])
         }
-        
-        setHasPaidAnalysis(canLaunch)
       } catch (e) {
         console.error('Erreur init dashboard:', e)
       } finally {
@@ -463,49 +747,96 @@ function DashboardPageContent() {
     return () => {
       cancelled = true
     }
-  }, [supabase, router])
+  }, [supabase, router, availableCapsules, getProductName, getProductDescription])
 
-  // Rafraîchir les analyses et la vérification des paiements quand on change d'onglet
-  useEffect(() => {
-    if (supabase && user && activeTab === 'analyses') {
-      loadAnalyses()
+  // Fonction pour recharger les analyses après upload
+  const [refreshingAnalyses, setRefreshingAnalyses] = useState(false)
+
+  const reloadAnalyses = useCallback(async () => {
+    setRefreshingAnalyses(true)
+    if (supabase && user) {
+      try {
+        const analyses = await analysisService.getAnalysesByUser()
+        setUserAnalyses(analyses)
+      } catch (error) {
+        console.error('Erreur rechargement analyses:', error)
+      } finally {
+        setRefreshingAnalyses(false)
+      }
+    } else {
+      setRefreshingAnalyses(false)
     }
-  }, [supabase, user, activeTab])
+  }, [supabase, user])
 
   // Rafraîchir après un paiement réussi
   useEffect(() => {
     if (searchParams?.get('payment') === 'success' && supabase && user) {
-      // Attendre un peu pour que les paiements soient bien enregistrés
-      setTimeout(async () => {
-        // Recharger toutes les données
-        await loadAnalyses()
+      // Attendre un peu plus longtemps pour que l'API verify-payment ait créé l'analyse
+      const refreshData = async () => {
+        // Recharger les analyses avec polling régulier
+        let attemptCount = 0
+        const maxAttempts = 15 // Poller jusqu'à 15 fois (30 secondes au total)
+        let previousCount = userAnalyses.length
         
-        // Recharger les capsules achetées (inclut maintenant packs et ebooks)
+        const loadAnalyses = async () => {
+          try {
+            const analyses = await analysisService.getAnalysesByUser()
+            const currentCount = analyses.length
+            setUserAnalyses(analyses)
+            
+            // Si une nouvelle analyse a été détectée, on peut arrêter le polling
+            if (currentCount > previousCount) {
+              previousCount = currentCount
+              // On continue quand même quelques tentatives pour être sûr
+            }
+            
+            // Continuer le polling jusqu'à maxAttempts
+            attemptCount++
+            if (attemptCount < maxAttempts) {
+              setTimeout(() => loadAnalyses(), 2000)
+            }
+          } catch (error) {
+            console.error('Erreur rechargement analyses:', error)
+            attemptCount++
+            if (attemptCount < maxAttempts) {
+              setTimeout(() => loadAnalyses(), 2000)
+            }
+          }
+        }
+        
+        // Démarrer le polling après 1 seconde pour laisser le temps à l'API verify-payment
+        setTimeout(() => loadAnalyses(), 1000)
+        
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        
+        // Recharger les capsules achetées depuis user_capsules
         const { data: capsulesData } = await supabase
           .from('user_capsules')
           .select('capsule_id')
           .eq('user_id', user.id)
         
-        const userCapsulesIds = capsulesData?.map((c: any) => c.capsule_id) || []
-        setUserCapsules(userCapsulesIds)
-        console.log('[RAFRAÎCHISSEMENT] Capsules/Packs/Ebooks achetés après paiement:', userCapsulesIds)
+        let userCapsulesIds = capsulesData?.map((c: any) => c.capsule_id) || []
         
-        // Recharger aussi les produits pour mettre à jour filteredFormations
-        const { data: allProductsData } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: true })
+        // Charger aussi les commandes depuis orders (pour inclure les commandes mobile money en attente)
+        const { data: ordersData } = await supabase
+          .from('orders')
+          .select('id, product_id, status, payment_method, created_at, validated_at')
+          .eq('user_id', user.id)
+          .in('status', ['pending_review', 'paid'])
         
-        if (allProductsData) {
-          const allProductsForFormations = allProductsData.map((p: any) => ({
-            id: p.id,
-            title: p.name,
-            img: p.image_url || '/images/pack.png',
-            blurb: p.description || '',
-            category: p.category || 'capsules',
-            pdf_url: p.pdf_url || null
-          }))
-          setAllProducts(allProductsForFormations)
+        if (ordersData && ordersData.length > 0) {
+          // Stocker les commandes complètes pour vérifier le statut plus tard
+          setUserOrders(ordersData)
+          
+          // Ajouter les product_id des commandes qui ne sont pas déjà dans userCapsulesIds
+          const orderProductIds = ordersData
+            .map((o: any) => o.product_id)
+            .filter((productId: string) => productId && productId !== 'abonnement')
+          
+          // Fusionner sans doublons
+          userCapsulesIds = [...new Set([...userCapsulesIds, ...orderProductIds])]
+        } else {
+          setUserOrders([])
         }
         
         // Rafraîchir aussi la vérification des paiements pour l'analyse financière
@@ -517,18 +848,35 @@ function DashboardPageContent() {
           .eq('status', 'success')
           .or('product_id.eq.analyse-financiere,product_id.ilike.%analyse-financiere%,payment_type.eq.analysis')
         
-        const nbPayments = paymentAnalysis?.length || 0
-        const userAnalyses = await analysisService.getAnalysesByUser().catch(() => [])
-        const nbAnalyses = userAnalyses?.length || 0
-        const canLaunch = nbPayments > nbAnalyses
+        // Ajouter "analyse-financiere" aux capsules si l'utilisateur a payé
+        if (paymentAnalysis && paymentAnalysis.length > 0 && !userCapsulesIds.includes('analyse-financiere')) {
+          userCapsulesIds = [...userCapsulesIds, 'analyse-financiere']
+        }
         
-        console.log('[RAFRAÎCHISSEMENT] Après paiement:', { 
-          nbPayments, 
-          nbAnalyses, 
-          canLaunch,
-          capsules: userCapsulesIds.length
-        })
-        setHasPaidAnalysis(canLaunch)
+        setUserCapsules(userCapsulesIds)
+        console.log('[RAFRAÎCHISSEMENT] Capsules/Packs/Ebooks achetés après paiement:', userCapsulesIds)
+        
+        // Recharger aussi les produits pour mettre à jour filteredFormations
+        const { data: allProductsData } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: true })
+        
+        if (allProductsData) {
+          const allProductsForFormations = allProductsData.map((p: any) => {
+            // Utiliser les traductions multilingues
+            return {
+              id: p.id,
+              title: getProductName(p),
+              img: p.image_url || '/images/pack.png',
+              blurb: getProductDescription(p),
+              category: p.category || 'capsules',
+              pdf_url: p.pdf_url || null,
+              _originalProduct: p // Garder une référence au produit original pour les traductions
+            }
+          })
+          setAllProducts(allProductsForFormations)
+        }
         
         // Recharger les produits de la boutique pour mettre à jour filteredFormations
         // Cela va déclencher le recalcul de filteredFormations via useMemo
@@ -540,28 +888,34 @@ function DashboardPageContent() {
         
         if (boutiqueProductsData) {
           const adaptedProducts = boutiqueProductsData.map((p: any) => {
-            // Si c'est une capsule prédéfinie (capsule1-5), utiliser le titre et blurb depuis availableCapsules
-            const predefinedCapsule = availableCapsules.find((c: any) => c.id === p.id)
+            // Utiliser les traductions multilingues
             return {
               id: p.id,
-              title: predefinedCapsule ? predefinedCapsule.title : p.name,
+              title: getProductName(p),
               img: p.image_url || '/images/pack.png',
-              blurb: predefinedCapsule ? predefinedCapsule.blurb : (p.description || ''),
+              blurb: getProductDescription(p),
               price: parseFloat(p.price),
               originalPrice: p.original_price ? parseFloat(p.original_price) : undefined,
               isPack: p.is_pack,
               isOneTime: p.is_one_time !== false,
-              category: p.category || 'capsules'
+              category: p.category || 'capsules',
+              _originalProduct: p // Garder une référence au produit original pour les traductions
             }
           })
           setBoutiqueCapsules(adaptedProducts)
         }
-        
-        // Nettoyer l'URL
+      }
+      
+      // Appeler refreshData immédiatement
+      refreshData()
+      
+      // Nettoyer l'URL après un délai
+      setTimeout(() => {
         router.replace('/dashboard')
-      }, 3000) // Augmenter à 3 secondes pour laisser le temps au webhook
+      }, 3000)
     }
-  }, [searchParams, supabase, user, router])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, supabase, user, router, availableCapsules, getProductName, getProductDescription])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -603,83 +957,12 @@ function DashboardPageContent() {
     }
   }, [showUserMenu, showWhatsAppPopup, showCartDropdown])
 
-  const loadAnalyses = async () => {
-    try {
-      const userAnalyses = await analysisService.getAnalysesByUser()
-      setAnalyses(userAnalyses)
-      
-      // Rafraîchir la vérification des paiements après chargement des analyses
-      if (supabase && user) {
-        // Utiliser une requête plus large pour être sûr de trouver les paiements
-        const { data: paymentAnalysis } = await supabase
-          .from('payments')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'success')
-          .or('product_id.eq.analyse-financiere,product_id.ilike.%analyse-financiere%,payment_type.eq.analysis')
-        
-        const nbPayments = paymentAnalysis?.length || 0
-        const nbAnalyses = userAnalyses?.length || 0
-        const canLaunch = nbPayments > nbAnalyses
-        
-        console.log('Rafraîchissement analyse financière après chargement:', {
-          nbPayments,
-          nbAnalyses,
-          canLaunch
-        })
-        
-        setHasPaidAnalysis(canLaunch)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des analyses:', error)
-      // En cas d'erreur, on affiche un message mais on ne bloque pas l'interface
-    }
-  }
-
   const handleSignOut = async () => {
     if (!supabase) return
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  const handleNewAnalysis = () => {
-    if (!hasPaidAnalysis) {
-      // Rediriger vers la boutique pour acheter l'analyse
-      setActiveTab('boutique')
-      // Scroll vers la carte analyse financière
-      setTimeout(() => {
-        const element = document.getElementById('analyse-financiere-card')
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        }
-      }, 100)
-      return
-    }
-    router.push('/analyse-financiere')
-  }
-
-
-
-
-
-  const hasCompletedAnalysisWithPdf = analyses.some(a => a.status === 'terminee' && !!a.pdf_url)
-
-  const toggleCapsule = (id: string) => {
-    setSelectedCapsules(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
-  }
-
-  const handleAddCapsules = async () => {
-    if (selectedCapsules.length === 0) return
-    const ok = await capsulesService.addUserCapsules(selectedCapsules)
-    if (ok) {
-      const myCaps = await capsulesService.getUserCapsules().catch(() => [])
-      setUserCapsules(Array.isArray(myCaps) ? myCaps.map((c: any) => c.capsule_id) : [])
-      setSelectedCapsules([])
-      alert('Ajouté à mes achats')
-    } else {
-      alert("Impossible d'ajouter les capsules pour le moment")
-    }
-  }
 
   const handleWhatsAppClick = () => {
     setShowWhatsAppPopup(true)
@@ -693,32 +976,6 @@ function DashboardPageContent() {
   const handleViewCart = () => {
     setShowCartDropdown(false)
     router.push('/cart')
-  }
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'en_cours':
-        return t.dashboard.status.inProgress
-      case 'en_analyse':
-        return t.dashboard.status.analyzing
-      case 'terminee':
-        return t.dashboard.status.completed
-      default:
-        return t.dashboard.status.unknown
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'en_cours':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'en_analyse':
-        return 'bg-blue-100 text-blue-800'
-      case 'terminee':
-        return 'bg-green-100 text-green-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
   }
 
   if (!mounted || loading) {
@@ -798,9 +1055,9 @@ function DashboardPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 relative z-[9998] transition-colors duration-200">
+      <header className="bg-white shadow-sm border-b border-gray-200 relative z-[9998]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -824,9 +1081,10 @@ function DashboardPageContent() {
               {user && (
                 <div className="flex items-center gap-1 sm:gap-3">
                   {/* Icône Panier */}
-                  <div className="relative cart-container">
+                  <div className="relative cart-container z-[10000]">
                     <button
                       onClick={() => setShowCartDropdown(!showCartDropdown)}
+                      data-onboarding="cart"
                       className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -841,19 +1099,21 @@ function DashboardPageContent() {
 
                     {/* Dropdown du panier */}
                     {showCartDropdown && (
-                      <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[10000] animate-fadeIn">
+                      <div className="fixed sm:absolute top-16 sm:top-auto right-1 sm:right-0 left-1 sm:left-auto mt-0 sm:mt-2 w-[calc(100vw-0.5rem)] sm:w-80 max-w-sm bg-white rounded-lg shadow-xl border border-gray-200 z-[10000] animate-fadeIn max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-8rem)] overflow-hidden flex flex-col">
                         {/* Header */}
                         <div className="px-4 py-3 border-b border-gray-200">
                           <h3 className="font-bold text-[#012F4E]" style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}>
-                            Mon panier
+                            {t.dashboard.cart.title}
                           </h3>
                         </div>
 
                         {/* Liste des articles */}
-                        <div className="max-h-64 overflow-y-auto">
+                        <div className="flex-1 overflow-y-auto min-h-0">
                           {cartItems.length === 0 ? (
                             <div className="px-4 py-8 text-center text-gray-500">
-                              Votre panier est vide
+                              <span className="mr-2">👋</span>
+                              {t.dashboard.cart.empty}
+                              <p className="text-xs text-gray-400 mt-2">{t.dashboard.cart.emptyDescription}</p>
                             </div>
                           ) : (
                             <div className="px-4 py-2">
@@ -873,8 +1133,8 @@ function DashboardPageContent() {
                                   {/* Infos */}
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                                    <p className="text-sm text-gray-600">Qté: {item.quantity}</p>
-                                    <p className="text-sm font-bold text-[#012F4E]">{(item.price * item.quantity).toFixed(2)} €</p>
+                                    <p className="text-sm text-gray-600">{t.dashboard.cart.quantity} {item.quantity}</p>
+                                    <p className="text-sm font-bold text-[#012F4E]">{formatPrice(item.price * item.quantity)}</p>
                                   </div>
 
                                   {/* Bouton supprimer */}
@@ -897,9 +1157,9 @@ function DashboardPageContent() {
                           <div className="px-4 py-3 border-t border-gray-200 space-y-3">
                             {/* Sous-total */}
                             <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-600">Sous-total :</span>
+                              <span className="text-sm text-gray-600">{t.dashboard.cart.subtotal}</span>
                               <span className="text-base font-bold text-[#012F4E]" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                                {getSubtotal().toFixed(2)} €
+                                {formatPrice(getSubtotal())}
                               </span>
                             </div>
 
@@ -909,7 +1169,7 @@ function DashboardPageContent() {
                               className="w-full px-4 py-2 bg-[#00A1C6] text-white rounded-lg font-medium hover:bg-[#FEBE02] transition-colors"
                               style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
                             >
-                              Voir le panier
+                              {t.dashboard.cart.viewCart}
                             </button>
 
                             {/* Lien "Continuer vos achats" */}
@@ -918,7 +1178,7 @@ function DashboardPageContent() {
                               className="w-full text-sm text-[#012F4E] hover:underline transition-colors"
                               style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
                             >
-                              Continuer vos achats
+                              {t.dashboard.cart.continueShopping}
                             </button>
                           </div>
                         )}
@@ -926,6 +1186,7 @@ function DashboardPageContent() {
                     )}
                   </div>
 
+                  <CurrencySelector />
                   <LanguageSwitch />
                   <div className="relative user-menu-container z-[9999]">
                     <button
@@ -957,9 +1218,10 @@ function DashboardPageContent() {
                             router.push('/dashboard/settings')
                             setShowUserMenu(false)
                           }}
+                          data-onboarding="settings"
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
-                          Paramètres
+                          {t.dashboard.settings}
                         </button>
                         <button
                           onClick={() => {
@@ -990,8 +1252,8 @@ function DashboardPageContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-green-900 mb-1">Paiement effectué avec succès !</h3>
-                <p className="text-green-800">Vos capsules sont maintenant disponibles dans l'onglet "Mes achats".</p>
+                <h3 className="text-lg font-semibold text-green-900 mb-1">{t.dashboard.paymentSuccess.title}</h3>
+                <p className="text-green-800">{t.dashboard.paymentSuccess.message}</p>
               </div>
             </div>
           )}
@@ -999,235 +1261,38 @@ function DashboardPageContent() {
           {/* En-tête d'accueil */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Bonjour, {getFirstNameFromEmail(user?.email)} 👋
+              {t.dashboard.welcomeGreeting} {getUserDisplayName(user)}
             </h1>
             <p className="text-gray-600">
-              Découvrez votre tableau de bord et gérez toutes vos activités en un seul endroit.
+              {t.dashboard.welcomeSubtitle}
             </p>
           </div>
 
           {/* Onglets de navigation */}
-          <div className="mb-8 flex gap-2 border-b border-gray-200">
-              <button
-                onClick={() => setActiveTab('analyses')}
-              className={`px-6 py-3 font-medium transition-all ${
-                activeTab === 'analyses'
-                  ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-              >
-              Mes Analyses
-              </button>
+          <div className="mb-8 flex gap-2 border-b border-gray-200" data-onboarding="tabs">
               <button
               onClick={() => setActiveTab('boutique')}
+              data-onboarding="boutique-tab"
               className={`px-6 py-3 font-medium transition-all ${
                 activeTab === 'boutique'
                   ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Boutique
+              {t.dashboard.tabs.boutique}
               </button>
               <button
                 onClick={() => setActiveTab('formations')}
+              data-onboarding="purchases-tab"
               className={`px-6 py-3 font-medium transition-all ${
                 activeTab === 'formations'
                   ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
               >
-              Mes achats
+              {t.dashboard.tabs.myPurchases}
               </button>
             </div>
-
-          {/* Contenu de l'onglet "Mes Analyses" */}
-          {activeTab === 'analyses' && (
-            <div className="space-y-6">
-              {/* Titre et description de la section */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-          </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Mes Analyses</h2>
-                  <p className="text-gray-600">Retrouvez ici toutes vos analyses financières réalisées avec Cash360.</p>
-                      </div>
-                      </div>
-
-              {/* Carte "Faire une nouvelle analyse" */}
-              <div className="bg-yellow-400 rounded-2xl p-8 mb-8">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-full bg-white/30 flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Faire une nouvelle analyse</h3>
-                  <p className="text-gray-700 mb-6 max-w-md">
-                    Téléversez vos relevés et recevez votre diagnostic sous 48h.
-                  </p>
-                          <button
-                    onClick={handleNewAnalysis}
-                    disabled={!hasPaidAnalysis}
-                    className={`px-6 py-3 rounded-lg transition-colors font-medium shadow-lg flex items-center gap-2 mx-auto ${
-                      hasPaidAnalysis
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-400 text-white cursor-not-allowed relative'
-                    }`}
-                          >
-                    <span className="text-white">Lancer une nouvelle analyse</span>
-                    {!hasPaidAnalysis && (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    )}
-                          </button>
-                          {!hasPaidAnalysis && (
-                            <p className="text-sm text-gray-800 mt-3 font-medium">
-                              Achetez l'analyse dans la boutique pour débloquer cette fonctionnalité
-                            </p>
-                          )}
-                      </div>
-                    </div>
-            
-            {/* Liste des analyses */}
-            {analyses.length > 0 && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {currentAnalyses.map((analysis) => (
-                  <div key={analysis.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow p-6">
-                    {/* En-tête de la carte */}
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Analyse du {new Date(analysis.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </h3>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className={`w-3 h-3 rounded-full ${
-                          analysis.status === 'terminee' ? 'bg-green-500' : 
-                          analysis.status === 'en_analyse' ? 'bg-blue-500' : 
-                          'bg-orange-500'
-                        }`}></div>
-                        <span className="text-sm font-medium text-gray-700">
-                          {analysis.status === 'terminee' ? 'Terminée' : 
-                           analysis.status === 'en_analyse' ? 'En analyse' : 
-                           'En cours'}
-                        </span>
-              </div>
-                      <p className="text-sm text-gray-600">
-                        {analysis.status === 'terminee' 
-                          ? 'Analyse de vos 3 relevés bancaires – rapport disponible.'
-                          : analysis.status === 'en_analyse'
-                          ? 'Vos documents sont en cours d\'analyse par nos experts.'
-                          : 'Traitement en cours de vos relevés bancaires.'
-                        }
-                      </p>
-                    </div>
-                    
-                    {/* Boutons d'action */}
-                    <div className="flex gap-3">
-                      {analysis.status === 'terminee' && analysis.pdf_url ? (
-                        <>
-                <button
-                            onClick={() => window.open(analysis.pdf_url, '_blank')}
-                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
-                >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Télécharger PDF
-                </button>
-                  <button
-                            onClick={handleNewAnalysis}
-                            className="flex-1 px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-                  >
-                            Refaire une analyse
-                  </button>
-                        </>
-                      ) : (
-                        <>
-                            <button
-                            disabled
-                            className="flex-1 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            En traitement
-                            </button>
-                          <button
-                            onClick={handleNewAnalysis}
-                            className="flex-1 px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-                          >
-                            Refaire une analyse
-                          </button>
-                        </>
-                      )}
-                        </div>
-                      </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Pagination Analyses */}
-              {totalPagesAnalyses > 1 && (
-                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                  <div className="flex-1 flex justify-between sm:hidden">
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Précédent
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPagesAnalyses, prev + 1))}
-                      disabled={currentPage === totalPagesAnalyses}
-                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Suivant
-                    </button>
-                  </div>
-                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm text-gray-700">
-                        Affichage de <span className="font-medium">{startIndexAnalyses + 1}</span> à{' '}
-                        <span className="font-medium">{Math.min(endIndexAnalyses, analyses.length)}</span> sur{' '}
-                        <span className="font-medium">{analyses.length}</span> analyses
-                      </p>
-                    </div>
-                    <div>
-                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                        <button
-                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                          disabled={currentPage === 1}
-                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <span className="sr-only">Précédent</span>
-                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                        <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                          Page {currentPage} sur {totalPagesAnalyses}
-                        </span>
-                        <button
-                          onClick={() => setCurrentPage(prev => Math.min(totalPagesAnalyses, prev + 1))}
-                          disabled={currentPage === totalPagesAnalyses}
-                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <span className="sr-only">Suivant</span>
-                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      </nav>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Contenu de l'onglet "Boutique" */}
           {activeTab === 'boutique' && (
@@ -1240,20 +1305,20 @@ function DashboardPageContent() {
                 </svg>
               </div>
                         <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Boutique</h2>
-                  <p className="text-gray-600">Découvrez nos produits exclusifs Cash360 pour transformer votre vie financière et spirituelle.</p>
+                  <h2 className="text-2xl font-bold text-gray-900">{t.dashboard.boutique.title}</h2>
+                  <p className="text-gray-600">{t.dashboard.boutique.subtitle}</p>
                     </div>
                   </div>
 
               {/* Onglets de catégories */}
-              <div className="bg-white rounded-lg border border-gray-200 p-2">
+              <div className="bg-white rounded-lg border border-gray-200 p-2" data-onboarding="categories">
                 <div className="flex gap-2 overflow-x-auto">
                   {[
-                    { id: 'capsules', label: 'Capsules' },
-                    { id: 'analyse-financiere', label: 'Analyse financière' },
-                    { id: 'pack', label: 'Pack' },
-                    { id: 'ebook', label: 'Ebook', badge: hasEbookProducts ? undefined : 'Bientôt' },
-                    { id: 'abonnement', label: 'Abonnement', badge: hasAbonnementProducts ? undefined : 'Bientôt' }
+                    { id: 'capsules', label: t.dashboard.boutique.categories.capsules },
+                    { id: 'analyse-financiere', label: t.dashboard.boutique.categories.analysis },
+                    { id: 'pack', label: t.dashboard.boutique.categories.pack },
+                    { id: 'ebook', label: t.dashboard.boutique.categories.ebook, badge: hasEbookProducts ? undefined : t.dashboard.boutique.comingSoon },
+                    { id: 'abonnement', label: t.dashboard.boutique.categories.subscription, badge: hasAbonnementProducts ? undefined : t.dashboard.boutique.comingSoon }
                   ].map((cat) => (
                     <button
                       key={cat.id}
@@ -1264,9 +1329,13 @@ function DashboardPageContent() {
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      <span>{cat.label}</span>
+                      <span className={selectedCategory === cat.id ? 'text-white' : ''}>{cat.label}</span>
                       {cat.badge && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-400 text-yellow-900 font-semibold">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                          selectedCategory === cat.id 
+                            ? 'bg-yellow-400 text-yellow-900' 
+                            : 'bg-yellow-400 text-yellow-900'
+                        }`}>
                           {cat.badge}
                         </span>
                       )}
@@ -1288,7 +1357,7 @@ function DashboardPageContent() {
                     value={searchBoutique}
                     onChange={(e) => setSearchBoutique(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Rechercher un produit par nom..."
+                    placeholder={t.dashboard.boutique.searchPlaceholder}
                   />
                   {searchBoutique && (
                     <button
@@ -1303,7 +1372,7 @@ function DashboardPageContent() {
                 </div>
                 {searchBoutique && (
                   <p className="mt-2 text-sm text-gray-600">
-                    {filteredBoutiqueCapsules.length} produit{filteredBoutiqueCapsules.length > 1 ? 's' : ''} trouvé{filteredBoutiqueCapsules.length > 1 ? 's' : ''}
+                    {filteredBoutiqueCapsules.length} {filteredBoutiqueCapsules.length > 1 ? t.dashboard.boutique.searchResultsPlural : t.dashboard.boutique.searchResults}
                   </p>
                 )}
               </div>
@@ -1311,7 +1380,7 @@ function DashboardPageContent() {
               {/* Grille des capsules */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentBoutiqueCapsules.map((capsule) => (
-                  <div key={capsule.id} id={capsule.id === 'analyse-financiere' ? 'analyse-financiere-card' : undefined} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                  <div key={`${capsule.id}-${currentCurrency}`} id={capsule.id === 'analyse-financiere' ? 'analyse-financiere-card' : undefined} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
                     {/* Image */}
                     <div className="relative h-48 w-full overflow-hidden">
                       <Image
@@ -1331,14 +1400,14 @@ function DashboardPageContent() {
                       <div className="mb-4">
                         {capsule.originalPrice && capsule.originalPrice > capsule.price ? (
                           <div className="flex items-center gap-2">
-                            <span className="text-lg font-bold text-blue-600">{capsule.price.toFixed(2)} €</span>
-                            <span className="text-sm text-gray-400 line-through">{capsule.originalPrice.toFixed(2)} €</span>
+                            <span className="text-lg font-bold text-blue-600">{formatPrice(capsule.price)}</span>
+                            <span className="text-sm text-gray-400 line-through">{formatPrice(capsule.originalPrice)}</span>
                             <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-semibold">
                               -{Math.round((1 - capsule.price / capsule.originalPrice) * 100)}%
                             </span>
                         </div>
                         ) : (
-                          <span className="text-lg font-bold text-blue-600">{capsule.price.toFixed(2)} €</span>
+                          <span className="text-lg font-bold text-blue-600">{formatPrice(capsule.price)}</span>
                         )}
                       </div>
 
@@ -1351,7 +1420,7 @@ function DashboardPageContent() {
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          Déjà acheté
+                          {t.dashboard.boutique.alreadyBought}
                         </button>
                       ) : (() => {
                         const capsuleCategory = (capsule as any).category || 'capsules'
@@ -1384,8 +1453,8 @@ function DashboardPageContent() {
                             }`}
                           >
                             {isDisabled 
-                              ? 'Déjà dans le panier'
-                              : (capsule.isPack ? 'Acheter le pack' : 'Acheter')
+                              ? t.dashboard.boutique.alreadyInCart
+                              : (capsule.isPack ? t.dashboard.boutique.buyPack : t.dashboard.boutique.buy)
                             }
                           </button>
                         )
@@ -1404,22 +1473,22 @@ function DashboardPageContent() {
                       disabled={currentPageBoutique === 1}
                       className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Précédent
+                      {t.dashboard.pagination.previous}
                     </button>
                     <button
                       onClick={() => setCurrentPageBoutique(prev => Math.min(totalPagesBoutique, prev + 1))}
                       disabled={currentPageBoutique === totalPagesBoutique}
                       className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Suivant
+                      {t.dashboard.pagination.next}
                     </button>
                   </div>
                   <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm text-gray-700">
-                        Affichage de <span className="font-medium">{startIndexBoutique + 1}</span> à{' '}
-                        <span className="font-medium">{Math.min(endIndexBoutique, filteredBoutiqueCapsules.length)}</span> sur{' '}
-                        <span className="font-medium">{filteredBoutiqueCapsules.length}</span> produit{filteredBoutiqueCapsules.length > 1 ? 's' : ''}
+                        {t.dashboard.pagination.showing} <span className="font-medium">{startIndexBoutique + 1}</span> {t.dashboard.pagination.to}{' '}
+                        <span className="font-medium">{Math.min(endIndexBoutique, filteredBoutiqueCapsules.length)}</span> {t.dashboard.pagination.of}{' '}
+                        <span className="font-medium">{filteredBoutiqueCapsules.length}</span> {filteredBoutiqueCapsules.length > 1 ? t.dashboard.pagination.products : t.dashboard.boutique.searchResults}
                       </p>
                     </div>
                     <div>
@@ -1435,7 +1504,7 @@ function DashboardPageContent() {
                           </svg>
                         </button>
                         <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                          Page {currentPageBoutique} sur {totalPagesBoutique}
+                          {t.dashboard.pagination.page} {currentPageBoutique} {t.dashboard.pagination.on} {totalPagesBoutique}
                         </span>
                         <button
                           onClick={() => setCurrentPageBoutique(prev => Math.min(totalPagesBoutique, prev + 1))}
@@ -1459,26 +1528,45 @@ function DashboardPageContent() {
           {activeTab === 'formations' && (
             <div className="space-y-6">
               {/* Titre et description de la section */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                        </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Mes achats</h2>
-                        </div>
-                <p className="text-gray-600">Accédez à vos achats et formations classés par catégorie.</p>
-                      </div>
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">{t.dashboard.purchases.title}</h2>
+                  </div>
+                  <p className="text-gray-600">{t.dashboard.purchases.subtitle}</p>
+                </div>
+                <button
+                  onClick={reloadAnalyses}
+                  disabled={refreshingAnalyses}
+                  className={`flex items-center gap-2 px-4 py-2 bg-[#00A1C6] text-white rounded-lg hover:bg-[#012F4E] transition-colors duration-200 shadow-sm ${refreshingAnalyses ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title="Actualiser les analyses"
+                >
+                  <svg 
+                    className={`w-5 h-5 text-white ${refreshingAnalyses ? 'animate-spin' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span className="hidden sm:inline text-white">{refreshingAnalyses ? 'Actualisation...' : 'Actualiser'}</span>
+                </button>
+              </div>
 
               {/* Onglets de catégories dans Mes achats */}
               <div className="bg-white rounded-lg border border-gray-200 p-2">
                 <div className="flex gap-2 overflow-x-auto">
                   {[
-                    { id: 'capsules', label: 'Capsules' },
-                    { id: 'pack', label: 'Pack' },
-                    { id: 'ebook', label: 'Ebook', badge: hasEbookProducts ? undefined : 'Bientôt' },
-                    { id: 'abonnement', label: 'Abonnement', badge: hasAbonnementProducts ? undefined : 'Bientôt' }
+                    { id: 'capsules', label: t.dashboard.boutique.categories.capsules },
+                    { id: 'analyse-financiere', label: t.dashboard.boutique.categories.analysis },
+                    { id: 'pack', label: t.dashboard.boutique.categories.pack },
+                    { id: 'ebook', label: t.dashboard.boutique.categories.ebook, badge: hasEbookProducts ? undefined : t.dashboard.boutique.comingSoon },
+                    { id: 'abonnement', label: t.dashboard.boutique.categories.subscription, badge: hasAbonnementProducts ? undefined : t.dashboard.boutique.comingSoon }
                   ].map((cat) => (
                     <button
                       key={cat.id}
@@ -1489,9 +1577,13 @@ function DashboardPageContent() {
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      <span>{cat.label}</span>
+                      <span className={selectedCategoryAchats === cat.id ? 'text-white' : ''}>{cat.label}</span>
                       {cat.badge && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-400 text-yellow-900 font-semibold">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                          selectedCategoryAchats === cat.id 
+                            ? 'bg-yellow-400 text-yellow-900' 
+                            : 'bg-yellow-400 text-yellow-900'
+                        }`}>
                           {cat.badge}
                         </span>
                       )}
@@ -1513,7 +1605,7 @@ function DashboardPageContent() {
                     value={searchFormations}
                     onChange={(e) => setSearchFormations(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Rechercher un achat par nom..."
+                    placeholder={t.dashboard.purchases.searchPlaceholder}
                   />
                   {searchFormations && (
                     <button
@@ -1528,7 +1620,7 @@ function DashboardPageContent() {
                 </div>
                 {searchFormations && (
                   <p className="mt-2 text-sm text-gray-600">
-                    {filteredFormationsBySearch.length} achat{filteredFormationsBySearch.length > 1 ? 's' : ''} trouvé{filteredFormationsBySearch.length > 1 ? 's' : ''}
+                    {filteredFormationsBySearch.length} {filteredFormationsBySearch.length > 1 ? t.dashboard.purchases.searchResultsPlural : t.dashboard.purchases.searchResults}
                   </p>
                 )}
               </div>
@@ -1549,7 +1641,26 @@ function DashboardPageContent() {
                             </div>
               ) : (
                 <div className="space-y-4">
-                  {currentFormations                    .map((c, index) => {
+                  {currentFormations.map((c) => {
+                      // Pour analyse-financiere, utiliser AnalysisCard
+                      const itemCategory = (c as any).category || 'capsules'
+                      if (itemCategory === 'analyse-financiere') {
+                        // Utiliser l'analyse passée dans l'objet c (une analyse par carte)
+                        const analysis = (c as any).analysis || null
+                        // Récupérer le statut de la commande pour Mobile Money
+                        const orderStatus = (c as any).orderStatus || null
+                        return (
+                          <AnalysisCard
+                            key={c.id || `analysis-${(c as any).analysisId}`}
+                            item={c}
+                            userAnalysis={analysis}
+                            orderStatus={orderStatus}
+                            onUploadSuccess={reloadAnalyses}
+                          />
+                        )
+                      }
+
+                      // Pour les autres produits, utiliser la carte normale
                       // Chercher la formation correspondante - essayer capsule_id d'abord, puis comparer les IDs
                       const formation = formationsData.find(f => {
                         // Vérifier si capsule_id correspond
@@ -1560,37 +1671,43 @@ function DashboardPageContent() {
                       })
                       const formatDate = (dateStr: string) => {
                         if (!dateStr) return ''
-                        return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+                        const localeMap: { [key: string]: string } = {
+                          'fr': 'fr-FR',
+                          'en': 'en-US',
+                          'es': 'es-ES',
+                          'pt': 'pt-PT'
+                        }
+                        const locale = localeMap[language || 'fr'] || 'fr-FR'
+                        return new Date(dateStr).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' })
                       }
                       const formatTime = (timeStr: string) => {
                         if (!timeStr) return ''
                         return timeStr.substring(0, 5)
                       }
                       // Pour ebooks et packs, pas de statut de session (ils n'ont pas de sessions)
-                      const itemCategory = (c as any).category || 'capsules'
-                      const hasNoSession = itemCategory === 'ebook' || itemCategory === 'pack' || itemCategory === 'analyse-financiere'
+                      const hasNoSession = itemCategory === 'ebook' || itemCategory === 'pack'
                       
                       const getStatus = (formation: any) => {
                         // Si c'est un ebook, pack ou analyse financière, pas de statut
                         if (hasNoSession) {
                           return null
                         }
-                        if (!formation) return { label: 'Session en cours de planification', color: 'bg-gray-100 text-gray-800' }
+                        if (!formation) return { label: t.dashboard.purchases.sessionStatus.planning, color: 'bg-gray-100 text-gray-800' }
                         // Si date ou heure sont null, la session est en cours de planification
                         if (!formation.date_scheduled || !formation.time_scheduled) {
-                          return { label: 'Session en cours de planification', color: 'bg-gray-100 text-gray-800' }
+                          return { label: t.dashboard.purchases.sessionStatus.planning, color: 'bg-gray-100 text-gray-800' }
                         }
                         try {
                           const now = new Date()
                           const sessionDate = new Date(`${formation.date_scheduled}T${formation.time_scheduled}`)
                           if (isNaN(sessionDate.getTime())) {
-                            return { label: 'Session en cours de planification', color: 'bg-gray-100 text-gray-800' }
+                            return { label: t.dashboard.purchases.sessionStatus.planning, color: 'bg-gray-100 text-gray-800' }
                           }
-                          if (sessionDate < now) return { label: 'Terminée', color: 'bg-gray-100 text-gray-800' }
-                          if (sessionDate.toDateString() === now.toDateString()) return { label: 'En cours', color: 'bg-blue-100 text-blue-800' }
-                          return { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' }
-                        } catch (e) {
-                          return { label: 'Session en cours de planification', color: 'bg-gray-100 text-gray-800' }
+                          if (sessionDate < now) return { label: t.dashboard.purchases.sessionStatus.completed, color: 'bg-gray-100 text-gray-800' }
+                          if (sessionDate.toDateString() === now.toDateString()) return { label: t.dashboard.purchases.sessionStatus.inProgress, color: 'bg-blue-100 text-blue-800' }
+                          return { label: t.dashboard.purchases.sessionStatus.pending, color: 'bg-yellow-100 text-yellow-800' }
+                        } catch {
+                          return { label: t.dashboard.purchases.sessionStatus.planning, color: 'bg-gray-100 text-gray-800' }
                         }
                       }
                       const status = getStatus(formation)
@@ -1613,6 +1730,14 @@ function DashboardPageContent() {
                               {/* Content */}
                               <div className="flex-1 min-w-0">
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">{c.title}</h3>
+                                {/* Badge pour commandes en attente de validation */}
+                                {(c as any).orderStatus && (c as any).orderStatus.status === 'pending_review' && (
+                                  <div className="mb-2">
+                                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                      {t.dashboard.purchases.pendingValidation}
+                                    </span>
+                                  </div>
+                                )}
                                 <p className="text-sm text-gray-600 mb-3">{c.blurb}</p>
                                 
                                 {/* Session info - seulement pour capsules avec sessions */}
@@ -1622,13 +1747,13 @@ function DashboardPageContent() {
                                       <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                       </svg>
-                                      <span className="text-gray-700 font-medium">{formatDate(formation.date_scheduled)} à {formatTime(formation.time_scheduled)}</span>
+                                      <span className="text-gray-700 font-medium">{formatDate(formation.date_scheduled)} {t.dashboard.purchases.sessionStatus.at} {formatTime(formation.time_scheduled)}</span>
                                     </div>
                                   </div>
                                 )}
                                 
-                                {/* Status - seulement pour capsules avec sessions */}
-                                {status && !hasNoSession && (
+                                {/* Status - seulement pour capsules avec sessions, masquer si commande en attente ou si le message est déjà affiché en bas */}
+                                {status && !hasNoSession && !((c as any).orderStatus && (c as any).orderStatus.status === 'pending_review') && status.label !== t.dashboard.purchases.sessionStatus.planning && (
                                   <div className="mb-4">
                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status.color}`}>
                                       {status.label}
@@ -1648,14 +1773,17 @@ function DashboardPageContent() {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    Télécharger le PDF
+                                    {t.dashboard.purchases.downloadPdf}
                                   </a>
                                 ) : hasNoSession ? (
-                                  // Pour packs et autres produits sans session, pas de bouton spécifique
+                                  // Pour packs et autres produits sans session
+                                  // Ne pas afficher de message si la commande est en attente (le badge en haut suffit)
+                                  !((c as any).orderStatus && (c as any).orderStatus.status === 'pending_review') && (
                                   <div className="text-sm text-gray-600 italic">
-                                    Achat confirmé
+                                      {t.dashboard.purchases.purchaseConfirmed}
                                   </div>
-                                ) : formation && formation.zoom_link && formation.date_scheduled && formation.time_scheduled && status && status.label !== 'Terminée' ? (
+                                  )
+                                ) : formation && formation.zoom_link && formation.date_scheduled && formation.time_scheduled && status && status.label !== t.dashboard.purchases.sessionStatus.completed ? (
                                   <a
                                     href={formation.zoom_link}
                                     target="_blank"
@@ -1665,11 +1793,11 @@ function DashboardPageContent() {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                     </svg>
-                                    Participer
+                                    {t.dashboard.purchases.participate}
                                   </a>
                                 ) : (
                                   <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium">
-                                    {status && status.label === 'Terminée' ? 'Terminée' : 'Session en cours de planification'}
+                                    {status && status.label === 'Terminée' ? t.dashboard.purchases.sessionStatus.completed : t.dashboard.purchases.sessionStatus.planning}
                                   </span>
                                 )}
                               </div>
@@ -1690,22 +1818,22 @@ function DashboardPageContent() {
                       disabled={currentPageFormations === 1}
                       className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Précédent
+                      {t.dashboard.pagination.previous}
                     </button>
                     <button
                       onClick={() => setCurrentPageFormations(prev => Math.min(totalPagesFormations, prev + 1))}
                       disabled={currentPageFormations === totalPagesFormations}
                       className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Suivant
+                      {t.dashboard.pagination.next}
                     </button>
                   </div>
                   <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm text-gray-700">
-                        Affichage de <span className="font-medium">{startIndexFormations + 1}</span> à{' '}
-                        <span className="font-medium">{Math.min(endIndexFormations, filteredFormationsBySearch.length)}</span> sur{' '}
-                        <span className="font-medium">{filteredFormationsBySearch.length}</span> achat{filteredFormationsBySearch.length > 1 ? 's' : ''}
+                        {t.dashboard.pagination.showing} <span className="font-medium">{startIndexFormations + 1}</span> {t.dashboard.pagination.to}{' '}
+                        <span className="font-medium">{Math.min(endIndexFormations, filteredFormationsBySearch.length)}</span> {t.dashboard.pagination.of}{' '}
+                        <span className="font-medium">{filteredFormationsBySearch.length}</span> {filteredFormationsBySearch.length > 1 ? t.dashboard.pagination.purchases : t.dashboard.purchases.searchResults}
                       </p>
                     </div>
                     <div>
@@ -1721,7 +1849,7 @@ function DashboardPageContent() {
                           </svg>
                         </button>
                         <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                          Page {currentPageFormations} sur {totalPagesFormations}
+                          {t.dashboard.pagination.page} {currentPageFormations} {t.dashboard.pagination.on} {totalPagesFormations}
                         </span>
                         <button
                           onClick={() => setCurrentPageFormations(prev => Math.min(totalPagesFormations, prev + 1))}
@@ -1801,6 +1929,9 @@ function DashboardPageContent() {
         onClose={() => setLegalModalOpen(false)} 
         type={legalModalType} 
       />
+
+      {/* Onboarding */}
+      <DashboardOnboarding userId={user?.id || null} />
     </div>
   )
 }

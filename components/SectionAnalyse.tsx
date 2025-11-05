@@ -31,52 +31,77 @@ export default function SectionAnalyse() {
     }
   }, [])
 
+  const featuredProducts = (t.sectionAnalyse?.featuredProducts || []).map((product: any, index: number) => ({
+    id: index + 1,
+    title: product.title,
+    category: product.category,
+    image: index === 0 ? "/images/stab.jpg" : index === 1 ? "/images/logo/capsule4.jpg" : "/images/logo/money1.png",
+    description: product.description
+  }))
+
   return (
     <section
       id="section-analyse"
-      className={`py-12 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden transition-all duration-1000 ${
+      className={`py-16 bg-gradient-to-br from-gray-50 via-white to-gray-50 transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Left Section - Text */}
-            <div className="space-y-4">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
-                {t.sectionAnalyse.title}
-              </h2>
-              <p className="text-base text-white/90 leading-relaxed">
-                {t.sectionAnalyse.description}
-              </p>
-              
-              {/* CTA Button */}
-              <div className="pt-2">
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#D4AF37] px-6 py-3 text-[#0B1B2B] font-semibold text-base hover:brightness-95 transition-all duration-300 transform hover:scale-105 shadow-lg"
-                >
-                  {t.sectionAnalyse.button}
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
+        <div className="max-w-7xl mx-auto">
+          {/* Titre de la section */}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              {t.sectionAnalyse?.featuredTitle || 'Produit à la une'}
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t.sectionAnalyse?.featuredDescription || 'Découvrez nos produits phares pour transformer votre vie financière'}
+            </p>
+          </div>
 
-            {/* Right Section - Image */}
-            <div className="relative flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-md">
-                <Image
-                  src="/images/logo/money1.png"
-                  alt={t.sectionAnalyse.imageAlt}
-                  width={500}
-                  height={400}
-                  className="object-contain rounded-2xl"
-                  priority
-                />
+          {/* Grille de 3 cartes */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {featuredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200 flex flex-col"
+              >
+                {/* Image */}
+                <div className="relative h-64 w-full overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={product.title}
+                    fill
+                    className="object-cover transition-transform duration-300 hover:scale-110"
+                  />
+                  {/* Badge catégorie */}
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-[#D4AF37] text-[#0B1B2B] px-3 py-1 rounded-full text-xs font-semibold">
+                      {product.category}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Contenu */}
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {product.title}
+                  </h3>
+                  <p className="text-gray-600 mb-6 text-sm leading-relaxed flex-1">
+                    {product.description}
+                  </p>
+                  
+                  {/* Bouton CTA aligné en bas */}
+                  <Link
+                    href={product.id === 3 ? "/analyse-financiere" : "https://www.cash360.finance/login"}
+                    className="block w-full text-center bg-[#D4AF37] text-[#0B1B2B] font-semibold py-3 px-6 rounded-lg hover:bg-[#C5A028] transition-all duration-300 transform hover:scale-105 shadow-md mt-auto"
+                  >
+                    {product.id === 3 
+                      ? (t.sectionAnalyse?.launchButton || "Je lance mon analyse")
+                      : (t.sectionAnalyse?.ctaButton || "Je m'inscris")}
+                  </Link>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

@@ -5,14 +5,17 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCart } from '@/lib/CartContext'
+import { useCurrency } from '@/lib/CurrencyContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
-import Footer from '@/components/Footer'
+import CurrencySelector from '@/components/CurrencySelector'
 import LegalModal from '@/components/LegalModal'
+import PayWithOMWaveButton from '@/components/PayWithOMWaveButton'
 
 export default function CartPage() {
   const { t } = useLanguage()
   const router = useRouter()
   const { cartItems, updateQuantity, removeFromCart, getSubtotal, clearCart } = useCart()
+  const { format: formatPrice, currency: currentCurrency } = useCurrency()
   
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [showLegalModal, setShowLegalModal] = useState(false)
@@ -21,6 +24,16 @@ export default function CartPage() {
   
   const subtotal = getSubtotal()
   const total = subtotal
+  
+  // Générer un orderId unique pour Mobile Money
+  const generateOrderId = () => {
+    return `MM${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+  }
+  
+  const [orderId, setOrderId] = useState(() => generateOrderId())
+  
+  // Récupérer les noms de produits pour Mobile Money
+  const productNames = cartItems.map(item => item.title).join(', ')
   
   const handleCheckout = async () => {
     if (!termsAccepted) {
@@ -65,9 +78,9 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
+      <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -86,8 +99,9 @@ export default function CartPage() {
               </button>
             </div>
             
-            {/* Language Switch */}
+            {/* Language Switch & Currency */}
             <div className="flex items-center gap-3 mr-2 sm:mr-20">
+              <CurrencySelector />
               <LanguageSwitch />
             </div>
           </div>
@@ -96,6 +110,18 @@ export default function CartPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Back to Boutique Button */}
+        <button
+          onClick={() => router.push('/dashboard?tab=boutique')}
+          className="inline-flex items-center gap-2 text-[#012F4E] hover:text-[#00A1C6] transition-colors font-medium mb-6"
+          style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Retour à la boutique
+        </button>
+
         {/* Title and Subtitle */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}>
@@ -130,7 +156,7 @@ export default function CartPage() {
             ) : (
               <>
                 {cartItems.map((item) => (
-                  <div key={item.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                  <div key={`${item.id}-${currentCurrency}`} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                     <div className="flex items-start gap-4">
                       {/* Image */}
                       <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0 border-2 border-[#012F4E]">
@@ -188,7 +214,7 @@ export default function CartPage() {
 
                           {/* Price */}
                           <div className="flex items-center gap-4">
-                            <span className="text-lg font-bold text-gray-900">{(item.price * item.quantity).toFixed(2)} €</span>
+                            <span className="text-lg font-bold text-gray-900">{formatPrice(item.price * item.quantity)}</span>
                             
                             {/* Delete Button */}
                             <button
@@ -233,7 +259,7 @@ export default function CartPage() {
                 <div className="border-t border-gray-200 pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-gray-900">Total :</span>
-                    <span className="text-xl font-bold text-gray-900">{total.toFixed(2)} €</span>
+                    <span className="text-xl font-bold text-gray-900">{formatPrice(total)}</span>
                   </div>
                 </div>
               </div>
@@ -262,44 +288,112 @@ export default function CartPage() {
                 </label>
               </div>
 
-              {/* Checkout Button */}
-              <button
-                onClick={handleCheckout}
-                disabled={cartItems.length === 0 || !termsAccepted || isProcessing}
-                className="w-full px-4 py-3 bg-[#FEBE02] text-white rounded-lg font-bold hover:bg-[#e0a900] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed mb-4"
-                style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}
-              >
-                {isProcessing ? 'Traitement en cours...' : 'Procéder au paiement'}
-              </button>
+              {/* Checkout Button - Stripe */}
+              <div className="mb-3">
+                <button
+                  onClick={handleCheckout}
+                  disabled={cartItems.length === 0 || !termsAccepted || isProcessing}
+                  className="w-full px-4 py-3 bg-[#FEBE02] text-white rounded-lg font-bold hover:bg-[#e0a900] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}
+                >
+                  {isProcessing ? 'Traitement en cours...' : 'Paiement'}
+                </button>
+                
+                {/* Payment Methods Accepted */}
+                <div className="mt-3">
+                  <p className="text-sm font-semibold text-gray-800 mb-2 text-center" style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}>
+                    NOUS ACCEPTONS :
+                  </p>
+                  <div className="flex justify-center">
+                    <Image
+                      src="/images/pay.png"
+                      alt="Méthodes de paiement acceptées"
+                      width={600}
+                      height={100}
+                      className="max-w-full h-auto"
+                    />
+                  </div>
+                </div>
+                
+                <p className="text-xs text-gray-500 mt-2 text-center" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                  Zone Euro et autres régions (hors Afrique)
+                </p>
+              </div>
+
+              {/* Séparateur */}
+              <div className="flex items-center gap-4 mb-3">
+                <div className="flex-1 border-t border-gray-300"></div>
+                <span className="text-sm text-gray-500 font-medium">OU</span>
+                <div className="flex-1 border-t border-gray-300"></div>
+              </div>
+
+              {/* Mobile Money Button */}
+              {cartItems.length > 0 && termsAccepted && (
+                <div className="mb-3">
+                  <PayWithOMWaveButton
+                    orderId={orderId}
+                    cartItems={cartItems}
+                    amountEUR={total}
+                  />
+                  
+                  {/* Payment Methods Accepted - Mobile Money */}
+                  <div className="mt-3">
+                    <div className="flex items-center justify-center gap-3">
+                      <p className="text-sm font-semibold text-gray-800" style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 'bold' }}>
+                        NOUS ACCEPTONS :
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Image
+                          src="/images/orange1.png"
+                          alt="Orange Money"
+                          width={60}
+                          height={40}
+                          className="h-auto"
+                        />
+                        <Image
+                          src="/images/wave1.png"
+                          alt="Wave"
+                          width={60}
+                          height={40}
+                          className="h-auto"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 mt-2 text-center" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                    Afrique de l'Ouest et Centrale
+                  </p>
+                </div>
+              )}
 
               {/* Security and Support Info */}
-              <div className="space-y-2 text-xs text-gray-600">
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  <span>Paiement sécurisé</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  <span>Données protégées</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  <span>Support 24h/24</span>
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-center gap-3 text-[10px] text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <svg className="w-3 h-3 flex-shrink-0 text-[#00A1C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Paiement sécurisé</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <svg className="w-3 h-3 flex-shrink-0 text-[#00A1C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Données protégées</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <svg className="w-3 h-3 flex-shrink-0 text-[#00A1C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Support 24h/24</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <Footer />
 
       {/* Legal Modal */}
       <LegalModal

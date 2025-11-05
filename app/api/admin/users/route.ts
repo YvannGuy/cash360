@@ -61,7 +61,8 @@ export async function GET(request: NextRequest) {
           first_analysis_date: null, // Peut être enrichi si nécessaire
           analysis_count: analysisCount,
           is_authenticated: true,
-          role: role
+          role: role,
+          user_metadata: authUser.user_metadata || {} // Inclure les métadonnées (ville, profession, etc.)
         }
       })
 

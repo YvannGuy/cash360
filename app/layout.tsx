@@ -3,8 +3,8 @@ import Script from "next/script";
 import { Geist, Geist_Mono, Pacifico } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/LanguageContext";
-import { ThemeProvider } from "@/lib/ThemeContext";
 import { CartProvider } from "@/lib/CartContext";
+import { CurrencyProvider } from "@/lib/CurrencyContext";
 
 const pacifico = Pacifico({
   weight: "400",
@@ -223,6 +223,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased`}
+        suppressHydrationWarning
       >
         {/* Google tag (gtag.js) */}
         <Script
@@ -239,9 +240,9 @@ export default function RootLayout({
         </Script>
 
         <LanguageProvider>
-          <ThemeProvider>
-            <CartProvider>{children}</CartProvider>
-          </ThemeProvider>
+          <CartProvider>
+            <CurrencyProvider>{children}</CurrencyProvider>
+          </CartProvider>
         </LanguageProvider>
       </body>
     </html>
