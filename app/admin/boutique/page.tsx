@@ -22,6 +22,17 @@ interface Product {
   is_one_time: boolean
   product_type?: string | null
   capsule_id?: string | null
+  category?: string | null
+  pdf_url?: string | null
+  name_en?: string | null
+  name_es?: string | null
+  name_pt?: string | null
+  name_fr?: string | null
+  description_en?: string | null
+  description_es?: string | null
+  description_pt?: string | null
+  description_fr?: string | null
+  appears_in_formations?: boolean
   created_at: string
   updated_at: string
 }
@@ -397,6 +408,52 @@ export default function AdminBoutiquePage() {
     }
   }
 
+  const handleToggleProductVisibility = async (product: Product) => {
+    const newAvailability = !product.available
+    try {
+      const response = await fetch(`/api/admin/products?productId=${product.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: product.name,
+          description: product.description,
+          nameFr: product.name_fr ?? product.name,
+          nameEn: product.name_en ?? null,
+          nameEs: product.name_es ?? null,
+          namePt: product.name_pt ?? null,
+          descriptionFr: product.description_fr ?? product.description,
+          descriptionEn: product.description_en ?? null,
+          descriptionEs: product.description_es ?? null,
+          descriptionPt: product.description_pt ?? null,
+          price: product.price,
+          originalPrice: product.original_price,
+          isPack: product.is_pack,
+          imageUrl: product.image_url,
+          available: newAvailability,
+          isOneTime: product.is_one_time,
+          productType: product.product_type ?? null,
+          capsuleId: product.capsule_id ?? null,
+          appearsInFormations: product.appears_in_formations !== false,
+          category: product.category ?? 'capsules',
+          pdfUrl: product.pdf_url ?? undefined
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Erreur lors de la mise à jour de la visibilité')
+      }
+
+      setProducts(prev => prev.map(p => p.id === product.id ? { ...p, available: newAvailability } : p))
+    } catch (error) {
+      console.error('Erreur lors du changement de visibilité:', error)
+      alert(error instanceof Error ? error.message : 'Erreur lors du changement de visibilité')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -543,7 +600,10 @@ export default function AdminBoutiquePage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                   {currentProducts.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div
+                key={product.id}
+                className={`bg-white rounded-lg border ${product.available ? 'border-gray-200' : 'border-gray-300 border-dashed'} overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col ${product.available ? '' : 'opacity-60'}`}
+              >
                 {/* Image */}
                 <div className="relative h-48 w-full overflow-hidden">
                   {(() => {
@@ -559,6 +619,7 @@ export default function AdminBoutiquePage() {
                         alt={product.name}
                         fill
                         className="object-cover"
+                        style={{ filter: product.available ? 'none' : 'grayscale(100%)' }}
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -619,6 +680,25 @@ export default function AdminBoutiquePage() {
 
                   {/* Actions */}
                   <div className="flex gap-2 mt-auto">
+                    <button
+                      onClick={() => handleToggleProductVisibility(product)}
+                      className={`px-3 py-2 rounded-lg border transition-colors ${product.available ? 'bg-white text-gray-500 hover:text-[#00A1C6] hover:border-[#00A1C6]' : 'bg-white text-[#00A1C6] border-[#00A1C6] hover:bg-[#00A1C6] hover:text-white'}`}
+                      title={product.available ? 'Masquer ce produit dans la boutique' : 'Réafficher ce produit dans la boutique'}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {product.available ? (
+                          <>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </>
+                        ) : (
+                          <>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.98 8.223a10.477 10.477 0 011.704-1.78M20.02 15.777A10.45 10.45 0 0021.542 12c-1.274-4.057-5.064-7-9.542-7a10.46 10.46 0 00-3.45.6" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.88 9.88a3 3 0 104.242 4.242M3 3l18 18" />
+                          </>
+                        )}
+                      </svg>
+                    </button>
                     <button
                       onClick={() => handleOpenModalForEdit(product)}
                       className="flex-1 px-4 py-2 bg-[#00A1C6] text-white rounded-lg hover:bg-[#0089a3] transition-colors font-medium"

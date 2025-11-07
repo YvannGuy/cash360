@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
@@ -40,55 +40,28 @@ export default function AdminAnalysesPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
-  useEffect(() => {
-    const checkAdminSession = () => {
-      const adminSessionData = localStorage.getItem('admin_session')
-      const adminEmail = localStorage.getItem('admin_email')
-      
-      if (adminSessionData === 'true' && adminEmail) {
-        setAdminSession({ isAdmin: true, email: adminEmail })
-      } else {
-        router.push('/admin/login')
-        return
+  const loadRelevesFiles = useCallback(async (ticket: string) => {
+    try {
+      const response = await fetch(`/api/admin/releves?ticket=${ticket}`)
+      const data = await response.json()
+
+      if (data.success && data.files) {
+        setRelevesFiles(prev => ({
+          ...prev,
+          [ticket]: data.files
+        }))
       }
-      setLoading(false)
+    } catch (error) {
+      console.error('Erreur lors du chargement des relevés:', error)
     }
-    
-    checkAdminSession()
-  }, [router])
+  }, [])
 
-  useEffect(() => {
-    if (adminSession?.isAdmin) {
-      loadAllAnalyses()
-    }
-  }, [adminSession])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showAdminMenu) {
-        const target = event.target as Element
-        if (!target.closest('.admin-menu-container')) {
-          setShowAdminMenu(false)
-        }
-      }
-      if (editingStatus) {
-        const target = event.target as Element
-        if (!target.closest('.status-dropdown')) {
-          setEditingStatus(null)
-        }
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showAdminMenu, editingStatus])
-
-  const loadAllAnalyses = async () => {
+  const loadAllAnalyses = useCallback(async () => {
     setRefreshing(true)
     try {
       const response = await fetch('/api/admin/analyses')
       const data = await response.json()
-      
+
       if (data.success) {
         const allAnalyses = data.analyses || []
         // Dédupliquer les analyses par ID (au cas où il y aurait des doublons)
@@ -110,23 +83,50 @@ export default function AdminAnalysesPage() {
     } finally {
       setRefreshing(false)
     }
-  }
+  }, [loadRelevesFiles])
 
-  const loadRelevesFiles = async (ticket: string) => {
-    try {
-      const response = await fetch(`/api/admin/releves?ticket=${ticket}`)
-      const data = await response.json()
+  useEffect(() => {
+    const checkAdminSession = () => {
+      const adminSessionData = localStorage.getItem('admin_session')
+      const adminEmail = localStorage.getItem('admin_email')
       
-      if (data.success && data.files) {
-        setRelevesFiles(prev => ({
-          ...prev,
-          [ticket]: data.files
-        }))
+      if (adminSessionData === 'true' && adminEmail) {
+        setAdminSession({ isAdmin: true, email: adminEmail })
+      } else {
+        router.push('/admin/login')
+        return
       }
-    } catch (error) {
-      console.error('Erreur lors du chargement des relevés:', error)
+      setLoading(false)
     }
-  }
+    
+    checkAdminSession()
+  }, [router])
+
+  useEffect(() => {
+    if (adminSession?.isAdmin) {
+      loadAllAnalyses()
+    }
+  }, [adminSession, loadAllAnalyses])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showAdminMenu) {
+        const target = event.target as Element
+        if (!target.closest('.admin-menu-container')) {
+          setShowAdminMenu(false)
+        }
+      }
+      if (editingStatus) {
+        const target = event.target as Element
+        if (!target.closest('.status-dropdown')) {
+          setEditingStatus(null)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showAdminMenu, editingStatus])
 
   const handleSignOut = () => {
     localStorage.removeItem('admin_session')
@@ -182,11 +182,6 @@ export default function AdminAnalysesPage() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-  }
-
-  const handleViewAnalysis = (analysis: Analysis) => {
-    // TODO: Implémenter la vue détaillée de l'analyse
-    console.log('Voir analyse:', analysis)
   }
 
   const handleMarkAsCompleted = async (analysis: Analysis) => {
