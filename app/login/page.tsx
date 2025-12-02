@@ -2,20 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { createClientBrowser } from '@/lib/supabase'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
 
 export default function LoginPage() {
   const { t } = useLanguage()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
-  const [isSignUp, setIsSignUp] = useState(() => searchParams.get('signup') === '1')
+  const [isSignUp, setIsSignUp] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [mounted, setMounted] = useState(false)
   const [supabase, setSupabase] = useState<any>(null)
@@ -32,6 +31,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     setMounted(true)
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('signup') === '1') {
+      setIsSignUp(true)
+    }
     // Initialiser Supabase côté client uniquement
     setSupabase(createClientBrowser())
   }, [])
