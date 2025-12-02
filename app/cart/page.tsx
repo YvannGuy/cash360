@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCart } from '@/lib/CartContext'
 import { useCurrency } from '@/lib/CurrencyContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
 import CurrencySelector from '@/components/CurrencySelector'
-import LegalModal from '@/components/LegalModal'
 import PayWithOMWaveButton from '@/components/PayWithOMWaveButton'
 
 export default function CartPage() {
@@ -18,8 +18,6 @@ export default function CartPage() {
   const { format: formatPrice, currency: currentCurrency } = useCurrency()
   
   const [termsAccepted, setTermsAccepted] = useState(false)
-  const [showLegalModal, setShowLegalModal] = useState(false)
-  const [legalModalType, setLegalModalType] = useState<'privacy' | 'legal' | 'terms'>('terms')
   const [isProcessing, setIsProcessing] = useState(false)
   
   const subtotal = getSubtotal()
@@ -275,15 +273,9 @@ export default function CartPage() {
                   />
                   <span className="text-sm text-gray-700" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
                     J'ai lu et j'accepte les{' '}
-                    <button
-                      onClick={() => {
-                        setLegalModalType('terms')
-                        setShowLegalModal(true)
-                      }}
-                      className="text-[#00A1C6] hover:underline"
-                    >
+                    <Link href="/cgv" className="text-[#00A1C6] hover:underline" target="_blank">
                       conditions générales de vente
-                    </button>
+                    </Link>
                   </span>
                 </label>
               </div>
@@ -396,11 +388,6 @@ export default function CartPage() {
       </div>
 
       {/* Legal Modal */}
-      <LegalModal
-        isOpen={showLegalModal}
-        onClose={() => setShowLegalModal(false)}
-        type={legalModalType}
-      />
     </div>
   )
 }

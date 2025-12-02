@@ -8,6 +8,7 @@ export const translations = {
       login: "Connexion",
       bookCall: "Je m'inscris",
       nosFormations: "Nos formations",
+      produitALaUne: "Découvrir nos produits",
       myAccount: "Mon compte",
       signOut: "Se déconnecter",
       connectedAs: "Connecté en tant que"
@@ -292,23 +293,23 @@ export const translations = {
       title: "Questions Fréquentes",
       questions: [
         {
-          q: "Comment Cash360 peut m'aider ?",
-          a: "Cash360 vous aide à comprendre où part votre argent, à identifier vos priorités et à réorganiser vos finances. Grâce à une approche simple, humaine et spirituelle, vous retrouvez équilibre, sérénité et liberté financière."
+          q: "Quels services et produits propose Cash360 ?",
+          a: "Cash360 propose une analyse personnalisée de vos relevés bancaires, des formations en ligne sur l'éducation financière et la prospérité, des capsules thématiques, ainsi qu'un outil de simulation financière. Nos services combinent expertise financière et accompagnement spirituel pour vous aider à retrouver l'équilibre et la liberté financière."
         },
         {
-          q: "Comment fonctionne l'analyse financière ?",
-          a: "Après un premier échange, vous pouvez nous transmettre vos trois derniers relevés bancaires pour une analyse complète. Nous identifions vos points forts, vos faiblesses et vous proposons un plan d'action personnalisé."
+          q: "Puis-je simuler ma situation financière ?",
+          a: "Oui, vous pouvez utiliser notre outil de simulation pour visualiser votre situation financière actuelle et explorer différents scénarios. Cette simulation vous permet de voir l'impact de vos décisions financières avant de les prendre, vous aidant à mieux planifier votre avenir financier."
         },
         {
-          q: "L'appel de 15 minutes est-il gratuit ?",
-          a: "Oui, totalement gratuit et sans engagement. Cet appel permet de mieux comprendre votre situation et de définir ensemble les prochaines étapes pour votre équilibre financier."
+          q: "Quelles méthodes de paiement sont acceptées ?",
+          a: "Nous acceptons les paiements par carte bancaire (Visa, Mastercard), ainsi que les solutions de paiement mobile comme Orange Money et Wave Money pour faciliter vos transactions depuis l'Afrique de l'Ouest."
         },
         {
           q: "Mes informations sont-elles confidentielles ?",
           a: "Absolument. Toutes vos données sont traitées de manière strictement confidentielle et sécurisée. Rien n'est partagé avec des tiers sans votre accord explicite."
         },
         {
-          q: "5️ Je suis Hors de l'europe, est ce que l'accompagnement est pour moi?",
+          q: "Je suis Hors de l'europe, est ce que l'accompagnement est pour moi?",
           a: "Oui, bien sûr 🌍 Où que vous soyez dans le monde, si vous avez un accès à Internet, vous pouvez bénéficier de l'accompagnement Cash360 via nos appels et outils en ligne."
         },
         {
@@ -495,7 +496,30 @@ export const translations = {
       seconds: "Secondes",
       username: "@ev.myriamkonan",
       schedule: "Tous les lundis à 22h00 (Paris)",
-      button: "Suivre sur TikTok"
+      button: "Suivre sur TikTok",
+      highlightTitle: "Pourquoi rejoindre le live ?",
+      highlightList: [
+        "Diagnostic financier express en direct",
+        "Plan d'action concret pour repartir avec une stratégie",
+        "Q&A spirituel et pratique avec Myriam"
+      ],
+      programTitle: "Au programme du prochain live",
+      programItems: [
+        {
+          title: "Audit express de vos dépenses",
+          description: "Analyse en direct d'un relevé pour dénicher les leviers d'économie."
+        },
+        {
+          title: "Témoignage & coaching",
+          description: "Un membre de la communauté partage son déclic financier et reçoit un plan personnalisé."
+        },
+        {
+          title: "Questions / réponses",
+          description: "Posez vos questions sur la gestion, la foi et l'argent."
+        }
+      ],
+      watchersLabel: "personnes connectées",
+      replaysLabel: "Replay disponible 24h"
     },
 
     // Login Page
@@ -908,6 +932,7 @@ export const translations = {
       login: "Login",
       bookCall: "Sign up",
       nosFormations: "Our trainings",
+      produitALaUne: "Discover our products",
       myAccount: "My account",
       signOut: "Sign out",
       connectedAs: "Connected as"
@@ -1396,7 +1421,30 @@ export const translations = {
       seconds: "Seconds",
       username: "@ev.myriamkonan",
       schedule: "Every Monday at 10:00 PM (Paris)",
-      button: "Follow on TikTok"
+      button: "Follow on TikTok",
+      highlightTitle: "Why join the live?",
+      highlightList: [
+        "Get a live financial health check",
+        "Leave with a concrete step-by-step plan",
+        "Ask anything during the spiritual & practical Q&A"
+      ],
+      programTitle: "What's happening next Monday",
+      programItems: [
+        {
+          title: "Real-time expense audit",
+          description: "We break down a bank statement and show where to regain margin."
+        },
+        {
+          title: "Testimony & coaching",
+          description: "A community member shares their breakthrough and receives a custom roadmap."
+        },
+        {
+          title: "Live Q&A",
+          description: "Bring your questions about money management, mindset and faith."
+        }
+      ],
+      watchersLabel: "people connected",
+      replaysLabel: "Replay available for 24h"
     },
 
     // Login Page
@@ -1809,6 +1857,7 @@ export const translations = {
       login: "Iniciar sesión",
       bookCall: "Inscribirse",
       nosFormations: "Nuestras formaciones",
+      produitALaUne: "Descubrir nuestros productos",
       myAccount: "Mi cuenta",
       signOut: "Cerrar sesión",
       connectedAs: "Conectado como"
@@ -2296,7 +2345,30 @@ export const translations = {
       seconds: "Segundos",
       username: "@ev.myriamkonan",
       schedule: "Todos los lunes a las 22:00 (París)",
-      button: "Seguir en TikTok"
+      button: "Seguir en TikTok",
+      highlightTitle: "¿Por qué unirte al live?",
+      highlightList: [
+        "Diagnóstico financiero exprés en directo",
+        "Plan de acción concreto para poner en práctica de inmediato",
+        "Sesión de preguntas y respuestas espiritual y práctica con Myriam"
+      ],
+      programTitle: "En el programa del próximo live",
+      programItems: [
+        {
+          title: "Auditoría exprés de gastos",
+          description: "Analizamos un extracto en directo para detectar márgenes y oportunidades."
+        },
+        {
+          title: "Testimonio y coaching",
+          description: "Un miembro comparte su experiencia y recibe un plan personalizado."
+        },
+        {
+          title: "Preguntas y respuestas",
+          description: "Haz tus preguntas sobre gestión financiera, mentalidad y fe."
+        }
+      ],
+      watchersLabel: "personas conectadas",
+      replaysLabel: "Repetición disponible 24h"
     },
 
     // Login Page
@@ -2709,6 +2781,7 @@ export const translations = {
       login: "Entrar",
       bookCall: "Inscrever-se",
       nosFormations: "Nossas formações",
+      produitALaUne: "Descobrir nossos produtos",
       myAccount: "Minha conta",
       signOut: "Sair",
       connectedAs: "Conectado como"
@@ -3196,7 +3269,30 @@ export const translations = {
       seconds: "Segundos",
       username: "@ev.myriamkonan",
       schedule: "Todas as segundas-feiras às 22:00 (Paris)",
-      button: "Seguir no TikTok"
+      button: "Seguir no TikTok",
+      highlightTitle: "Por que entrar ao vivo?",
+      highlightList: [
+        "Diagnóstico financeiro expresso ao vivo",
+        "Plano de ação concreto para aplicar imediatamente",
+        "Sessão de perguntas e respostas espiritual e prática com Myriam"
+      ],
+      programTitle: "No programa do próximo live",
+      programItems: [
+        {
+          title: "Auditoria expressa de gastos",
+          description: "Analisamos um extrato ao vivo para revelar margens e oportunidades."
+        },
+        {
+          title: "Depoimento e coaching",
+          description: "Um membro compartilha seu avanço e recebe um plano personalizado."
+        },
+        {
+          title: "Perguntas e respostas",
+          description: "Pergunte sobre gestão financeira, mentalidade e fé."
+        }
+      ],
+      watchersLabel: "pessoas conectadas",
+      replaysLabel: "Replay disponível por 24h"
     },
 
     // Login Page

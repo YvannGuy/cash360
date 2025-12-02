@@ -41,17 +41,12 @@ export default function CookieConsentBanner() {
           <div className="flex-1">
             <p className="text-sm text-gray-700 leading-relaxed">
               {t.cookieConsent?.message || 'Nous utilisons des cookies pour améliorer votre expérience sur notre site, analyser le trafic et personnaliser le contenu. En continuant à naviguer, vous acceptez notre'}{' '}
-              <button
-                onClick={() => {
-                  const event = new CustomEvent('openLegalModal', { 
-                    detail: { type: 'privacy' } 
-                  })
-                  window.dispatchEvent(event)
-                }}
+              <a
+                href="/politique-de-confidentialite"
                 className="text-[#00A1C6] hover:underline font-medium"
               >
                 {t.cookieConsent?.privacyLink || 'politique de confidentialité'}
-              </button>
+              </a>
               {' '}{t.cookieConsent?.andCookies || 'et notre utilisation des cookies.'}
             </p>
           </div>

@@ -49,7 +49,7 @@ export default function Hero() {
               <div className="relative w-full max-w-4xl mx-auto">
                 <div className="aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
                   <iframe
-                    src="https://player.vimeo.com/video/1117610452?autoplay=1&loop=1&muted=0&title=0&byline=0&portrait=0&controls=1"
+                    src="https://player.vimeo.com/video/1142374086?autoplay=1&loop=1&muted=0&title=0&byline=0&portrait=0&controls=1"
                     title="Cash360 - Présentation"
                     className="w-full h-full"
                     frameBorder="0"
@@ -75,10 +75,10 @@ export default function Hero() {
               </a>
               
               <a
-                href="#cta"
+                href="#section-analyse"
                 className="inline-flex items-center px-8 py-3.5 border border-white/50 text-white text-base font-medium rounded-lg hover:bg-white/10 transition-all duration-200"
               >
-                {t.nav.nosFormations}
+                {t.nav.produitALaUne || "Découvrir nos produits"}
               </a>
             </div>
 

@@ -31,13 +31,33 @@ export default function SectionAnalyse() {
     }
   }, [])
 
-  const featuredProducts = (t.sectionAnalyse?.featuredProducts || []).map((product: any, index: number) => ({
-    id: index + 1,
-    title: product.title,
-    category: product.category,
-    image: index === 0 ? "/images/stab.jpg" : index === 1 ? "/images/logo/capsule4.jpg" : "/images/logo/money1.png",
-    description: product.description
-  }))
+  const featuredProducts = (t.sectionAnalyse?.featuredProducts || [])
+    .filter((product: any) => {
+      const title = product.title?.toLowerCase() || ''
+      // Masquer "Les combats liés à la prospérité" et ses traductions
+      const battlesTitles = [
+        'les combats liés à la prospérité',
+        'battles related to prosperity',
+        'las batallas relacionadas con la prosperidad',
+        'as batalhas relacionadas à prosperidade'
+      ]
+      // Masquer "Analyse financière" et ses traductions
+      const analysisTitles = [
+        'analyse financière',
+        'financial analysis',
+        'análisis financiero',
+        'análise financeira'
+      ]
+      return !battlesTitles.some(t => title.includes(t.toLowerCase())) && 
+             !analysisTitles.some(t => title.includes(t.toLowerCase()))
+    })
+    .map((product: any, index: number) => ({
+      id: index + 1,
+      title: product.title,
+      category: product.category,
+      image: index === 0 ? "/images/stab.jpg" : index === 1 ? "/images/logo/capsule4.jpg" : "/images/logo/money1.png",
+      description: product.description
+    }))
 
   return (
     <section
@@ -92,10 +112,10 @@ export default function SectionAnalyse() {
                   
                   {/* Bouton CTA aligné en bas */}
                   <Link
-                    href={product.id === 3 ? "/analyse-financiere" : "https://www.cash360.finance/login"}
+                    href={product.category?.toLowerCase() === 'analyse' ? "/analyse-financiere" : "https://www.cash360.finance/login"}
                     className="block w-full text-center bg-[#D4AF37] text-[#0B1B2B] font-semibold py-3 px-6 rounded-lg hover:bg-[#C5A028] transition-all duration-300 transform hover:scale-105 shadow-md mt-auto"
                   >
-                    {product.id === 3 
+                    {product.category?.toLowerCase() === 'analyse'
                       ? (t.sectionAnalyse?.launchButton || "Je lance mon analyse")
                       : (t.sectionAnalyse?.ctaButton || "Je m'inscris")}
                   </Link>

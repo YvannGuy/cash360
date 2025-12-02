@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
-import Image from 'next/image'
 import Link from 'next/link'
 
 export default function CTASection() {
@@ -31,19 +30,6 @@ export default function CTASection() {
     }
   }, [])
 
-  const images = [
-    '/images/logo/capsule1.jpg',
-    '/images/logo/capsule2.jpg',
-    '/images/logo/capsule3.jpg',
-    '/images/logo/capsule4.jpg',
-    '/images/logo/capsule5.jpg',
-    '/images/pack.png'
-  ]
-  
-  const capsules = (t.ctaSection?.capsules || []).map((capsule: any, index: number) => ({
-    ...capsule,
-    image: images[index] || '/images/logo/capsule1.jpg'
-  }))
 
   return (
     <section id="cta" className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
@@ -71,54 +57,17 @@ export default function CTASection() {
             </p>
           </div>
 
-          {/* Cards Horizontal Scroll */}
+          {/* Bouton CTA */}
           <div className={`transition-all duration-1000 delay-300 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
-            <div className="overflow-x-auto pb-6 scrollbar-hide">
-              <div className="flex gap-6 min-w-max">
-                {capsules.map((capsule) => (
-                  <div
-                    key={capsule.id}
-                    className="flex-shrink-0 w-80 bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group flex flex-col"
-                  >
-                    {/* Image */}
-                    <div className="relative h-48 w-full overflow-hidden">
-                      <Image
-                        src={capsule.image}
-                        alt={capsule.title}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-6 flex flex-col flex-grow">
-                      <h3 className="text-xl font-bold text-gray-900 mb-4">
-                        {capsule.title}
-                      </h3>
-                      
-                      <ul className="space-y-2 mb-6 flex-grow">
-                        {capsule.content.map((item: string, index: number) => (
-                          <li key={index} className="text-sm text-gray-600 flex items-start">
-                            <span className="text-yellow-500 mr-2 mt-1">•</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Button */}
-                      <Link
-                        href="/login"
-                        className="block w-full text-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg mt-auto"
-                      >
-                        {t.ctaSection?.ctaButton || t.nav.nosFormations}
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="flex justify-center mb-12">
+              <Link
+                href="/login"
+                className="inline-block px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold text-lg rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-xl"
+              >
+                {t.ctaSection?.ctaButton || "Je m'inscris"}
+              </Link>
             </div>
           </div>
 

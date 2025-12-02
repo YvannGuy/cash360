@@ -193,10 +193,10 @@ export default function Navbar() {
 
             {/* CTA Button */}
             <a
-              href="#cta"
+              href="/login?signup=1"
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              {t.nav.nosFormations}
+              {t.nav.bookCall || 'Inscription'}
             </a>
           </div>
 
@@ -291,11 +291,11 @@ export default function Navbar() {
               )}
 
               <a
-                href="#cta"
+                href="/login?signup=1"
                 onClick={() => setIsMenuOpen(false)}
                 className="block w-full mt-4 px-3 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-xl text-center hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300"
               >
-                {t.nav.nosFormations}
+                {t.nav.bookCall || 'Inscription'}
               </a>
             </div>
           </div>

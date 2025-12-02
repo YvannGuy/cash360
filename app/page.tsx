@@ -12,25 +12,15 @@ import CTASection from '@/components/CTASection'
 import Footer from '@/components/Footer'
 import FAQ from '@/components/FAQ'
 import SectionAnalyse from '@/components/SectionAnalyse'
-import LegalModal from '@/components/LegalModal'
 import CookieConsentBanner from '@/components/CookieConsentBanner'
 
 export default function Home() {
   const { t } = useLanguage()
   const [showScrollTop, setShowScrollTop] = useState(false)
-  const [legalModalOpen, setLegalModalOpen] = useState(false)
-  const [legalModalType, setLegalModalType] = useState<'privacy' | 'legal' | 'terms'>('privacy')
 
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300)
-    }
-
-    // Gérer l'ouverture des modals légaux
-    const handleLegalModal = (event: CustomEvent) => {
-      const type = event.detail.type as 'privacy' | 'legal' | 'terms'
-      setLegalModalType(type)
-      setLegalModalOpen(true)
     }
 
     // Désactiver la redirection automatique vers le dashboard
@@ -41,12 +31,10 @@ export default function Home() {
     }
 
     window.addEventListener('scroll', handleScroll)
-    window.addEventListener('openLegalModal', handleLegalModal as EventListener)
     checkAuthAndRedirect()
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('openLegalModal', handleLegalModal as EventListener)
     }
   }, [])
 
@@ -128,13 +116,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* Legal Modal */}
-      <LegalModal 
-        isOpen={legalModalOpen} 
-        onClose={() => setLegalModalOpen(false)} 
-        type={legalModalType} 
-      />
 
       {/* Bandeau de consentement aux cookies */}
       <CookieConsentBanner />

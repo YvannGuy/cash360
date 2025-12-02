@@ -10,7 +10,6 @@ import { useCart } from '@/lib/CartContext'
 import { useCurrency } from '@/lib/CurrencyContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
 import CurrencySelector from '@/components/CurrencySelector'
-import LegalModal from '@/components/LegalModal'
 import AnalysisCard from '@/components/AnalysisCard'
 import DashboardOnboarding from '@/components/DashboardOnboarding'
 
@@ -111,8 +110,6 @@ function DashboardPageContent() {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [legalModalOpen, setLegalModalOpen] = useState(false)
-  const [legalModalType, setLegalModalType] = useState<'privacy' | 'legal' | 'terms'>('privacy')
   const [showCartDropdown, setShowCartDropdown] = useState(false)
   
   // Pagination
@@ -941,19 +938,10 @@ function DashboardPageContent() {
       }
     }
 
-    // Gérer l'ouverture des modals légaux
-    const handleLegalModal = (event: CustomEvent) => {
-      const type = event.detail.type as 'privacy' | 'legal' | 'terms'
-      setLegalModalType(type)
-      setLegalModalOpen(true)
-    }
-
     document.addEventListener('mousedown', handleClickOutside)
-    window.addEventListener('openLegalModal', handleLegalModal as EventListener)
     
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
-      window.removeEventListener('openLegalModal', handleLegalModal as EventListener)
     }
   }, [showUserMenu, showWhatsAppPopup, showCartDropdown])
 
@@ -1922,13 +1910,6 @@ function DashboardPageContent() {
           </svg>
         </button>
       </div>
-
-      {/* Legal Modal */}
-      <LegalModal 
-        isOpen={legalModalOpen} 
-        onClose={() => setLegalModalOpen(false)} 
-        type={legalModalType} 
-      />
 
       {/* Onboarding */}
       <DashboardOnboarding userId={user?.id || null} />

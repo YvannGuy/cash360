@@ -9,7 +9,6 @@ import UploadDropzone from '@/components/UploadDropzone'
 import { createClientBrowser } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
-import LegalModal from '@/components/LegalModal'
 
 interface FormData {
   message: string
@@ -30,7 +29,6 @@ export default function AnalyseFinancierePage() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [user, setUser] = useState<any>(null)
   const [mounted, setMounted] = useState(false)
-  const [showPrivacy, setShowPrivacy] = useState(false)
   
   const [formData, setFormData] = useState<FormData>({
     message: '',
@@ -335,7 +333,7 @@ export default function AnalyseFinancierePage() {
                 <br />
                 Je peux exercer mes droits (accès, rectification, suppression) en écrivant à <a className="text-blue-600 underline" href="mailto:cash@cash360.finance">cash@cash360.finance</a>.
                 <br />
-                J’ai pris connaissance de la <button type="button" onClick={() => setShowPrivacy(true)} className="text-blue-600 underline">politique de confidentialité (RGPD)</button>.
+                J’ai pris connaissance de la <a href="/politique-de-confidentialite" target="_blank" className="text-blue-600 underline">politique de confidentialité (RGPD)</a>.
                 <span className="text-red-500"> *</span>
               </label>
             </div>
@@ -375,7 +373,6 @@ export default function AnalyseFinancierePage() {
         </div>
       </div>
       {/* Modal politique de confidentialité */}
-      <LegalModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} type="privacy" />
     </div>
   )
 }

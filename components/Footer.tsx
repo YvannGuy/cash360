@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
 
 export default function Footer() {
@@ -108,32 +109,17 @@ export default function Footer() {
               © {currentYear} Cash360. {t.footer.rights}
             </div>
             
-            <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
-              <button 
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('openLegalModal', { detail: { type: 'privacy' } }));
-                }}
-                className="text-gray-400 hover:text-yellow-400 transition-colors duration-200"
-              >
-                {t.footer.privacy}
-              </button>
-              <button 
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('openLegalModal', { detail: { type: 'legal' } }));
-                }}
-                className="text-gray-400 hover:text-yellow-400 transition-colors duration-200"
-              >
-                {t.footer.legal}
-              </button>
-              <button 
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('openLegalModal', { detail: { type: 'terms' } }));
-                }}
-                className="text-gray-400 hover:text-yellow-400 transition-colors duration-200"
-              >
-                {t.footer.terms}
-              </button>
-            </div>
+              <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                <Link href="/politique-de-confidentialite" className="text-gray-400 hover:text-yellow-400 transition-colors duration-200">
+                  {t.footer.privacy}
+                </Link>
+                <Link href="/mentions-legales" className="text-gray-400 hover:text-yellow-400 transition-colors duration-200">
+                  {t.footer.legal}
+                </Link>
+                <Link href="/cgv" className="text-gray-400 hover:text-yellow-400 transition-colors duration-200">
+                  {t.footer.terms}
+                </Link>
+              </div>
           </div>
         </div>
 
