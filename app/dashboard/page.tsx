@@ -1,5 +1,8 @@
 'use client'
 
+// Page Tableau de bord Cash360 (V1 statique, à connecter aux données utilisateur plus tard)
+// NAV NOTE: La navigation principale (onglets Tableau de bord, Boutique, Mes achats, Profil) et les sections associées sont toutes gérées dans ce fichier. Les sous-routes comme /dashboard/settings restent indépendantes.
+
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientBrowser } from '@/lib/supabase'
@@ -12,6 +15,7 @@ import LanguageSwitch from '@/components/LanguageSwitch'
 import CurrencySelector from '@/components/CurrencySelector'
 import AnalysisCard from '@/components/AnalysisCard'
 import DashboardOnboarding from '@/components/DashboardOnboarding'
+import BudgetTracker, { type BudgetSnapshot } from '@/components/dashboard/BudgetTracker'
 
 function DashboardPageContent() {
   const { t, language } = useLanguage()
@@ -22,7 +26,7 @@ function DashboardPageContent() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [userAnalyses, setUserAnalyses] = useState<AnalysisRecord[]>([])
-  const [activeTab, setActiveTab] = useState<'boutique' | 'formations' | 'profil'>('boutique')
+  const [activeTab, setActiveTab] = useState<'overview' | 'boutique' | 'formations' | 'profil' | 'budget'>('overview')
   
   // Capsules prédéfinies - utiliser les traductions
   const availableCapsules = useMemo(() => [
@@ -120,6 +124,146 @@ function DashboardPageContent() {
   const [profileSaving, setProfileSaving] = useState(false)
   const [profileSuccess, setProfileSuccess] = useState('')
   const [profileError, setProfileError] = useState('')
+  const [dailyVerse, setDailyVerse] = useState<{ reference: string; text: string; summary?: string } | null>(null)
+  const [budgetSnapshot, setBudgetSnapshot] = useState<BudgetSnapshot | null>(null)
+  const computeBudgetSnapshot = useCallback((payload: any): BudgetSnapshot => {
+    const monthlyIncomeValue = Number(payload?.monthlyIncome ?? 0)
+    const expensesArray = Array.isArray(payload?.expenses) ? payload.expenses : []
+    const totalExpensesValue = expensesArray.reduce(
+      (sum: number, expense: any) => sum + Number(expense?.amount ?? 0),
+      0
+    )
+
+    return {
+      month: payload?.month || '',
+      monthlyIncome: monthlyIncomeValue,
+      totalExpenses: totalExpensesValue,
+      remaining: monthlyIncomeValue - totalExpensesValue
+    }
+  }, [])
+
+  const refreshBudgetSnapshot = useCallback(async () => {
+    try {
+      const response = await fetch('/api/budget', { cache: 'no-store' })
+      if (!response.ok) return
+      const data = await response.json()
+      setBudgetSnapshot(computeBudgetSnapshot(data))
+    } catch (error) {
+      console.error('Failed to load budget snapshot', error)
+    }
+  }, [computeBudgetSnapshot])
+
+  useEffect(() => {
+    refreshBudgetSnapshot()
+  }, [refreshBudgetSnapshot])
+
+  useEffect(() => {
+    if (activeTab === 'overview' && budgetSnapshot) {
+      refreshBudgetSnapshot()
+    }
+  }, [activeTab, budgetSnapshot, refreshBudgetSnapshot])
+
+  const handleBudgetChange = useCallback((snapshot: BudgetSnapshot) => {
+    setBudgetSnapshot(snapshot)
+  }, [])
+
+  const summaryCards = useMemo(() => {
+    const fallbackIncome = 1500
+    const fallbackExpenses = 1050
+    const incomeValue = budgetSnapshot?.monthlyIncome ?? fallbackIncome
+    const expensesValue = budgetSnapshot?.totalExpenses ?? fallbackExpenses
+    const savingsValue =
+      budgetSnapshot?.remaining ?? incomeValue - expensesValue
+
+    return [
+      {
+        label: t.dashboard.overview?.incomeLabel || 'Revenu du mois',
+        value: formatPrice(incomeValue)
+      },
+      {
+        label: t.dashboard.overview?.expensesLabel || 'Dépenses',
+        value: formatPrice(expensesValue)
+      },
+      {
+        label: t.dashboard.overview?.savingsLabel || 'Épargne',
+        value: formatPrice(savingsValue)
+      }
+    ]
+  }, [budgetSnapshot, formatPrice, t.dashboard.overview])
+
+  const overviewInsights = useMemo(() => {
+    const items: Array<{ key: string; title: string; description: string; status: string; accent: string }> = []
+    const remaining = budgetSnapshot?.remaining
+
+    if (typeof remaining === 'number') {
+      const description =
+        remaining > 0
+          ? t.dashboard.overview?.budgetInsightPositive || 'Vos dépenses restent sous contrôle.'
+          : remaining < 0
+            ? t.dashboard.overview?.budgetInsightNegative || 'Vos dépenses dépassent vos revenus.'
+            : t.dashboard.overview?.budgetInsightNeutral || 'Budget équilibré, gardez une marge de sécurité.'
+
+      items.push({
+        key: 'budget',
+        title: t.dashboard.overview?.budgetInsightTitle || 'Budget',
+        description,
+        status: formatPrice(remaining),
+        accent: remaining >= 0 ? 'text-emerald-600' : 'text-red-500'
+      })
+    } else {
+      items.push({
+        key: 'budget',
+        title: t.dashboard.overview?.budgetInsightTitle || 'Budget',
+        description: t.dashboard.overview?.budgetInsightMissing || 'Complétez votre budget pour suivre votre mois.',
+        status: '—',
+        accent: 'text-gray-400'
+      })
+    }
+
+    const latestAnalysis = userAnalyses[0]
+    if (latestAnalysis) {
+      const statusKey = latestAnalysis.status as keyof (typeof t.dashboard.analysis)['status']
+      const statusLabel =
+        t.dashboard.analysis?.status?.[statusKey] || latestAnalysis.status
+
+      items.push({
+        key: 'analysis',
+        title: t.dashboard.overview?.analysisInsightTitle || 'Analyse financière',
+        description: t.dashboard.overview?.analysisInsightActive || 'Une analyse est actuellement en cours.',
+        status: statusLabel,
+        accent: 'text-blue-600'
+      })
+    } else {
+      items.push({
+        key: 'analysis',
+        title: t.dashboard.overview?.analysisInsightTitle || 'Analyse financière',
+        description: t.dashboard.overview?.analysisInsightEmpty || 'Lancez une nouvelle analyse pour obtenir un diagnostic.',
+        status: '—',
+        accent: 'text-gray-400'
+      })
+    }
+
+    const capsulesCount = userCapsules?.length ?? 0
+    if (capsulesCount > 0) {
+      items.push({
+        key: 'capsules',
+        title: t.dashboard.overview?.capsulesInsightTitle || 'Capsules actives',
+        description: t.dashboard.overview?.capsulesInsightOwned || 'Accédez à vos formations en un clic.',
+        status: `${capsulesCount}`,
+        accent: 'text-amber-600'
+      })
+    } else {
+      items.push({
+        key: 'capsules',
+        title: t.dashboard.overview?.capsulesInsightTitle || 'Capsules actives',
+        description: t.dashboard.overview?.capsulesInsightEmpty || 'Aucune capsule disponible pour l’instant.',
+        status: '0',
+        accent: 'text-gray-400'
+      })
+    }
+
+    return items
+  }, [budgetSnapshot, formatPrice, t, userAnalyses, userCapsules])
   
   // Pagination
   const [currentPageBoutique, setCurrentPageBoutique] = useState(1)
@@ -482,6 +626,24 @@ function DashboardPageContent() {
     setMounted(true)
     // Initialiser Supabase côté client uniquement
     setSupabase(createClientBrowser())
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    const fetchVerse = async () => {
+      try {
+        const res = await fetch('/api/verses', { signal: controller.signal })
+        if (!res.ok) return
+        const data = await res.json()
+        setDailyVerse(data)
+      } catch (error) {
+        if ((error as any)?.name !== 'AbortError') {
+          // TODO: gérer éventuellement le logging
+        }
+      }
+    }
+    fetchVerse()
+    return () => controller.abort()
   }, [])
 
   useEffect(() => {
@@ -1304,41 +1466,165 @@ function DashboardPageContent() {
             </p>
           </div>
 
-          {/* Onglets de navigation */}
-          <div className="mb-8 flex gap-2 border-b border-gray-200" data-onboarding="tabs">
+        {/* Onglets de navigation */}
+        <div className="mb-8 border-b border-gray-200 pb-2" data-onboarding="tabs">
+          <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            {[
+              { id: 'overview', label: t.dashboard.tabs.overview || 'Tableau de bord' },
+              { id: 'budget', label: t.dashboard.tabs.budget || 'Budget & suivi' },
+              { id: 'boutique', label: t.dashboard.tabs.boutique },
+              { id: 'formations', label: t.dashboard.tabs.myPurchases },
+              { id: 'profil', label: t.dashboard.tabs.profile || 'Profil' }
+            ].map((tab) => (
               <button
-              onClick={() => setActiveTab('boutique')}
-              data-onboarding="boutique-tab"
-              className={`px-6 py-3 font-medium transition-all ${
-                activeTab === 'boutique'
-                  ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {t.dashboard.tabs.boutique}
-              </button>
-              <button
-                onClick={() => setActiveTab('formations')}
-              data-onboarding="purchases-tab"
-              className={`px-6 py-3 font-medium transition-all ${
-                activeTab === 'formations'
-                  ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-              >
-              {t.dashboard.tabs.myPurchases}
-              </button>
-              <button
-                onClick={() => setActiveTab('profil')}
-                className={`px-6 py-3 font-medium transition-all ${
-                  activeTab === 'profil'
-                    ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
-                    : 'text-gray-600 hover:text-gray-900'
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as 'overview' | 'boutique' | 'formations' | 'budget' | 'profil')}
+                className={`snap-start px-5 sm:px-6 py-3 font-medium transition-all rounded-t-lg whitespace-nowrap ${
+                  activeTab === tab.id ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900 bg-white'
                 }`}
               >
-                {t.dashboard.tabs.profile || 'Profil'}
+                {tab.label}
               </button>
+            ))}
+          </div>
+        </div>
+
+          {/* Contenu de l'onglet "Tableau de bord" */}
+          {activeTab === 'overview' && (
+            <div className="space-y-8">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(1,47,78,0.08)] border border-[#E7EDF5]">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <div>
+                    <p className="text-xs font-semibold tracking-[0.35em] text-[#00A1C6] mb-3">
+                      {t.dashboard.overview?.summaryTitle || 'Résumé du mois'}
+                    </p>
+                    <h3 className="text-3xl sm:text-4xl font-extrabold text-[#012F4E]">
+                      {t.dashboard.tabs.overview || 'Tableau de bord'}
+                    </h3>
+                    <p className="mt-3 text-gray-500">
+                      {t.dashboard.overview?.subtitle || 'Heureux de vous accompagner vers une vie financière équilibrée.'}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+                  {summaryCards.map((card) => (
+                    <div
+                      key={card.label}
+                      className="bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-4"
+                    >
+                      <p className="text-sm text-[#7CA7C0]">{card.label}</p>
+                      <div className="flex items-baseline justify-between mt-2">
+                        <p className="text-2xl font-semibold text-[#012F4E]">{card.value}</p>
+                        <span className="text-xs text-[#00A1C6]">•</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        {t.dashboard.overview?.actionsTitle || 'Prochaines actions'}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {t.dashboard.overview?.subtitle || 'Choisissez la prochaine étape pour avancer.'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        {/* TODO: connect upcoming milestone */}
+                        2 actions à jour
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('budget')}
+                      className="w-full group rounded-2xl border border-[#00A1C6]/20 p-5 text-left bg-white hover:border-[#00A1C6] hover:shadow-lg transition-all duration-200"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-lg font-semibold text-[#012F4E] group-hover:text-[#00A1C6]">
+                          {t.dashboard.overview?.primaryAction || 'Gérer mon budget'}
+                        </h4>
+                        <span className="text-sm text-[#00A1C6] group-hover:text-[#012F4E]">→</span>
+                      </div>
+                      <p className="text-sm text-gray-600 group-hover:text-gray-700">
+                        {/* TODO: connect to budget completion */}
+                        Suivez vos dépenses en temps réel et optimisez chaque euro.
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => router.push('/dashboard/defi-7-jours')}
+                      className="w-full group rounded-2xl border border-amber-200 p-5 text-left bg-gradient-to-br from-amber-50 to-white hover:from-amber-100 hover:to-white transition-colors duration-200"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-lg font-semibold text-amber-900 group-hover:text-amber-950">
+                          {t.dashboard.overview?.secondaryAction || 'Défi 7 jours'}
+                        </h4>
+                        <span className="text-sm text-amber-600 group-hover:text-amber-950">→</span>
+                      </div>
+                      <p className="text-sm text-amber-900/80 group-hover:text-amber-950">
+                        {/* TODO: connect to challenge progress */}
+                        Construisez votre discipline financière en un exercice par jour.
+                      </p>
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white text-[#012F4E] rounded-2xl p-6 shadow-xl border border-[#E7EDF5]">
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold tracking-[0.35em] text-[#00A1C6] uppercase mb-1">
+                      {t.dashboard.overview?.inspirationTitle || 'Verset du jour'}
+                    </p>
+                    <h3 className="text-lg font-semibold">
+                      {dailyVerse?.reference || t.dashboard.overview?.inspirationReference || 'Proverbes 24:3'}
+                    </h3>
+                  </div>
+                  <p className="text-xl font-medium italic mb-4 leading-relaxed text-gray-700">
+                    “{dailyVerse?.text || t.dashboard.overview?.inspirationText || 'La sagesse assure la réussite.'}”
+                  </p>
+                  {dailyVerse?.summary && dailyVerse.summary !== dailyVerse.text && (
+                    <p className="text-sm text-gray-500">
+                      {dailyVerse.summary}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Insights personnalisés */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {t.dashboard.overview?.insightsTitle || 'Suivi personnalisé'}
+                  </h3>
+                </div>
+                <div className="space-y-5">
+                  {overviewInsights.map((insight) => (
+                    <div key={insight.key} className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{insight.title}</p>
+                        <p className="text-sm text-gray-600">{insight.description}</p>
+                      </div>
+                      <span className={`text-sm font-semibold ${insight.accent}`}>{insight.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
+          )}
+
+          {/* Contenu de l'onglet "Budget & suivi" */}
+          {activeTab === 'budget' && (
+            <div className="space-y-8">
+              <BudgetTracker variant="embedded" onBudgetChange={handleBudgetChange} />
+            </div>
+          )}
 
           {/* Contenu de l'onglet "Boutique" */}
           {activeTab === 'boutique' && (
