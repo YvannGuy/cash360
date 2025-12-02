@@ -22,7 +22,7 @@ function DashboardPageContent() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [userAnalyses, setUserAnalyses] = useState<AnalysisRecord[]>([])
-  const [activeTab, setActiveTab] = useState<'boutique' | 'formations'>('boutique')
+  const [activeTab, setActiveTab] = useState<'boutique' | 'formations' | 'profil'>('boutique')
   
   // Capsules prédéfinies - utiliser les traductions
   const availableCapsules = useMemo(() => [
@@ -111,6 +111,15 @@ function DashboardPageContent() {
   const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [showCartDropdown, setShowCartDropdown] = useState(false)
+  const [profileFirstName, setProfileFirstName] = useState('')
+  const [profileLastName, setProfileLastName] = useState('')
+  const [profilePhone, setProfilePhone] = useState('')
+  const [profileCountry, setProfileCountry] = useState('France')
+  const [profileCity, setProfileCity] = useState('')
+  const [profileProfession, setProfileProfession] = useState('')
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileSuccess, setProfileSuccess] = useState('')
+  const [profileError, setProfileError] = useState('')
   
   // Pagination
   const [currentPageBoutique, setCurrentPageBoutique] = useState(1)
@@ -474,6 +483,17 @@ function DashboardPageContent() {
     // Initialiser Supabase côté client uniquement
     setSupabase(createClientBrowser())
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    const metadata = user.user_metadata || {}
+    setProfileFirstName(metadata.first_name || '')
+    setProfileLastName(metadata.last_name || '')
+    setProfilePhone(metadata.phone || '')
+    setProfileCountry(metadata.country || 'France')
+    setProfileCity(metadata.city || '')
+    setProfileProfession(metadata.profession || '')
+  }, [user])
   
   // Recharger périodiquement les analyses et commandes pour détecter les nouveaux achats et validations
   useEffect(() => {
@@ -951,6 +971,44 @@ function DashboardPageContent() {
     router.push('/')
   }
 
+  const handleProfileSave = async (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault()
+    if (!supabase) return
+    setProfileSaving(true)
+    setProfileError('')
+    setProfileSuccess('')
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          first_name: profileFirstName,
+          last_name: profileLastName,
+          phone: profilePhone,
+          country: profileCountry,
+          city: profileCity,
+          profession: profileProfession
+        }
+      })
+      if (error) throw error
+      setProfileSuccess(t.dashboard.profile?.successMessage || 'Profil mis à jour avec succès.')
+      setUser((prev: any) => prev ? ({
+        ...prev,
+        user_metadata: {
+          ...prev.user_metadata,
+          first_name: profileFirstName,
+          last_name: profileLastName,
+          phone: profilePhone,
+          country: profileCountry,
+          city: profileCity,
+          profession: profileProfession
+        }
+      }) : prev)
+    } catch (err: any) {
+      setProfileError(t.dashboard.profile?.errorMessage || err?.message || 'Erreur lors de la mise à jour du profil.')
+    } finally {
+      setProfileSaving(false)
+    }
+  }
+
 
   const handleWhatsAppClick = () => {
     setShowWhatsAppPopup(true)
@@ -1203,16 +1261,6 @@ function DashboardPageContent() {
                         </button>
                         <button
                           onClick={() => {
-                            router.push('/dashboard/settings')
-                            setShowUserMenu(false)
-                          }}
-                          data-onboarding="settings"
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          {t.dashboard.settings}
-                        </button>
-                        <button
-                          onClick={() => {
                             handleSignOut()
                             setShowUserMenu(false)
                           }}
@@ -1279,6 +1327,16 @@ function DashboardPageContent() {
               }`}
               >
               {t.dashboard.tabs.myPurchases}
+              </button>
+              <button
+                onClick={() => setActiveTab('profil')}
+                className={`px-6 py-3 font-medium transition-all ${
+                  activeTab === 'profil'
+                    ? 'bg-blue-600 text-white rounded-t-lg shadow-md'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {t.dashboard.tabs.profile || 'Profil'}
               </button>
             </div>
 
@@ -1854,6 +1912,183 @@ function DashboardPageContent() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Contenu de l'onglet "Profil" */}
+          {activeTab === 'profil' && (
+            <div className="space-y-6">
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {t.dashboard.profile?.title || 'Mon profil'}
+                    </h2>
+                  </div>
+                  <p className="text-gray-600">
+                    {t.dashboard.profile?.subtitle || 'Mettez à jour vos informations personnelles et vos coordonnées.'}
+                  </p>
+                </div>
+              </div>
+
+              {profileSuccess && (
+                <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+                  {profileSuccess}
+                </div>
+              )}
+
+              {profileError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {profileError}
+                </div>
+              )}
+
+              <form onSubmit={handleProfileSave} className="bg-white rounded-lg border border-gray-200 p-6 space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {t.dashboard.profile?.infoTitle || 'Informations personnelles'}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      {t.dashboard.profile?.form?.firstName || 'Prénom'}
+                    </label>
+                    <input
+                      type="text"
+                      value={profileFirstName}
+                      onChange={(e) => setProfileFirstName(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Votre prénom"
+                    />
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      {t.dashboard.profile?.form?.lastName || 'Nom'}
+                    </label>
+                    <input
+                      type="text"
+                      value={profileLastName}
+                      onChange={(e) => setProfileLastName(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Votre nom"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      {t.dashboard.profile?.form?.email || 'Adresse e-mail'}
+                    </label>
+                    <input
+                      type="email"
+                      value={user?.email || ''}
+                      disabled
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                      placeholder="votre@email.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      {t.dashboard.profile?.form?.phone || 'Téléphone'}
+                    </label>
+                    <input
+                      type="tel"
+                      value={profilePhone}
+                      onChange={(e) => setProfilePhone(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="+33 X XX XX XX XX"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1 1 0 01-1.414 0L6.343 16.657A8 8 0 1117.657 16.657z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {t.dashboard.profile?.form?.country || 'Pays'}
+                    </label>
+                    <input
+                      type="text"
+                      value={profileCountry}
+                      onChange={(e) => setProfileCountry(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="France"
+                    />
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1 1 0 01-1.414 0L6.343 16.657A8 8 0 1117.657 16.657z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {t.dashboard.profile?.form?.city || 'Ville'}
+                    </label>
+                    <input
+                      type="text"
+                      value={profileCity}
+                      onChange={(e) => setProfileCity(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Paris"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-3.866 0-7 1.567-7 3.5V15h14v-3.5C19 9.567 15.866 8 12 8z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8V6a2 2 0 10-4 0v2m4 0a2 2 0 114 0v2M5 15h14v6H5z" />
+                    </svg>
+                    {t.dashboard.profile?.form?.profession || 'Profession'}
+                  </label>
+                  <input
+                    type="text"
+                    value={profileProfession}
+                    onChange={(e) => setProfileProfession(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Votre profession"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={profileSaving}
+                    className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {profileSaving && (
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3.536-3.536A8 8 0 114 12z"></path>
+                      </svg>
+                    )}
+                    {profileSaving
+                      ? t.dashboard.profile?.saving || 'Enregistrement...'
+                      : t.dashboard.profile?.saveButton || 'Enregistrer'}
+                  </button>
+                </div>
+              </form>
             </div>
           )}
         </div>

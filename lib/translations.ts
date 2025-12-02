@@ -727,7 +727,26 @@ export const translations = {
       tabs: {
         myAnalyses: "Mes Analyses",
         boutique: "Boutique",
-        myPurchases: "Mes achats"
+        myPurchases: "Mes achats",
+        profile: "Profil"
+      },
+      profile: {
+        title: "Mon profil",
+        subtitle: "Mettez à jour vos informations personnelles et vos coordonnées.",
+        infoTitle: "Informations personnelles",
+        successMessage: "Profil mis à jour avec succès.",
+        errorMessage: "Impossible de mettre à jour le profil. Veuillez réessayer.",
+        saveButton: "Enregistrer",
+        saving: "Enregistrement...",
+        form: {
+          firstName: "Prénom",
+          lastName: "Nom",
+          email: "Adresse e-mail",
+          phone: "Téléphone",
+          country: "Pays",
+          city: "Ville",
+          profession: "Profession"
+        }
       },
       // Analysis section
       analysis: {
@@ -1658,7 +1677,26 @@ export const translations = {
       tabs: {
         myAnalyses: "My Analyses",
         boutique: "Shop",
-        myPurchases: "My purchases"
+        myPurchases: "My purchases",
+        profile: "Profile"
+      },
+      profile: {
+        title: "My profile",
+        subtitle: "Update your personal details and contact information.",
+        infoTitle: "Personal information",
+        successMessage: "Profile updated successfully.",
+        errorMessage: "Unable to update the profile. Please try again.",
+        saveButton: "Save",
+        saving: "Saving...",
+        form: {
+          firstName: "First name",
+          lastName: "Last name",
+          email: "Email address",
+          phone: "Phone",
+          country: "Country",
+          city: "City",
+          profession: "Profession"
+        }
       },
       // Analysis section
       analysis: {
@@ -2588,7 +2626,26 @@ export const translations = {
       tabs: {
         myAnalyses: "Mis Análisis",
         boutique: "Tienda",
-        myPurchases: "Mis compras"
+        myPurchases: "Mis compras",
+        profile: "Perfil"
+      },
+      profile: {
+        title: "Mi perfil",
+        subtitle: "Actualiza tus datos personales y de contacto.",
+        infoTitle: "Información personal",
+        successMessage: "Perfil actualizado con éxito.",
+        errorMessage: "No se pudo actualizar el perfil. Inténtalo de nuevo.",
+        saveButton: "Guardar",
+        saving: "Guardando...",
+        form: {
+          firstName: "Nombre",
+          lastName: "Apellido",
+          email: "Correo electrónico",
+          phone: "Teléfono",
+          country: "País",
+          city: "Ciudad",
+          profession: "Profesión"
+        }
       },
       // Analysis section
       analysis: {
@@ -3518,7 +3575,26 @@ export const translations = {
       tabs: {
         myAnalyses: "Minhas Análises",
         boutique: "Loja",
-        myPurchases: "Minhas compras"
+        myPurchases: "Minhas compras",
+        profile: "Perfil"
+      },
+      profile: {
+        title: "Meu perfil",
+        subtitle: "Atualize seus dados pessoais e informações de contato.",
+        infoTitle: "Informações pessoais",
+        successMessage: "Perfil atualizado com sucesso.",
+        errorMessage: "Não foi possível atualizar o perfil. Tente novamente.",
+        saveButton: "Salvar",
+        saving: "Salvando...",
+        form: {
+          firstName: "Nome",
+          lastName: "Sobrenome",
+          email: "E-mail",
+          phone: "Telefone",
+          country: "País",
+          city: "Cidade",
+          profession: "Profissão"
+        }
       },
       // Analysis section
       analysis: {
