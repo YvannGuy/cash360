@@ -10,25 +10,27 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [supabase, setSupabase] = useState<any>(null)
-  const [source, setSource] = useState<string>('boutique')
+  const [source, setSource] = useState<string | null>(null)
 
   useEffect(() => {
     setSupabase(createClientBrowser())
     // Récupérer la source depuis sessionStorage
     const storedSource = sessionStorage.getItem('stripe_checkout_source')
-    if (storedSource) {
-      setSource(storedSource)
-    }
+    setSource(storedSource || 'boutique')
   }, [])
 
   useEffect(() => {
     const verifyAndCreate = async () => {
       console.log('🔍 Vérification paiement - sessionId:', sessionId)
-      if (!sessionId || !supabase) {
+      if (!sessionId || !supabase || !source) {
         // Log silencieux - supabase peut être null pendant l'initialisation
         if (sessionId && !supabase) {
           console.log('⏳ Initialisation Supabase en cours...')
         }
+        return
+      }
+      if (source === 'subscription') {
+        console.log('ℹ️ Paiement lié à un abonnement, vérification manuelle ignorée.')
         return
       }
 
@@ -132,21 +134,23 @@ function PaymentSuccessContent() {
     }
 
     verifyAndCreate()
-  }, [sessionId, supabase])
+  }, [sessionId, source, supabase])
 
   useEffect(() => {
+    if (!source) return
     // Attendre 3 secondes puis rediriger selon la source
     const timer = setTimeout(() => {
-      const source = sessionStorage.getItem('stripe_checkout_source')
       if (source === 'analysis') {
         router.push('/analyse-financiere')
+      } else if (source === 'subscription') {
+        router.push('/dashboard?subscription=success')
       } else {
         router.push('/dashboard?payment=success')
       }
     }, 3000)
 
     return () => clearTimeout(timer)
-  }, [router])
+  }, [router, source])
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -164,9 +168,11 @@ function PaymentSuccessContent() {
         </h1>
         
         <p className="text-gray-600 mb-6">
-          {source === 'analysis' 
+          {source === 'analysis'
             ? 'Votre paiement a été traité avec succès. Vous pouvez maintenant soumettre vos relevés.'
-            : 'Votre paiement a été traité avec succès. Vos capsules sont maintenant disponibles.'}
+            : source === 'subscription'
+              ? 'Merci pour votre confiance ! Votre abonnement Sagesse de Salomon est en cours d’activation.'
+              : 'Votre paiement a été traité avec succès. Vos capsules sont maintenant disponibles.'}
         </p>
 
         <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-8">

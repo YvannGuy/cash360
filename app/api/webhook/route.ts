@@ -2,10 +2,91 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sendMail } from '@/lib/mail'
+import { computeGraceUntil } from '@/lib/subscriptionAccess'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-10-29.clover',
+  apiVersion: '2025-10-29.clover'
 })
+
+const SALOMON_PRICE_ID = process.env.STRIPE_SALOMON_PRICE_ID || 'price_1SZwvXFv4a9jSj8cgdjfzaYd'
+const SUBSCRIPTION_PLAN_CODE = 'sagesse-salomon'
+const SUBSCRIPTION_GRACE_DAYS = Number(process.env.SALOMON_GRACE_DAYS || '3')
+
+const resolveCustomerId = (customer: Stripe.Checkout.Session['customer']): string | null => {
+  if (!customer) return null
+  if (typeof customer === 'string') return customer
+  if ('id' in customer) return customer.id
+  return null
+}
+
+const resolveSubscriptionUserId = (
+  explicitUserId?: string | null,
+  subscription?: Stripe.Subscription | null
+): string | null => {
+  if (explicitUserId) return explicitUserId
+  if (subscription?.metadata?.user_id) return subscription.metadata.user_id
+  return null
+}
+
+async function persistSubscriptionRecord(
+  subscription: Stripe.Subscription,
+  explicitUserId?: string | null,
+  statusOverride?: string
+) {
+  if (!supabaseAdmin) {
+    console.error('[WEBHOOK][SUBSCRIPTION] supabaseAdmin not configured')
+    return
+  }
+
+  const userId = resolveSubscriptionUserId(explicitUserId, subscription)
+  if (!userId) {
+    console.warn('[WEBHOOK][SUBSCRIPTION] Impossible de déterminer user_id pour la souscription', subscription.id)
+    return
+  }
+
+  const firstItem = subscription.items.data[0]
+  const status = statusOverride || subscription.status
+  const currentPeriodEnd = subscription.current_period_end
+  const currentPeriodStart = subscription.current_period_start
+
+  const { error } = await supabaseAdmin
+    .from('user_subscriptions')
+    .upsert(
+      {
+        user_id: userId,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: resolveCustomerId(subscription.customer),
+        status,
+        plan_id: subscription.metadata?.plan || SUBSCRIPTION_PLAN_CODE,
+        price_id: firstItem?.price?.id || null,
+        current_period_start: currentPeriodStart ? new Date(currentPeriodStart * 1000).toISOString() : null,
+        current_period_end: currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null,
+        grace_until: computeGraceUntil(currentPeriodEnd, SUBSCRIPTION_GRACE_DAYS),
+        cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+        cancelled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+        metadata: subscription.metadata || {}
+      },
+      { onConflict: 'user_id' }
+    )
+
+  if (error) {
+    console.error('[WEBHOOK][SUBSCRIPTION] upsert error', error)
+  }
+}
+
+async function syncSubscriptionById(
+  subscriptionId?: string | null,
+  explicitUserId?: string | null,
+  statusOverride?: string
+) {
+  if (!subscriptionId) return
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+    await persistSubscriptionRecord(subscription, explicitUserId, statusOverride)
+  } catch (error) {
+    console.error('[WEBHOOK][SUBSCRIPTION] sync error', error)
+  }
+}
 
 // Désactiver le body parser pour Stripe webhook
 export const runtime = 'nodejs'
@@ -37,6 +118,30 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  if (event.type === 'invoice.paid') {
+    const invoice = event.data.object as Stripe.Invoice
+    await syncSubscriptionById(invoice.subscription as string, invoice.metadata?.user_id)
+    return NextResponse.json({ received: true })
+  }
+
+  if (event.type === 'invoice.payment_failed') {
+    const invoice = event.data.object as Stripe.Invoice
+    await syncSubscriptionById(invoice.subscription as string, invoice.metadata?.user_id, 'past_due')
+    return NextResponse.json({ received: true })
+  }
+
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object as Stripe.Subscription
+    await persistSubscriptionRecord(subscription, subscription.metadata?.user_id, 'canceled')
+    return NextResponse.json({ received: true })
+  }
+
+  if (event.type === 'customer.subscription.updated') {
+    const subscription = event.data.object as Stripe.Subscription
+    await persistSubscriptionRecord(subscription, subscription.metadata?.user_id)
+    return NextResponse.json({ received: true })
+  }
+
   // Gérer les événements de paiement
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
@@ -53,6 +158,10 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      if (session.mode === 'subscription' && session.subscription) {
+        await syncSubscriptionById(session.subscription as string, session.metadata?.user_id)
+      }
+
       // Récupérer les métadonnées
       const userId = session.metadata?.user_id
       const itemsJson = session.metadata?.items

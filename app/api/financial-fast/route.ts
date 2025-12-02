@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClientServer } from '@/lib/supabase-server'
+import { hasActiveSubscription } from '@/lib/subscriptionAccess'
 
 type FastRow = {
   id: string
   title: string
   categories: string[]
   intention: string | null
+  additional_notes?: string | null
+  habit_name?: string | null
+  habit_reminder?: string | null
+  meta_categories?: Record<string, any> | null
   estimated_monthly_spend: number
   start_date: string
   end_date: string
@@ -17,6 +22,7 @@ type FastDayRow = {
   day_index: number
   date: string
   respected: boolean
+  reflection?: string | null
 }
 
 const FAST_TITLE = 'Jeûne financier 30 jours'
@@ -28,7 +34,7 @@ const formatDate = (value: Date) => value.toISOString().split('T')[0]
 async function getActiveFast(supabase: any, userId: string) {
   const { data: fast, error } = await supabase
     .from('financial_fasts')
-    .select('id, title, categories, intention, estimated_monthly_spend, start_date, end_date, is_active')
+    .select('id, title, categories, intention, additional_notes, habit_name, habit_reminder, meta_categories, estimated_monthly_spend, start_date, end_date, is_active')
     .eq('user_id', userId)
     .eq('is_active', true)
     .order('created_at', { ascending: false })
@@ -45,7 +51,7 @@ async function getActiveFast(supabase: any, userId: string) {
 
   const { data: days, error: daysError } = await supabase
     .from('financial_fast_days')
-    .select('id, day_index, date, respected')
+    .select('id, day_index, date, respected, reflection')
     .eq('fast_id', fast.id)
     .order('day_index', { ascending: true })
 
@@ -61,6 +67,10 @@ const mapFastRow = (row: FastRow) => ({
   title: row.title,
   categories: row.categories ?? [],
   intention: row.intention ?? '',
+  additionalNotes: row.additional_notes ?? '',
+  habitName: row.habit_name ?? '',
+  habitReminder: row.habit_reminder ?? '',
+  categoryBudgets: row.meta_categories ?? {},
   estimatedMonthlySpend: Number(row.estimated_monthly_spend ?? 0),
   startDate: row.start_date,
   endDate: row.end_date,
@@ -71,8 +81,23 @@ const mapDayRow = (row: FastDayRow) => ({
   id: row.id,
   dayIndex: row.day_index,
   date: row.date,
-  respected: Boolean(row.respected)
+  respected: Boolean(row.respected),
+  reflection: row.reflection || ''
 })
+
+async function userHasPremiumAccess(supabase: any, userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('user_subscriptions')
+    .select('status, grace_until')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[FAST] subscription lookup error', error)
+  }
+
+  return hasActiveSubscription(data)
+}
 
 export async function GET() {
   try {
@@ -84,6 +109,11 @@ export async function GET() {
 
     if (userError || !user) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    }
+
+    const premiumAccess = await userHasPremiumAccess(supabase, user.id)
+    if (!premiumAccess) {
+      return NextResponse.json({ error: 'subscription_required' }, { status: 402 })
     }
 
     const { fast, days } = await getActiveFast(supabase, user.id)
@@ -114,11 +144,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
+    const premiumAccess = await userHasPremiumAccess(supabase, user.id)
+    if (!premiumAccess) {
+      return NextResponse.json({ error: 'subscription_required' }, { status: 402 })
+    }
+
     const body = await request.json()
     const categories = Array.isArray(body.categories)
       ? body.categories.map((value: string) => value).filter(Boolean)
       : []
     const intention = typeof body.intention === 'string' ? body.intention.trim() : ''
+    const additionalNotes = typeof body.additionalNotes === 'string' ? body.additionalNotes.trim() : ''
+    const habitName = typeof body.habitName === 'string' ? body.habitName.trim() : ''
+    const habitReminder = typeof body.habitReminder === 'string' ? body.habitReminder.trim() : ''
+    const categoryBudgets =
+      typeof body.categoryBudgets === 'object' && body.categoryBudgets !== null ? body.categoryBudgets : {}
     const estimatedMonthlySpend = Number(body.estimatedMonthlySpend ?? 0)
 
     if (categories.length === 0) {
@@ -144,6 +184,18 @@ export async function POST(request: NextRequest) {
     now.setHours(0, 0, 0, 0)
     const endDate = new Date(now.getTime() + (DAYS_COUNT - 1) * MS_IN_DAY)
 
+    const sanitizedCategoryBudgets = Object.keys(categoryBudgets).reduce((acc, key) => {
+      const value = Number(
+        typeof categoryBudgets[key] === 'object' && categoryBudgets[key] !== null
+          ? categoryBudgets[key].target
+          : categoryBudgets[key]
+      )
+      if (Number.isFinite(value) && value >= 0) {
+        acc[key] = { target: Number(value.toFixed(2)) }
+      }
+      return acc
+    }, {} as Record<string, { target: number }>)
+
     const { data: fast, error: insertError } = await supabase
       .from('financial_fasts')
       .insert({
@@ -152,13 +204,19 @@ export async function POST(request: NextRequest) {
         categories,
         intention,
         estimated_monthly_spend: estimatedMonthlySpend,
+        additional_notes: additionalNotes,
+        habit_name: habitName,
+        habit_reminder: habitReminder,
+        meta_categories: sanitizedCategoryBudgets,
         start_date: formatDate(now),
         end_date: formatDate(endDate),
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .select('id, title, categories, intention, estimated_monthly_spend, start_date, end_date, is_active')
+      .select(
+        'id, title, categories, intention, additional_notes, habit_name, habit_reminder, meta_categories, estimated_monthly_spend, start_date, end_date, is_active'
+      )
       .single()
 
     if (insertError || !fast) {
@@ -212,6 +270,11 @@ export async function PATCH(request: NextRequest) {
 
     if (userError || !user) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    }
+
+    const premiumAccess = await userHasPremiumAccess(supabase, user.id)
+    if (!premiumAccess) {
+      return NextResponse.json({ error: 'subscription_required' }, { status: 402 })
     }
 
     const { data: fast, error: fetchError } = await supabase

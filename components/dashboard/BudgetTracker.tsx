@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
+import { useCurrency } from '@/lib/CurrencyContext'
 
 type BudgetExpenseForm = {
   clientId: string
@@ -79,6 +80,7 @@ const computeSnapshot = (payload: any, fallbackMonth: string): BudgetSnapshot =>
 export default function BudgetTracker({ variant = 'page', onBudgetChange }: BudgetTrackerProps) {
   const isEmbedded = variant === 'embedded'
   const { t, language } = useLanguage()
+  const { format: formatCurrency, symbol: currencySymbol } = useCurrency()
   const copy = t.dashboard?.budget ?? {}
   const [monthlyIncome, setMonthlyIncome] = useState('')
   const [expenses, setExpenses] = useState<BudgetExpenseForm[]>([])
@@ -88,10 +90,14 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [currentMonth] = useState(getCurrentMonthSlug)
+  const [requiresSubscription, setRequiresSubscription] = useState(false)
 
   const locale = localeMap[language as keyof typeof localeMap] ?? 'fr-FR'
   const timelineDateFormatter = useMemo(() => new Intl.DateTimeFormat(locale, { day: '2-digit', month: 'short' }), [locale])
-  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }), [locale])
+  const formatMoney = useCallback(
+    (value: number) => formatCurrency(value),
+    [formatCurrency]
+  )
 
   const totalExpenses = useMemo(() => {
     return expenses.reduce((sum, expense) => sum + normalizeAmount(expense.amount), 0)
@@ -110,6 +116,33 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
     })
   }, [expenses, normalizedSearch])
   const hasFilteredExpenses = filteredExpenses.length > 0
+  const subscriptionLock = (
+    <div className={`${isEmbedded ? '' : 'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
+      <div className="bg-white rounded-3xl border border-dashed border-gray-200 p-8 text-center shadow-sm">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 text-yellow-600 mx-auto mb-4">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0-8v2m-6 5V6a2 2 0 012-2h6.5a2 2 0 011.6.8l3.5 4.2a2 2 0 01.4 1.2V17a2 2 0 01-2 2H8a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-[#012F4E] mb-2">
+          {copy.subscriptionLockedTitle || 'Abonnement requis'}
+        </h2>
+        <p className="text-gray-600 mb-6">
+          {copy.subscriptionLockedDescription ||
+            'Souscrivez à l’abonnement Sagesse de Salomon pour débloquer le suivi budgétaire complet.'}
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = '/dashboard?tab=boutique#subscription'
+          }}
+          className="inline-flex items-center justify-center rounded-2xl bg-[#012F4E] px-6 py-3 text-white font-semibold shadow-lg hover:bg-[#023d68]"
+        >
+          {copy.subscriptionLockedCta || 'Découvrir l’abonnement'}
+        </button>
+      </div>
+    </div>
+  )
   const isSearchActive = normalizedSearch.length > 0
 
   const totalExpensePages = Math.max(1, Math.ceil(filteredExpenses.length / EXPENSES_PER_PAGE))
@@ -191,13 +224,13 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
     return [
       {
         title: copy.activityBudgetUpdated || 'Budget mis à jour',
-        detail: `${currencyFormatter.format(Math.max(totalExpenses, 0))}`,
+        detail: `${formatMoney(Math.max(totalExpenses, 0))}`,
         date: intlToday
       },
       latestExpense
         ? {
             title: copy.activityExpenseAdded || 'Dernière dépense enregistrée',
-            detail: `${latestExpense.category} · ${currencyFormatter.format(latestExpense.amountValue)}`,
+            detail: `${latestExpense.category} · ${formatMoney(latestExpense.amountValue)}`,
             date: intlToday
           }
         : {
@@ -209,12 +242,12 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
         title: copy.activityGoal || "Objectif d'épargne",
         detail:
           remaining > 0
-            ? `${currencyFormatter.format(remaining)} ${remainingLabelLower}`
+            ? `${formatMoney(remaining)} ${remainingLabelLower}`
             : copy.negativeMessage || 'Rééquilibrez vos dépenses',
         date: intlToday
       }
     ]
-  }, [copy.activityBudgetUpdated, copy.activityExpenseAdded, copy.activityGoal, copy.emptyExpenses, copy.negativeMessage, copy.remainingLabel, currencyFormatter, intlToday, latestExpense, remaining, totalExpenses])
+  }, [copy.activityBudgetUpdated, copy.activityExpenseAdded, copy.activityGoal, copy.emptyExpenses, copy.negativeMessage, copy.remainingLabel, formatMoney, intlToday, latestExpense, remaining, totalExpenses])
 
   const statsCards = useMemo(() => {
     const safeIncome = Math.max(incomeValue, 0)
@@ -225,17 +258,17 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
     return [
       {
         label: copy.monthlyIncomeLabel || 'Revenu mensuel net',
-        value: currencyFormatter.format(safeIncome),
+        value: formatMoney(safeIncome),
         hint: monthLabel
       },
       {
         label: copy.totalExpensesLabel || 'Total des dépenses',
-        value: currencyFormatter.format(safeExpenses),
+        value: formatMoney(safeExpenses),
         hint: usageLabelLower ? `${usagePercent.toFixed(0)}% ${usageLabelLower}` : `${usagePercent.toFixed(0)}%`
       },
       {
         label: copy.remainingLabel || 'Solde restant',
-        value: currencyFormatter.format(safeRemaining),
+        value: formatMoney(safeRemaining),
         hint:
           safeRemaining > 0
             ? copy.positiveMessage || 'Vos dépenses sont inférieures à vos revenus.'
@@ -256,7 +289,7 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
     copy.remainingLabel,
     copy.totalExpensesLabel,
     copy.usageLabel,
-    currencyFormatter,
+    formatMoney,
     incomeValue,
     monthLabel,
     remaining,
@@ -280,9 +313,20 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
       }
       try {
         const response = await fetch(`/api/budget?month=${currentMonth}`, { cache: 'no-store' })
+        if (response.status === 402) {
+          setRequiresSubscription(true)
+          setMonthlyIncome('')
+          setExpenses([])
+          setStatus({
+            type: 'error',
+            text: copy.subscriptionRequired || 'Un abonnement actif est nécessaire pour accéder au budget.'
+          })
+          return
+        }
         if (!response.ok) {
           throw new Error(copy.fetchError || 'Impossible de charger vos données budgétaires.')
         }
+        setRequiresSubscription(false)
         const data = await response.json()
         setMonthlyIncome(
           typeof data.monthlyIncome === 'number' ? String(data.monthlyIncome) : data.monthlyIncome ?? ''
@@ -309,7 +353,7 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
         }
       }
     },
-    [copy.fetchError, currentMonth, notifySnapshotChange]
+    [copy.fetchError, copy.subscriptionRequired, currentMonth, notifySnapshotChange]
   )
 
   useEffect(() => {
@@ -342,6 +386,13 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
 
   const handleSave = async () => {
     setStatus(null)
+    if (requiresSubscription) {
+      setStatus({
+        type: 'error',
+        text: copy.subscriptionRequired || 'Un abonnement actif est nécessaire pour accéder au budget.'
+      })
+      return
+    }
     if (incomeValue < 0) {
       setStatus({ type: 'error', text: copy.saveError || 'Le revenu doit être positif.' })
       return
@@ -366,6 +417,11 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
           expenses: sanitizedExpenses
         })
       })
+
+      if (response.status === 402) {
+        setRequiresSubscription(true)
+        throw new Error(copy.subscriptionRequired || 'Abonnement requis pour enregistrer votre budget.')
+      }
 
       if (!response.ok) {
         throw new Error(copy.saveError || 'Impossible de sauvegarder vos données.')
@@ -434,7 +490,7 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
                       placeholder={copy.monthlyIncomePlaceholder || 'Ex : 1500'}
                       className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-lg font-semibold text-[#012F4E] focus:outline-none focus:ring-2 focus:ring-[#00A1C6]/40"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">€</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">{currencySymbol}</span>
                   </div>
                 </div>
               <div className="w-full lg:w-1/2 bg-[#F5FAFF] border border-[#E0ECF5] rounded-2xl p-5">
@@ -460,7 +516,7 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
               </div>
             </section>
 
-          <section className="bg-white rounded-3xl shadow-sm border border-[#E7EDF5] p-6">
+            <section className="bg-white rounded-3xl shadow-sm border border-[#E7EDF5] p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
                 <div>
                   <h2 className="text-xl font-semibold text-[#012F4E]">
@@ -612,7 +668,7 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
                   </h3>
                 </div>
                 <span className="text-lg font-semibold text-[#012F4E]">
-                {currencyFormatter.format(Math.max(totalExpenses, 0))}
+                {formatMoney(Math.max(totalExpenses, 0))}
                 </span>
               </div>
               <div className="mt-6 rounded-2xl bg-[#F5FAFF] border border-[#E0ECF5] p-4">
@@ -622,7 +678,7 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
                     remaining >= 0 ? 'text-emerald-600' : 'text-red-500'
                   }`}
                 >
-                  {currencyFormatter.format(remaining)}
+                  {formatMoney(remaining)}
                 </p>
               </div>
             <p className="text-sm text-gray-600 mt-4 leading-relaxed">{usageStatus.message}</p>
@@ -649,7 +705,7 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
                       <p className="font-semibold text-[#012F4E]">{expense.category}</p>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-[#012F4E]">
-                          {currencyFormatter.format(expense.amountValue)}
+                          {formatMoney(expense.amountValue)}
                         </p>
                         <p className="text-xs text-gray-500">{percent.toFixed(0)}%</p>
                       </div>
@@ -666,7 +722,7 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
               {otherExpensesAmount > 0 && (
                 <div className="flex items-center justify-between text-sm text-gray-600">
                   <span>Autres</span>
-                  <span>{currencyFormatter.format(otherExpensesAmount)}</span>
+                  <span>{formatMoney(otherExpensesAmount)}</span>
                 </div>
               )}
             </div>
@@ -709,6 +765,10 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
     )
 
     return isEmbedded ? skeleton : <div className="min-h-screen bg-slate-50 py-10">{skeleton}</div>
+  }
+
+  if (requiresSubscription) {
+    return isEmbedded ? subscriptionLock : <div className="min-h-screen bg-slate-50 py-10">{subscriptionLock}</div>
   }
 
   return isEmbedded ? content : <div className="min-h-screen bg-slate-50 py-10">{content}</div>

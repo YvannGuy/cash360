@@ -3,13 +3,13 @@
 // Page Tableau de bord Cash360 (V1 statique, à connecter aux données utilisateur plus tard)
 // NAV NOTE: La navigation principale (onglets Tableau de bord, Boutique, Mes achats, Profil) et les sections associées sont toutes gérées dans ce fichier. Les sous-routes comme /dashboard/settings restent indépendantes.
 
-import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientBrowser } from '@/lib/supabase'
 import { analysisService, type AnalysisRecord, capsulesService } from '@/lib/database'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
-import { useCart } from '@/lib/CartContext'
+import { useCart, type CartItem } from '@/lib/CartContext'
 import { useCurrency } from '@/lib/CurrencyContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
 import CurrencySelector from '@/components/CurrencySelector'
@@ -17,8 +17,12 @@ import AnalysisCard from '@/components/AnalysisCard'
 import DashboardOnboarding from '@/components/DashboardOnboarding'
 import BudgetTracker, { type BudgetSnapshot } from '@/components/dashboard/BudgetTracker'
 import FinancialFast from '@/components/dashboard/FinancialFast'
+import ModalOMWave from '@/components/ModalOMWave'
+import { hasActiveSubscription } from '@/lib/subscriptionAccess'
+import { EUR_TO_FCFA_RATE } from '@/config/omWave'
 
 type DashboardTab = 'overview' | 'boutique' | 'formations' | 'profil' | 'budget' | 'fast'
+type SubscriptionAction = 'cancel_period_end' | 'resume' | 'terminate_immediately'
 const FAST_TOTAL_DAYS = 30
 const DAY_MS = 1000 * 60 * 60 * 24
 
@@ -35,14 +39,49 @@ function DashboardPageContent() {
   const [fastSummary, setFastSummary] = useState<{ status: 'none' | 'active' | 'completed'; day?: number }>({
     status: 'none'
   })
-  const navItems: Array<{ id: DashboardTab; label: string }> = [
-    { id: 'overview', label: t.dashboard.tabs.overview || 'Tableau de bord' },
-    { id: 'budget', label: t.dashboard.tabs.budget || 'Budget & suivi' },
-    { id: 'fast', label: t.dashboard.tabs.financialFast || 'Jeûne financier' },
-    { id: 'boutique', label: t.dashboard.tabs.boutique },
-    { id: 'formations', label: t.dashboard.tabs.myPurchases },
-    { id: 'profil', label: t.dashboard.tabs.profile || 'Profil' }
-  ]
+  const [subscription, setSubscription] = useState<any | null>(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true)
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(null)
+  const [subscriptionCheckoutProduct, setSubscriptionCheckoutProduct] = useState<string | null>(null)
+  const [subscriptionActionLoading, setSubscriptionActionLoading] = useState<SubscriptionAction | null>(null)
+  const [subscriptionActionMessage, setSubscriptionActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [subscriptionConfirm, setSubscriptionConfirm] = useState<{ action: SubscriptionAction; dateLabel?: string } | null>(null)
+  const [subscriptionMobileModalOpen, setSubscriptionMobileModalOpen] = useState(false)
+  const [subscriptionMobileOrderId, setSubscriptionMobileOrderId] = useState<string | null>(null)
+  const [subscriptionMobileCartItems, setSubscriptionMobileCartItems] = useState<CartItem[]>([])
+  const [subscriptionMobileProductName, setSubscriptionMobileProductName] = useState('')
+  const [subscriptionMobileAmountEUR, setSubscriptionMobileAmountEUR] = useState(0)
+  const generateSubscriptionOrderId = useCallback(
+    () => `SUB${Date.now()}${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+    []
+  )
+  const subscriptionMobileAmountFCFA = useMemo(
+    () => Math.round(subscriptionMobileAmountEUR * EUR_TO_FCFA_RATE),
+    [subscriptionMobileAmountEUR]
+  )
+  const handleSubscriptionMobileMoney = useCallback(
+    (product: any) => {
+      setSubscriptionMobileCartItems([
+        {
+          id: product.id,
+          title: product.title,
+          img: product.img,
+          price: product.price,
+          quantity: 1,
+          category: 'abonnement'
+        }
+      ])
+      setSubscriptionMobileProductName(product.title)
+      setSubscriptionMobileAmountEUR(product.price)
+      setSubscriptionMobileOrderId(generateSubscriptionOrderId())
+      setSubscriptionMobileModalOpen(true)
+    },
+    [generateSubscriptionOrderId]
+  )
+  const handleCloseSubscriptionMobileModal = useCallback(() => {
+    setSubscriptionMobileModalOpen(false)
+    setSubscriptionMobileOrderId(null)
+  }, [])
   
   // Capsules prédéfinies - utiliser les traductions
   const availableCapsules = useMemo(() => [
@@ -142,6 +181,27 @@ function DashboardPageContent() {
   const [profileError, setProfileError] = useState('')
   const [dailyVerse, setDailyVerse] = useState<{ reference: string; text: string; summary?: string } | null>(null)
   const [budgetSnapshot, setBudgetSnapshot] = useState<BudgetSnapshot | null>(null)
+  const hasPremiumAccess = useMemo(() => hasActiveSubscription(subscription), [subscription])
+  const previousHasPremiumRef = useRef(hasPremiumAccess)
+  const navItems: Array<{ id: DashboardTab; label: string }> = useMemo(() => {
+    const baseTabs: Array<{ id: DashboardTab; label: string }> = [
+      { id: 'boutique', label: t.dashboard.tabs.boutique },
+      { id: 'formations', label: t.dashboard.tabs.myPurchases },
+      { id: 'profil', label: t.dashboard.tabs.profile || 'Profil' }
+    ]
+
+    if (hasPremiumAccess) {
+      return [
+        { id: 'overview', label: t.dashboard.tabs.overview || 'Tableau de bord' },
+        { id: 'budget', label: t.dashboard.tabs.budget || 'Budget & suivi' },
+        { id: 'fast', label: t.dashboard.tabs.financialFast || 'Jeûne financier' },
+        ...baseTabs
+      ]
+    }
+
+    return baseTabs
+  }, [hasPremiumAccess, t.dashboard.tabs])
+  const allowedTabs = useMemo(() => navItems.map((item) => item.id), [navItems])
   const computeBudgetSnapshot = useCallback((payload: any): BudgetSnapshot => {
     const monthlyIncomeValue = Number(payload?.monthlyIncome ?? 0)
     const expensesArray = Array.isArray(payload?.expenses) ? payload.expenses : []
@@ -161,6 +221,10 @@ function DashboardPageContent() {
   const refreshBudgetSnapshot = useCallback(async () => {
     try {
       const response = await fetch('/api/budget', { cache: 'no-store' })
+      if (response.status === 402) {
+        setBudgetSnapshot(null)
+        return
+      }
       if (!response.ok) return
       const data = await response.json()
       setBudgetSnapshot(computeBudgetSnapshot(data))
@@ -172,6 +236,10 @@ function DashboardPageContent() {
 const refreshFastSummary = useCallback(async () => {
   try {
     const response = await fetch('/api/financial-fast', { cache: 'no-store' })
+    if (response.status === 402) {
+      setFastSummary({ status: 'none' })
+      return
+    }
     if (!response.ok) {
       throw new Error('fetch_failed')
     }
@@ -197,22 +265,137 @@ const refreshFastSummary = useCallback(async () => {
 }, [])
 
   useEffect(() => {
+    if (!hasPremiumAccess) {
+      setBudgetSnapshot(null)
+      return
+    }
     refreshBudgetSnapshot()
-  }, [refreshBudgetSnapshot])
-
-useEffect(() => {
-  refreshFastSummary()
-}, [refreshFastSummary])
+  }, [hasPremiumAccess, refreshBudgetSnapshot])
 
   useEffect(() => {
+    if (!hasPremiumAccess) {
+      setFastSummary({ status: 'none' })
+      return
+    }
+    refreshFastSummary()
+  }, [hasPremiumAccess, refreshFastSummary])
+
+  useEffect(() => {
+    if (!hasPremiumAccess) return
     if (activeTab === 'overview' && budgetSnapshot) {
       refreshBudgetSnapshot()
     }
-  }, [activeTab, budgetSnapshot, refreshBudgetSnapshot])
+  }, [activeTab, budgetSnapshot, hasPremiumAccess, refreshBudgetSnapshot])
 
   const handleBudgetChange = useCallback((snapshot: BudgetSnapshot) => {
     setBudgetSnapshot(snapshot)
   }, [])
+
+  const refreshSubscription = useCallback(
+    async (withLoader = true) => {
+      if (withLoader) {
+        setSubscriptionLoading(true)
+      }
+      setSubscriptionError(null)
+      try {
+        const response = await fetch('/api/subscription', { cache: 'no-store' })
+        if (!response.ok) {
+          if (response.status === 401) {
+            setSubscription(null)
+          } else {
+            const payload = await response.json().catch(() => ({}))
+            throw new Error(payload?.error || 'Impossible de récupérer votre abonnement.')
+          }
+        } else {
+          const data = await response.json()
+          setSubscription(data.subscription ?? null)
+        }
+      } catch (error: any) {
+        console.error('[DASHBOARD] refreshSubscription error', error)
+        setSubscription(null)
+        setSubscriptionError(error?.message || 'Impossible de récupérer votre abonnement.')
+      } finally {
+        if (withLoader) {
+          setSubscriptionLoading(false)
+        }
+      }
+    },
+    []
+  )
+
+  const handleSubscriptionCheckout = useCallback(
+    async (productId: string) => {
+      setSubscriptionError(null)
+      setSubscriptionCheckoutProduct(productId)
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('stripe_checkout_source', 'subscription')
+          sessionStorage.removeItem('stripe_checkout_items')
+        }
+
+        const response = await fetch('/api/subscription/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId })
+        })
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}))
+          throw new Error(payload?.error || 'Impossible de lancer l’abonnement.')
+        }
+
+        const data = await response.json()
+        if (data?.url) {
+          window.location.href = data.url
+          return
+        }
+
+        throw new Error('URL de paiement introuvable.')
+      } catch (error: any) {
+        console.error('[DASHBOARD] handleSubscriptionCheckout error', error)
+        setSubscriptionCheckoutProduct(null)
+        setSubscriptionError(error?.message || 'Impossible de lancer l’abonnement.')
+      }
+    },
+    []
+  )
+
+  const handleSubscriptionAction = useCallback(
+    async (action: SubscriptionAction) => {
+      setSubscriptionActionMessage(null)
+      setSubscriptionActionLoading(action)
+      try {
+        const response = await fetch('/api/subscription/manage', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action })
+        })
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}))
+          throw new Error(payload?.error || t.dashboard.subscription?.manageError || 'Impossible de mettre à jour votre abonnement.')
+        }
+
+        const successMessage = action === 'terminate_immediately'
+          ? (t.dashboard.subscription?.terminateImmediatelySuccess || 'Abonnement terminé immédiatement. L\'accès aux fonctionnalités premium a été retiré.')
+          : (t.dashboard.subscription?.manageSuccess || 'Abonnement mis à jour.')
+        
+        setSubscriptionActionMessage({
+          type: 'success',
+          text: successMessage
+        })
+        await refreshSubscription(false)
+      } catch (error: any) {
+        setSubscriptionActionMessage({
+          type: 'error',
+          text: error?.message || t.dashboard.subscription?.manageError || 'Impossible de mettre à jour votre abonnement.'
+        })
+      } finally {
+        setSubscriptionActionLoading(null)
+      }
+    },
+    [refreshSubscription, t.dashboard.subscription]
+  )
 
   const summaryCards = useMemo(() => {
     const fallbackIncome = 1500
@@ -321,6 +504,50 @@ useEffect(() => {
 
     return items
   }, [budgetSnapshot, fastSummary, formatPrice, t, userCapsules])
+
+  const formatDateFromISO = useCallback(
+    (value?: string | null) => {
+      if (!value) return ''
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) return ''
+      const localeMap: Record<string, string> = {
+        fr: 'fr-FR',
+        en: 'en-US',
+        es: 'es-ES',
+        pt: 'pt-PT'
+      }
+      const locale = localeMap[language as keyof typeof localeMap] ?? 'fr-FR'
+      return date.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' })
+    },
+    [language]
+  )
+
+  const computePeriodEndFromStart = useCallback((start?: string | null) => {
+    if (!start) return null
+    const startDate = new Date(start)
+    if (Number.isNaN(startDate.getTime())) return null
+    const derived = new Date(startDate)
+    derived.setMonth(derived.getMonth() + 1)
+    return derived.toISOString()
+  }, [])
+
+  const subscriptionEndISO = useMemo(() => {
+    if (!subscription) return null
+    return (
+      subscription.grace_until ||
+      subscription.current_period_end ||
+      computePeriodEndFromStart(subscription.current_period_start) ||
+      computePeriodEndFromStart(subscription.created_at) ||
+      computePeriodEndFromStart(subscription.updated_at)
+    )
+  }, [subscription, computePeriodEndFromStart])
+
+  const subscriptionEndLabel = useMemo(() => {
+    const formatted = formatDateFromISO(subscriptionEndISO)
+    return formatted || t.dashboard.subscription?.confirmFallback || 'fin de période'
+  }, [subscriptionEndISO, formatDateFromISO, t.dashboard.subscription?.confirmFallback])
+
+  const hasSubscriptionEndEstimate = Boolean(subscriptionEndISO)
   
   // Pagination
   const [currentPageBoutique, setCurrentPageBoutique] = useState(1)
@@ -693,6 +920,40 @@ useEffect(() => {
   }, [])
 
   useEffect(() => {
+    refreshSubscription()
+  }, [refreshSubscription])
+
+  useEffect(() => {
+    if (searchParams?.get('subscription') === 'success') {
+      refreshSubscription(false)
+    }
+  }, [refreshSubscription, searchParams])
+
+  useEffect(() => {
+    if (!subscriptionLoading && hasPremiumAccess && !previousHasPremiumRef.current) {
+      setActiveTab('overview')
+    }
+    previousHasPremiumRef.current = hasPremiumAccess
+  }, [hasPremiumAccess, subscriptionLoading])
+
+  useEffect(() => {
+    if (subscriptionLoading) return
+    if (!allowedTabs.includes(activeTab)) {
+      setActiveTab(allowedTabs[0] as DashboardTab)
+    }
+  }, [activeTab, allowedTabs, subscriptionLoading])
+
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab')
+    if (!tabParam) return
+    if (allowedTabs.includes(tabParam as DashboardTab)) {
+      setActiveTab(tabParam as DashboardTab)
+    } else if (!hasPremiumAccess) {
+      setActiveTab('boutique')
+    }
+  }, [allowedTabs, hasPremiumAccess, searchParams])
+
+  useEffect(() => {
     const controller = new AbortController()
     const fetchVerse = async () => {
       try {
@@ -753,7 +1014,7 @@ useEffect(() => {
         // Recharger aussi les commandes pour détecter les changements de statut (pending_review → paid)
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
-          .select('id, product_id, status, payment_method, created_at, validated_at')
+          .select('id, product_id, product_name, status, payment_method, created_at, validated_at')
           .eq('user_id', user.id)
           .in('status', ['pending_review', 'paid'])
         
@@ -768,6 +1029,46 @@ useEffect(() => {
             }
             return prevOrders
           })
+
+          // Détecter les commandes d'abonnement payées (plus robuste)
+          const paidSubscriptionOrders = ordersData.filter((o: any) => {
+            const isAbonnement = o.product_id === 'abonnement' || 
+                                o.product_id?.toLowerCase() === 'abonnement' ||
+                                o.product_name?.toLowerCase()?.includes('abonnement') ||
+                                o.product_name?.toLowerCase()?.includes('sagesse')
+            return isAbonnement && o.status === 'paid'
+          })
+          
+          const hasPaidSubscriptionOrder = paidSubscriptionOrders.length > 0
+          
+          // Vérifier aussi si une commande d'abonnement vient d'être validée récemment
+          const recentlyValidatedSubscription = paidSubscriptionOrders.some((o: any) => {
+            // Vérifier si validated_at est récent (moins de 2 minutes)
+            if (!o.validated_at) return false
+            const validatedDate = new Date(o.validated_at)
+            const now = new Date()
+            const diffMinutes = (now.getTime() - validatedDate.getTime()) / (1000 * 60)
+            return diffMinutes < 2
+          })
+          
+          // Vérifier si le nombre de commandes d'abonnement payées a changé (détection suppression)
+          const prevPaidSubscriptionCount = userOrders.filter((o: any) => {
+            const isAbonnement = o.product_id === 'abonnement' || 
+                                o.product_id?.toLowerCase() === 'abonnement' ||
+                                o.product_name?.toLowerCase()?.includes('abonnement') ||
+                                o.product_name?.toLowerCase()?.includes('sagesse')
+            return isAbonnement && o.status === 'paid'
+          }).length
+          
+          const subscriptionCountChanged = prevPaidSubscriptionCount !== paidSubscriptionOrders.length
+          
+          // Rafraîchir l'abonnement si :
+          // 1. Il y a des commandes payées ET une validation récente
+          // 2. Le nombre de commandes payées a changé (ajout ou suppression)
+          if (hasPaidSubscriptionOrder && recentlyValidatedSubscription || subscriptionCountChanged) {
+            console.log('[DASHBOARD] 🔄 Détection changement abonnement (payée:', hasPaidSubscriptionOrder, ', récente:', recentlyValidatedSubscription, ', changement:', subscriptionCountChanged, '), rafraîchissement...')
+            refreshSubscription(false)
+          }
         }
       } catch (error) {
         console.error('Erreur rechargement périodique analyses/commandes:', error)
@@ -775,7 +1076,7 @@ useEffect(() => {
     }, 10000) // Toutes les 10 secondes (au lieu de 30)
     
     return () => clearInterval(interval)
-  }, [supabase, user])
+  }, [supabase, user, refreshSubscription])
 
   // Réinitialiser les pages et la recherche lors du changement d'onglet
   useEffect(() => {
@@ -1520,6 +1821,52 @@ useEffect(() => {
             </div>
           )}
 
+          {subscriptionError && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {subscriptionError}
+            </div>
+          )}
+
+          {!subscriptionLoading && !hasPremiumAccess && (
+            <div className="mb-6 rounded-3xl border border-[#F4E2AF] bg-gradient-to-br from-white via-[#FFF9EC] to-white p-6 shadow-[0_15px_35px_rgba(15,23,42,0.08)]">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex-1 space-y-3">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF3C4] text-[#7A4F00] text-[11px] font-semibold uppercase tracking-[0.35em]">
+                    <span className="block w-1.5 h-1.5 rounded-full bg-[#E7B008]" />
+                    {t.dashboard.subscription?.badge || 'Exclusif'}
+                  </span>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-bold text-[#2C1A00]">
+                      {t.dashboard.subscription?.lockedTitle || 'Déverrouillez l’expérience premium Cash360'}
+                    </h2>
+                  {t.dashboard.subscription?.lockedDescription && (
+                    <p className="text-sm text-[#4E3B1A] leading-relaxed">
+                      {t.dashboard.subscription.lockedDescription}
+                    </p>
+                  )}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 lg:items-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('boutique')
+                      setSelectedCategory('abonnement')
+                      if (typeof window !== 'undefined') {
+                        requestAnimationFrame(() => {
+                          document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        })
+                      }
+                    }}
+                    className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-[#FEE7A1] via-[#FBD786] to-[#F6AE2D] px-6 py-3 text-[#3B2A06] font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    {t.dashboard.subscription?.cta || 'Découvrir l’abonnement'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* En-tête d'accueil */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -1549,7 +1896,7 @@ useEffect(() => {
         </div>
 
           {/* Contenu de l'onglet "Tableau de bord" */}
-          {activeTab === 'overview' && (
+          {hasPremiumAccess && activeTab === 'overview' && (
             <div className="space-y-8">
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(1,47,78,0.08)] border border-[#E7EDF5]">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -1677,13 +2024,13 @@ useEffect(() => {
           )}
 
           {/* Contenu de l'onglet "Budget & suivi" */}
-          {activeTab === 'budget' && (
+          {hasPremiumAccess && activeTab === 'budget' && (
             <div className="space-y-8">
               <BudgetTracker variant="embedded" onBudgetChange={handleBudgetChange} />
             </div>
           )}
 
-        {activeTab === 'fast' && (
+        {hasPremiumAccess && activeTab === 'fast' && (
           <div className="space-y-8">
             <FinancialFast variant="embedded" onStatusChange={refreshFastSummary} />
           </div>
@@ -1775,7 +2122,19 @@ useEffect(() => {
               {/* Grille des capsules */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentBoutiqueCapsules.map((capsule) => (
-                  <div key={`${capsule.id}-${currentCurrency}`} id={capsule.id === 'analyse-financiere' ? 'analyse-financiere-card' : undefined} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                  <div
+                    key={`${capsule.id}-${currentCurrency}`}
+                    id={
+                      capsule.id === 'analyse-financiere'
+                        ? 'analyse-financiere-card'
+                        : (capsule as any).category === 'abonnement'
+                          ? 'subscription'
+                          : undefined
+                    }
+                    className={`bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col ${
+                      (capsule as any).category === 'abonnement' ? 'ring-1 ring-[#FEBE02]/40' : ''
+                    }`}
+                  >
                     {/* Image */}
                     <div className="relative h-48 w-full overflow-hidden">
                       <Image
@@ -1806,26 +2165,73 @@ useEffect(() => {
                         )}
                       </div>
 
-                      {/* Bouton d'achat */}
-                      {capsule.isOneTime && userCapsules.includes(capsule.id) ? (
-                        <button
-                          disabled
-                          className="w-full px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {t.dashboard.boutique.alreadyBought}
-                        </button>
-                      ) : (() => {
+                      {/* Bouton d'achat ou abonnement */}
+                      {(() => {
                         const capsuleCategory = (capsule as any).category || 'capsules'
-                        const cartItem = cartItems.find(item => item.id === capsule.id)
+                        if (capsuleCategory === 'abonnement') {
+                          if (hasPremiumAccess) {
+                            return (
+                              <button
+                                type="button"
+                                disabled
+                                className="w-full px-4 py-2 rounded-lg bg-emerald-600/10 text-emerald-700 font-semibold border border-emerald-200 cursor-not-allowed"
+                              >
+                                {t.dashboard.subscription?.activeLabel || 'Abonnement actif'}
+                              </button>
+                            )
+                          }
+                          const isProcessing = subscriptionCheckoutProduct === capsule.id
+                          return (
+                            <div className="space-y-3">
+                              <button
+                                type="button"
+                                onClick={() => handleSubscriptionCheckout(capsule.id)}
+                                disabled={isProcessing}
+                                className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-[#FEBE02] to-[#F99500] text-[#012F4E] font-semibold shadow hover:from-[#ffd24f] hover:to-[#ffae33] transition disabled:opacity-60"
+                              >
+                                {isProcessing
+                                  ? t.dashboard.subscription?.checkoutLoading || 'Redirection...'
+                                  : t.dashboard.subscription?.cta || 'S’abonner maintenant'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSubscriptionMobileMoney(capsule)}
+                                className="w-full px-4 py-2 rounded-lg border border-[#FEBE02] text-[#012F4E] font-semibold hover:bg-yellow-50 transition"
+                              >
+                                {t.dashboard.subscription?.mobileButton || 'Payer avec Mobile Money'}
+                              </button>
+                              <div className="text-xs text-gray-500 text-center space-y-1">
+                                <p>
+                                  {t.dashboard.subscription?.accessSummary ||
+                                    'Accédez au tableau de bord complet, Budget & suivi et Jeûne financier.'}
+                                </p>
+                                <p className="text-[11px] text-gray-600">
+                                  {t.dashboard.subscription?.mobileInfo ||
+                                    'Orange Money & Wave – Afrique de l’Ouest/Centrale. Activation manuelle sous 24h.'}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        }
+
+                        if (capsule.isOneTime && userCapsules.includes(capsule.id)) {
+                          return (
+                            <button
+                              disabled
+                              className="w-full px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {t.dashboard.boutique.alreadyBought}
+                            </button>
+                          )
+                        }
+
+                        const cartItem = cartItems.find((item) => item.id === capsule.id)
                         const isInCart = cartItem !== undefined
-                        
-                        // Pour capsules/pack/ebook/abonnement : désactiver si déjà dans le panier (quantité = 1)
-                        // Pour analyse-financiere : quantités illimitées, toujours activé
                         const isDisabled = capsuleCategory !== 'analyse-financiere' && isInCart
-                        
+
                         return (
                           <button
                             onClick={() => {
@@ -1847,10 +2253,11 @@ useEffect(() => {
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
                           >
-                            {isDisabled 
+                            {isDisabled
                               ? t.dashboard.boutique.alreadyInCart
-                              : (capsule.isPack ? t.dashboard.boutique.buyPack : t.dashboard.boutique.buy)
-                            }
+                              : capsule.isPack
+                                ? t.dashboard.boutique.buyPack
+                                : t.dashboard.boutique.buy}
                           </button>
                         )
                       })()}
@@ -2080,7 +2487,8 @@ useEffect(() => {
                         return timeStr.substring(0, 5)
                       }
                       // Pour ebooks et packs, pas de statut de session (ils n'ont pas de sessions)
-                      const hasNoSession = itemCategory === 'ebook' || itemCategory === 'pack'
+                      const isSubscriptionProduct = itemCategory === 'abonnement'
+                      const hasNoSession = itemCategory === 'ebook' || itemCategory === 'pack' || isSubscriptionProduct
                       
                       const getStatus = (formation: any) => {
                         // Si c'est un ebook, pack ou analyse financière, pas de statut
@@ -2170,6 +2578,24 @@ useEffect(() => {
                                     </svg>
                                     {t.dashboard.purchases.downloadPdf}
                                   </a>
+                                ) : isSubscriptionProduct ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveTab('profil')
+                                      if (typeof window !== 'undefined') {
+                                        requestAnimationFrame(() => {
+                                          document.getElementById('profile-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                        })
+                                      }
+                                    }}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#012F4E] text-white rounded-lg hover:bg-[#023d68] transition-colors font-medium"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A4 4 0 018 17h8a4 4 0 012.879 1.196M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    {t.dashboard.subscription?.manageButton || 'Gérer mon abonnement'}
+                                  </button>
                                 ) : hasNoSession ? (
                                   // Pour packs et autres produits sans session
                                   // Ne pas afficher de message si la commande est en attente (le badge en haut suffit)
@@ -2266,7 +2692,7 @@ useEffect(() => {
 
           {/* Contenu de l'onglet "Profil" */}
           {activeTab === 'profil' && (
-            <div className="space-y-6">
+            <div className="space-y-6" id="profile-section">
               <div className="mb-6 flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
@@ -2438,10 +2864,164 @@ useEffect(() => {
                   </button>
                 </div>
               </form>
+
+          {subscription && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {t.dashboard.subscription?.manageButton || 'Gérer mon abonnement'}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {subscriptionActionLoading
+                      ? t.dashboard.subscription?.checkoutLoading || 'Redirection...'
+                      : t.dashboard.subscription?.accessSummary || 'Gérez votre abonnement Sagesse de Salomon.'}
+                  </p>
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    subscription.status === 'canceled'
+                      ? 'bg-red-100 text-red-700'
+                      : subscription.status === 'past_due'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-green-100 text-green-700'
+                  }`}
+                >
+                  {subscription.status === 'canceled'
+                    ? t.dashboard.subscription?.statusCanceled || 'Abonnement arrêté'
+                    : subscription.status === 'past_due'
+                      ? t.dashboard.subscription?.statusPastDue || 'Paiement en attente'
+                      : subscription.cancel_at_period_end
+                        ? t.dashboard.subscription?.suspendButton || 'Suspendu'
+                        : t.dashboard.subscription?.statusActive || 'Abonnement actif'}
+                </span>
+              </div>
+
+              <div className="text-sm text-gray-700 space-y-1">
+                {hasSubscriptionEndEstimate && !subscription.cancel_at_period_end && (
+                  <p>
+                    <span className="font-medium">{t.dashboard.subscription?.nextRenewal || 'Prochain renouvellement'} :</span>{' '}
+                    {subscriptionEndLabel}
+                  </p>
+                )}
+                {subscription.cancel_at_period_end && subscription.grace_until && (
+                  <p>
+                    <span className="font-medium">{t.dashboard.subscription?.graceUntil || 'Accès disponible jusqu’au'} :</span>{' '}
+                    {formatDateFromISO(subscription.grace_until)}
+                  </p>
+                )}
+                {subscription.status === 'canceled' && subscription.grace_until && (
+                  <p className="text-gray-600">
+                    {t.dashboard.subscription?.cancelledInfo || 'Votre abonnement est arrêté. Relancez-le quand vous voulez.'}
+                  </p>
+                )}
+              </div>
+
+              {subscriptionActionMessage && (
+                <div
+                  className={`text-sm px-4 py-2 rounded-lg border ${
+                    subscriptionActionMessage.type === 'success'
+                      ? 'bg-green-50 border-green-200 text-green-800'
+                      : 'bg-red-50 border-red-200 text-red-700'
+                  }`}
+                >
+                  {subscriptionActionMessage.text}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                {!subscription.cancel_at_period_end && subscription.status !== 'canceled' && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSubscriptionConfirm({
+                        action: 'cancel_period_end',
+                        dateLabel: formatDateFromISO(subscription.grace_until || subscriptionEndISO) || subscriptionEndLabel
+                      })
+                    }
+                    className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-yellow-300 text-yellow-800 hover:bg-yellow-50 transition-colors"
+                  >
+                    {t.dashboard.subscription?.cancelButton || "Résiliez l'abonnement"}
+                  </button>
+                )}
+
+                {subscription.cancel_at_period_end && subscription.status !== 'canceled' && (
+                  <button
+                    type="button"
+                    onClick={() => handleSubscriptionAction('resume')}
+                    disabled={subscriptionActionLoading !== null}
+                    className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    {subscriptionActionLoading === 'resume' && (
+                      <svg className="animate-spin h-4 w-4 text-white mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3.536-3.536A8 8 0 114 12z"></path>
+                      </svg>
+                    )}
+                    {t.dashboard.subscription?.resumeButton || 'Relancer l’abonnement'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
             </div>
           )}
         </div>
       </div>
+
+      {subscriptionConfirm && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4 py-6">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <h4 className="text-xl font-semibold text-gray-900">
+              {t.dashboard.subscription?.confirmTitle || 'Vous partez déjà ?'}
+            </h4>
+            <p className="text-gray-700">
+              {(t.dashboard.subscription?.confirmDescription ||
+                'Vous continuez à bénéficier de l’abonnement jusqu’au {date}. Vous pourrez le relancer quand vous voulez.')
+                .replace('{date}', subscriptionConfirm.dateLabel || '')}
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setSubscriptionConfirm(null)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                {t.dashboard.subscription?.confirmCancel || 'Annuler'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const action = subscriptionConfirm.action
+                  setSubscriptionConfirm(null)
+                  handleSubscriptionAction(action)
+                }}
+                disabled={subscriptionActionLoading !== null}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#012F4E] text-white hover:bg-[#023d68] transition-colors disabled:opacity-50"
+              >
+                {subscriptionActionLoading === 'cancel_period_end' && (
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3.536-3.536A8 8 0 114 12z"></path>
+                  </svg>
+                )}
+                {t.dashboard.subscription?.confirmAction || 'Confirmer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {subscriptionMobileModalOpen && subscriptionMobileOrderId && subscriptionMobileCartItems.length > 0 && (
+        <ModalOMWave
+          isOpen={subscriptionMobileModalOpen}
+          onClose={handleCloseSubscriptionMobileModal}
+          orderId={subscriptionMobileOrderId}
+          cartItems={subscriptionMobileCartItems}
+          productName={subscriptionMobileProductName}
+          amountEUR={subscriptionMobileAmountEUR}
+          amountFCFA={subscriptionMobileAmountFCFA}
+        />
+      )}
 
       {/* Bouton WhatsApp flottant */}
       <div className="fixed bottom-6 right-6 z-50 whatsapp-container">

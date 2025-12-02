@@ -1,5 +1,182 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { computeGraceUntil } from '@/lib/subscriptionAccess'
+
+const SUBSCRIPTION_PLAN_CODE = 'sagesse-salomon'
+const MOBILE_MONEY_PRICE_ID = 'mobile_money_manual'
+
+const addMonths = (date: Date, months: number) => {
+  const cloned = new Date(date.getTime())
+  cloned.setMonth(cloned.getMonth() + months)
+  return cloned
+}
+
+async function activateSubscriptionFromOrder(order: any) {
+  if (!supabaseAdmin || !order?.user_id) {
+    console.warn('[ADMIN/ORDERS] Impossible d\'activer abonnement: user_id manquant', { orderId: order?.id, userId: order?.user_id })
+    return
+  }
+
+  console.log('[ADMIN/ORDERS] 🔵 Activation abonnement Mobile Money pour commande', {
+    orderId: order.id,
+    userId: order.user_id,
+    productId: order.product_id,
+    productName: order.product_name,
+    paymentMethod: order.payment_method
+  })
+
+  try {
+    const now = new Date()
+    const { data: existingSub, error: fetchError } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', order.user_id)
+      .maybeSingle()
+
+    if (fetchError) {
+      console.error('[ADMIN/ORDERS] ❌ Erreur récupération abonnement existant:', fetchError)
+      return
+    }
+
+    const previousPeriodEnd = existingSub?.current_period_end ? new Date(existingSub.current_period_end) : null
+    const startDate = previousPeriodEnd && previousPeriodEnd > now ? previousPeriodEnd : now
+    const startISO = startDate.toISOString()
+    const endDate = addMonths(startDate, 1)
+    const endISO = endDate.toISOString()
+    // computeGraceUntil attend une Date ou un timestamp, pas une string ISO
+    const graceUntil = computeGraceUntil(endDate, 3)
+    const priceId = order.payment_method === 'mobile_money' ? MOBILE_MONEY_PRICE_ID : existingSub?.price_id || MOBILE_MONEY_PRICE_ID
+
+    const payload = {
+      status: 'active',
+      plan_id: existingSub?.plan_id || SUBSCRIPTION_PLAN_CODE,
+      price_id: priceId,
+      current_period_start: startISO,
+      current_period_end: endISO,
+      cancel_at_period_end: false,
+      grace_until: graceUntil,
+      updated_at: new Date().toISOString()
+    }
+
+    console.log('[ADMIN/ORDERS] 📦 Payload abonnement:', {
+      userId: order.user_id,
+      status: payload.status,
+      start: payload.current_period_start,
+      end: payload.current_period_end,
+      graceUntil: payload.grace_until,
+      existingSub: !!existingSub
+    })
+
+    if (existingSub) {
+      const { error: updateError } = await supabaseAdmin
+        .from('user_subscriptions')
+        .update(payload)
+        .eq('user_id', order.user_id)
+
+      if (updateError) {
+        console.error('[ADMIN/ORDERS] ❌ Erreur mise à jour abonnement mobile money:', updateError)
+      } else {
+        console.log('[ADMIN/ORDERS] ✅ Abonnement mobile money prolongé pour l\'utilisateur', order.user_id)
+      }
+    } else {
+      const insertPayload = {
+        user_id: order.user_id,
+        ...payload,
+        stripe_subscription_id: null,
+        stripe_customer_id: null,
+        created_at: new Date().toISOString()
+      }
+
+      const { error: insertError } = await supabaseAdmin.from('user_subscriptions').insert(insertPayload)
+      if (insertError) {
+        console.error('[ADMIN/ORDERS] ❌ Erreur création abonnement mobile money:', insertError)
+      } else {
+        console.log('[ADMIN/ORDERS] ✅ Abonnement mobile money créé pour l\'utilisateur', order.user_id)
+      }
+    }
+  } catch (error) {
+    console.error('[ADMIN/ORDERS] ❌ Erreur activation abonnement mobile money:', error)
+  }
+}
+
+async function cancelSubscriptionFromOrder(order: any) {
+  if (!supabaseAdmin || !order?.user_id) {
+    console.warn('[ADMIN/ORDERS] ⚠️ Impossible de désactiver abonnement: user_id manquant', { orderId: order?.id })
+    return
+  }
+
+  console.log('[ADMIN/ORDERS] 🔴 Désactivation abonnement pour commande', {
+    orderId: order.id,
+    userId: order.user_id,
+    productId: order.product_id,
+    paymentMethod: order.payment_method
+  })
+
+  try {
+    const { data: existingSub, error } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('id, stripe_subscription_id, price_id, status')
+      .eq('user_id', order.user_id)
+      .maybeSingle()
+
+    if (error) {
+      console.error('[ADMIN/ORDERS] ❌ Erreur récupération abonnement:', error)
+      return
+    }
+
+    if (!existingSub) {
+      console.log('[ADMIN/ORDERS] ⚠️ Aucun abonnement trouvé pour cet utilisateur')
+      return
+    }
+
+    console.log('[ADMIN/ORDERS] 📋 Abonnement existant:', {
+      id: existingSub.id,
+      stripeSubscriptionId: existingSub.stripe_subscription_id,
+      priceId: existingSub.price_id,
+      status: existingSub.status
+    })
+
+    // Détecter si c'est un abonnement Mobile Money
+    // Un abonnement Mobile Money n'a pas de stripe_subscription_id OU a le price_id mobile_money_manual
+    // OU la commande a été payée avec mobile_money
+    const isMobileMoney = !existingSub.stripe_subscription_id || 
+                         existingSub.price_id === MOBILE_MONEY_PRICE_ID ||
+                         existingSub.price_id === 'mobile_money_manual' ||
+                         order.payment_method === 'mobile_money'
+    
+    // Ne pas annuler un abonnement Stripe actif (sauf si c'est Mobile Money)
+    if (existingSub.stripe_subscription_id && !isMobileMoney) {
+      console.log('[ADMIN/ORDERS] ⚠️ Abonnement Stripe détecté (stripe_subscription_id:', existingSub.stripe_subscription_id, ', price_id:', existingSub.price_id, '), pas de désactivation automatique')
+      return
+    }
+    
+    // Si c'est Mobile Money, on peut désactiver
+    if (!isMobileMoney && existingSub.stripe_subscription_id) {
+      console.log('[ADMIN/ORDERS] ⚠️ Abonnement Stripe détecté, pas de désactivation automatique')
+      return
+    }
+
+    console.log('[ADMIN/ORDERS] 🔴 Désactivation abonnement Mobile Money...')
+
+    const { error: updateError } = await supabaseAdmin
+      .from('user_subscriptions')
+      .update({
+        status: 'canceled',
+        cancel_at_period_end: false,
+        grace_until: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', order.user_id)
+
+    if (updateError) {
+      console.error('[ADMIN/ORDERS] ❌ Erreur désactivation abonnement mobile money:', updateError)
+    } else {
+      console.log('[ADMIN/ORDERS] ✅ Abonnement mobile money désactivé pour l\'utilisateur', order.user_id)
+    }
+  } catch (error) {
+    console.error('[ADMIN/ORDERS] ❌ Erreur lors de la désactivation abonnement mobile money:', error)
+  }
+}
 
 // GET: Récupérer toutes les commandes (avec filtres optionnels)
 export async function GET(request: NextRequest) {
@@ -147,9 +324,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (productId === 'abonnement') {
+      await activateSubscriptionFromOrder(createdOrder)
+    }
     // Ajouter dans user_capsules si c'est un produit qui doit apparaître dans "Mes achats"
-    // Exclure "analyse-financiere" et "abonnement"
-    if (productId !== 'analyse-financiere' && productId !== 'abonnement') {
+    else if (productId !== 'analyse-financiere') {
       try {
         const { error: capsuleError } = await supabaseAdmin!
           .from('user_capsules')
@@ -412,8 +591,24 @@ export async function PUT(request: NextRequest) {
           }
         }
       }
+      // Activation abonnement mobile money
+      // Vérifier aussi par product_name au cas où le product_id serait différent
+      const isAbonnement = existingOrder.product_id === 'abonnement' || 
+                           existingOrder.product_id?.toLowerCase() === 'abonnement' ||
+                           existingOrder.product_name?.toLowerCase()?.includes('abonnement') ||
+                           existingOrder.product_name?.toLowerCase()?.includes('sagesse')
+      
+      if (isAbonnement) {
+        console.log('[ADMIN/ORDERS] 🔍 Détection abonnement:', {
+          orderId: existingOrder.id,
+          productId: existingOrder.product_id,
+          productName: existingOrder.product_name,
+          paymentMethod: existingOrder.payment_method
+        })
+        await activateSubscriptionFromOrder(existingOrder)
+      }
       // Ajouter dans user_capsules si ce n'est pas déjà fait et si le produit doit apparaître dans "Mes achats"
-      else if (existingOrder.product_id !== 'abonnement') {
+      else {
         // Vérifier si la capsule existe déjà
         const { data: existingCapsule } = await supabaseAdmin!
           .from('user_capsules')
@@ -461,7 +656,16 @@ export async function PUT(request: NextRequest) {
         }
       }
       // Retirer de user_capsules si présent pour les autres produits
-      else if (existingOrder.product_id !== 'abonnement' && existingOrder.status === 'paid') {
+      // Vérifier aussi par product_name au cas où le product_id serait différent
+      const isAbonnementReject = existingOrder.product_id === 'abonnement' || 
+                                 existingOrder.product_id?.toLowerCase() === 'abonnement' ||
+                                 existingOrder.product_name?.toLowerCase()?.includes('abonnement') ||
+                                 existingOrder.product_name?.toLowerCase()?.includes('sagesse')
+      
+      if (isAbonnementReject) {
+        await cancelSubscriptionFromOrder(existingOrder)
+      }
+      else if (existingOrder.status === 'paid') {
         const { error: deleteError } = await supabaseAdmin!
           .from('user_capsules')
           .delete()
@@ -562,9 +766,24 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
+    console.log('[ADMIN/ORDERS] 🗑️ Suppression commande demandée:', {
+      orderId: existingOrder.id,
+      userId: existingOrder.user_id,
+      productId: existingOrder.product_id,
+      productName: existingOrder.product_name,
+      status: existingOrder.status,
+      paymentMethod: existingOrder.payment_method
+    })
+
     // Supprimer la capsule de user_capsules si elle existe et si la commande était payée
     // Cas spécial pour "analyse-financiere" : supprimer aussi le paiement
     if (existingOrder.status === 'paid') {
+      // Vérifier si c'est une commande d'abonnement (plus robuste)
+      const isAbonnement = existingOrder.product_id === 'abonnement' || 
+                           existingOrder.product_id?.toLowerCase() === 'abonnement' ||
+                           existingOrder.product_name?.toLowerCase()?.includes('abonnement') ||
+                           existingOrder.product_name?.toLowerCase()?.includes('sagesse')
+      
       if (existingOrder.product_id === 'analyse-financiere' && existingOrder.user_id) {
         // Supprimer le paiement correspondant
         const { error: paymentDeleteError } = await supabaseAdmin!
@@ -578,7 +797,50 @@ export async function DELETE(request: NextRequest) {
           console.error('[ADMIN/ORDERS] Erreur suppression paiement pour analyse:', paymentDeleteError)
           // On continue quand même
         }
-      } else if (existingOrder.product_id !== 'abonnement') {
+      } else if (isAbonnement && existingOrder.user_id) {
+        console.log('[ADMIN/ORDERS] 🔍 Commande abonnement détectée pour suppression:', {
+          orderId: existingOrder.id,
+          userId: existingOrder.user_id,
+          productId: existingOrder.product_id,
+          productName: existingOrder.product_name,
+          paymentMethod: existingOrder.payment_method,
+          status: existingOrder.status
+        })
+        
+        // Pour les abonnements, vérifier s'il reste d'autres commandes d'abonnement payées
+        const { data: allPaidOrders, error: checkError } = await supabaseAdmin!
+          .from('orders')
+          .select('id, product_id, product_name')
+          .eq('user_id', existingOrder.user_id)
+          .eq('status', 'paid')
+          .neq('id', orderId)
+        
+        if (checkError) {
+          console.error('[ADMIN/ORDERS] ❌ Erreur vérification autres commandes abonnement:', checkError)
+        }
+        
+        // Filtrer les commandes d'abonnement
+        const otherSubscriptionOrders = (allPaidOrders || []).filter((o: any) => {
+          const isSub = o.product_id === 'abonnement' || 
+                       o.product_id?.toLowerCase() === 'abonnement' ||
+                       o.product_name?.toLowerCase()?.includes('abonnement') ||
+                       o.product_name?.toLowerCase()?.includes('sagesse')
+          return isSub
+        })
+        
+        console.log('[ADMIN/ORDERS] 📊 Autres commandes abonnement payées trouvées:', otherSubscriptionOrders.length)
+        
+        // Ne désactiver l'abonnement que s'il n'y a plus d'autres commandes d'abonnement payées
+        const hasOtherPaidSubscriptions = otherSubscriptionOrders.length > 0
+        
+        if (!hasOtherPaidSubscriptions) {
+          console.log('[ADMIN/ORDERS] 🔴 Dernière commande abonnement supprimée, désactivation abonnement pour', existingOrder.user_id)
+          await cancelSubscriptionFromOrder(existingOrder)
+        } else {
+          console.log('[ADMIN/ORDERS] ⚠️ D\'autres commandes abonnement payées existent (' + otherSubscriptionOrders.length + '), abonnement maintenu')
+          console.log('[ADMIN/ORDERS] 📋 Autres commandes:', otherSubscriptionOrders.map((o: any) => ({ id: o.id, productId: o.product_id, productName: o.product_name })))
+        }
+      } else {
         // Supprimer de user_capsules pour les autres produits
         const { error: capsuleDeleteError } = await supabaseAdmin!
           .from('user_capsules')
@@ -624,3 +886,4 @@ export async function DELETE(request: NextRequest) {
     )
   }
 }
+

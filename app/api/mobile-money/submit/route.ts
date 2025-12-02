@@ -218,16 +218,14 @@ export async function POST(request: NextRequest) {
       
       // Créer une commande pour chaque produit
       for (const item of cartItems) {
-        // Exclure seulement "abonnement" des commandes (les analyses financières sont incluses)
-        if (item.category === 'abonnement') {
-          continue
-        }
-        
         const itemAmount = (item.price * item.quantity) * amountPerProduct
         const itemAmountFcfa = Math.round(itemAmount * 655.96)
         
         // Récupérer le nom du produit depuis la DB si possible
         let productNameFinal = item.title
+        if (item.category === 'abonnement') {
+          productNameFinal = `${productNameFinal} (Abonnement)`
+        }
         try {
           const { data: product } = await supabaseAdmin!
             .from('products')

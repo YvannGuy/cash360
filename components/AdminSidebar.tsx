@@ -68,6 +68,11 @@ const Icons = {
       <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
     </svg>
   ),
+  subscription: (
+    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+      <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+    </svg>
+  ),
 }
 
 export default function AdminSidebar({ activeTab = 'overview', isOpen: controlledIsOpen, onClose }: AdminSidebarProps) {
@@ -104,6 +109,7 @@ export default function AdminSidebar({ activeTab = 'overview', isOpen: controlle
     { id: 'boutique', label: 'Boutique', icon: 'store', route: '/admin/boutique', adminOnly: true },
     { id: 'formations', label: 'Formations & sessions', icon: 'chalkboard', route: '/admin/formations', adminOnly: true },
     { id: 'paiements', label: 'Paiements', icon: 'creditCard', route: '/admin/paiements', adminOnly: true },
+    { id: 'abonnements', label: 'Abonnements', icon: 'subscription', route: '/admin/abonnements', adminOnly: true },
     { id: 'mes-achats-utilisateurs', label: 'Mes achats utilisateurs', icon: 'store', route: '/admin/mes-achats-utilisateurs', adminOnly: true },
     { id: 'fichiers', label: 'Fichiers & relevés', icon: 'folder', route: '/admin/fichiers', adminOnly: true },
     { id: 'settings', label: 'Paramètres', icon: 'cog', route: '/admin/settings', adminOnly: false },

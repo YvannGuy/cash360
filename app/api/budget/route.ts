@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClientServer } from '@/lib/supabase-server'
+import { hasActiveSubscription } from '@/lib/subscriptionAccess'
 
 interface BudgetExpensePayload {
   id?: string
@@ -37,6 +38,20 @@ const extractMonthSlug = (value: string | null | undefined, fallback: string): s
     }
   }
   return fallback
+}
+
+async function userHasPremiumAccess(supabase: any, userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('user_subscriptions')
+    .select('status, grace_until')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[BUDGET] subscription lookup error', error)
+  }
+
+  return hasActiveSubscription(data)
 }
 
 async function fetchBudgetForMonth(supabase: any, userId: string, monthSlug: string): Promise<BudgetResponse> {
@@ -85,6 +100,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
+    const premiumAccess = await userHasPremiumAccess(supabase, user.id)
+    if (!premiumAccess) {
+      return NextResponse.json({ error: 'subscription_required' }, { status: 402 })
+    }
+
     const { searchParams } = new URL(request.url)
     const monthSlug = resolveMonth(searchParams.get('month'))
 
@@ -106,6 +126,11 @@ export async function POST(request: NextRequest) {
 
     if (userError || !user) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    }
+
+    const premiumAccess = await userHasPremiumAccess(supabase, user.id)
+    if (!premiumAccess) {
+      return NextResponse.json({ error: 'subscription_required' }, { status: 402 })
     }
 
     const body = await request.json()
