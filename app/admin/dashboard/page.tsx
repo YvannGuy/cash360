@@ -27,6 +27,7 @@ export default function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [refreshingOverview, setRefreshingOverview] = useState(false)
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -146,6 +147,17 @@ export default function AdminDashboardPage() {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des formations:', error)
+    }
+  }
+
+  const handleRefreshOverview = async () => {
+    setRefreshingOverview(true)
+    try {
+      await Promise.all([loadAllAnalyses(), loadAllUsers(), loadPayments(), loadFormations()])
+    } catch (error) {
+      console.error('Erreur lors de l’actualisation du dashboard admin:', error)
+    } finally {
+      setRefreshingOverview(false)
     }
   }
 
@@ -610,9 +622,19 @@ export default function AdminDashboardPage() {
         {/* Main Dashboard Content */}
         <main className="p-6">
           {/* Page Title */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-[#012F4E] mb-2">Overview (Admin)</h2>
-            <p className="text-gray-600">Vue d'ensemble de l'activité Cash360.</p>
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-[#012F4E] mb-2">Overview (Admin)</h2>
+              <p className="text-gray-600">Vue d'ensemble de l'activité Cash360.</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleRefreshOverview}
+              disabled={refreshingOverview}
+              className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:border-blue-300 hover:text-blue-700 transition disabled:opacity-60"
+            >
+              {refreshingOverview ? 'Actualisation...' : 'Actualiser'}
+            </button>
           </div>
 
           {/* KPI Cards */}

@@ -11,15 +11,34 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Récupérer tous les utilisateurs authentifiés
-    const { data: authUsers, error: authUsersError } = await supabaseAdmin.auth.admin.listUsers()
+    // Récupérer l'intégralité des utilisateurs authentifiés (listUsers retourne 50 par page par défaut)
+    const MAX_PER_PAGE = 200
+    const aggregatedAuthUsers: any[] = []
+    let page = 1
+    let hasMore = true
 
-    if (authUsersError) {
-      console.error('Erreur lors de la récupération des utilisateurs auth:', authUsersError)
-      return NextResponse.json(
-        { error: 'Erreur lors de la récupération des utilisateurs' },
-        { status: 500 }
-      )
+    while (hasMore) {
+      const { data, error } = await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage: MAX_PER_PAGE
+      })
+
+      if (error) {
+        console.error('Erreur lors de la récupération des utilisateurs auth (page', page, '):', error)
+        return NextResponse.json(
+          { error: 'Erreur lors de la récupération des utilisateurs' },
+          { status: 500 }
+        )
+      }
+
+      const batch = data?.users || []
+      aggregatedAuthUsers.push(...batch)
+
+      if (batch.length < MAX_PER_PAGE) {
+        hasMore = false
+      } else {
+        page += 1
+      }
     }
 
     // Récupérer toutes les analyses pour compter par utilisateur
@@ -44,7 +63,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Transformer tous les utilisateurs authentifiés
-    const allUsers = (authUsers?.users || [])
+    const allUsers = aggregatedAuthUsers
       .filter(authUser => authUser.email) // Filtrer les utilisateurs sans email
       .map(authUser => {
         const role = authUser.user_metadata?.role || 'user'

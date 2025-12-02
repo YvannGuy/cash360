@@ -97,7 +97,8 @@ export default function AdminSidebar({ activeTab = 'overview', isOpen: controlle
 
   const allMenuItems = [
     { id: 'overview', label: 'Overview', icon: 'home', route: '/admin/dashboard', adminOnly: true },
-    { id: 'commercial-calls', label: 'Appels & RDV', icon: 'phone', route: '/admin/commercial-calls', adminOnly: false },
+    // Onglet Appels & RDV masqué temporairement
+    // { id: 'commercial-calls', label: 'Appels & RDV', icon: 'phone', route: '/admin/commercial-calls', adminOnly: false },
     { id: 'users', label: 'Utilisateurs', icon: 'users', route: '/admin/users', adminOnly: true },
     { id: 'analyses', label: 'Analyses financières', icon: 'chart', route: '/admin/analyses', adminOnly: true },
     { id: 'boutique', label: 'Boutique', icon: 'store', route: '/admin/boutique', adminOnly: true },

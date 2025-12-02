@@ -16,6 +16,11 @@ import CurrencySelector from '@/components/CurrencySelector'
 import AnalysisCard from '@/components/AnalysisCard'
 import DashboardOnboarding from '@/components/DashboardOnboarding'
 import BudgetTracker, { type BudgetSnapshot } from '@/components/dashboard/BudgetTracker'
+import FinancialFast from '@/components/dashboard/FinancialFast'
+
+type DashboardTab = 'overview' | 'boutique' | 'formations' | 'profil' | 'budget' | 'fast'
+const FAST_TOTAL_DAYS = 30
+const DAY_MS = 1000 * 60 * 60 * 24
 
 function DashboardPageContent() {
   const { t, language } = useLanguage()
@@ -26,7 +31,18 @@ function DashboardPageContent() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [userAnalyses, setUserAnalyses] = useState<AnalysisRecord[]>([])
-  const [activeTab, setActiveTab] = useState<'overview' | 'boutique' | 'formations' | 'profil' | 'budget'>('overview')
+  const [activeTab, setActiveTab] = useState<DashboardTab>('overview')
+  const [fastSummary, setFastSummary] = useState<{ status: 'none' | 'active' | 'completed'; day?: number }>({
+    status: 'none'
+  })
+  const navItems: Array<{ id: DashboardTab; label: string }> = [
+    { id: 'overview', label: t.dashboard.tabs.overview || 'Tableau de bord' },
+    { id: 'budget', label: t.dashboard.tabs.budget || 'Budget & suivi' },
+    { id: 'fast', label: t.dashboard.tabs.financialFast || 'Jeûne financier' },
+    { id: 'boutique', label: t.dashboard.tabs.boutique },
+    { id: 'formations', label: t.dashboard.tabs.myPurchases },
+    { id: 'profil', label: t.dashboard.tabs.profile || 'Profil' }
+  ]
   
   // Capsules prédéfinies - utiliser les traductions
   const availableCapsules = useMemo(() => [
@@ -153,9 +169,40 @@ function DashboardPageContent() {
     }
   }, [computeBudgetSnapshot])
 
+const refreshFastSummary = useCallback(async () => {
+  try {
+    const response = await fetch('/api/financial-fast', { cache: 'no-store' })
+    if (!response.ok) {
+      throw new Error('fetch_failed')
+    }
+    const data = await response.json()
+    const record = data.fast
+    if (!record) {
+      setFastSummary({ status: 'none' })
+      return
+    }
+    const start = new Date(`${record.startDate}T00:00:00`)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const diff = Math.floor((today.getTime() - start.getTime()) / DAY_MS) + 1
+    const dayIndex = Math.min(Math.max(diff, 1), FAST_TOTAL_DAYS)
+    setFastSummary({
+      status: record.isActive ? 'active' : 'completed',
+      day: dayIndex
+    })
+  } catch (error) {
+    console.error('refreshFastSummary error', error)
+    setFastSummary((prev) => prev ?? { status: 'none' })
+  }
+}, [])
+
   useEffect(() => {
     refreshBudgetSnapshot()
   }, [refreshBudgetSnapshot])
+
+useEffect(() => {
+  refreshFastSummary()
+}, [refreshFastSummary])
 
   useEffect(() => {
     if (activeTab === 'overview' && budgetSnapshot) {
@@ -220,25 +267,35 @@ function DashboardPageContent() {
       })
     }
 
-    const latestAnalysis = userAnalyses[0]
-    if (latestAnalysis) {
-      const statusKey = latestAnalysis.status as keyof (typeof t.dashboard.analysis)['status']
-      const statusLabel =
-        t.dashboard.analysis?.status?.[statusKey] || latestAnalysis.status
-
+    const fastTitle = t.dashboard.overview?.fastInsightTitle || 'Jeûne financier'
+    if (fastSummary.status === 'active') {
+      const dayValue = fastSummary.day ?? 1
+      const description =
+        (t.dashboard.overview?.fastInsightActive || 'Jour {day}/30 – Continue, tu avances.').replace(
+          '{day}',
+          String(dayValue)
+        )
       items.push({
-        key: 'analysis',
-        title: t.dashboard.overview?.analysisInsightTitle || 'Analyse financière',
-        description: t.dashboard.overview?.analysisInsightActive || 'Une analyse est actuellement en cours.',
-        status: statusLabel,
-        accent: 'text-blue-600'
+        key: 'fast',
+        title: fastTitle,
+        description,
+        status: `${dayValue}/${FAST_TOTAL_DAYS}`,
+        accent: 'text-sky-600'
+      })
+    } else if (fastSummary.status === 'completed') {
+      items.push({
+        key: 'fast',
+        title: fastTitle,
+        description: t.dashboard.overview?.fastInsightCompleted || 'Jeûne terminé : passe à l’action avec ton épargne.',
+        status: t.dashboard.overview?.fastInsightStatusCompleted || 'Terminé',
+        accent: 'text-emerald-600'
       })
     } else {
       items.push({
-        key: 'analysis',
-        title: t.dashboard.overview?.analysisInsightTitle || 'Analyse financière',
-        description: t.dashboard.overview?.analysisInsightEmpty || 'Lancez une nouvelle analyse pour obtenir un diagnostic.',
-        status: '—',
+        key: 'fast',
+        title: fastTitle,
+        description: t.dashboard.overview?.fastInsightMissing || 'Active ton premier jeûne pour renforcer ta discipline.',
+        status: t.dashboard.overview?.fastInsightStatusNone || '—',
         accent: 'text-gray-400'
       })
     }
@@ -263,7 +320,7 @@ function DashboardPageContent() {
     }
 
     return items
-  }, [budgetSnapshot, formatPrice, t, userAnalyses, userCapsules])
+  }, [budgetSnapshot, fastSummary, formatPrice, t, userCapsules])
   
   // Pagination
   const [currentPageBoutique, setCurrentPageBoutique] = useState(1)
@@ -273,6 +330,13 @@ function DashboardPageContent() {
   
   const [supabase, setSupabase] = useState<any>(null)
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab')
+    if (!tabParam) return
+    if (['overview', 'boutique', 'formations', 'profil', 'budget', 'fast'].includes(tabParam)) {
+      setActiveTab(tabParam as DashboardTab)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     // Vérifier si on vient d'une réussite de paiement
@@ -1469,22 +1533,16 @@ function DashboardPageContent() {
         {/* Onglets de navigation */}
         <div className="mb-8 border-b border-gray-200 pb-2" data-onboarding="tabs">
           <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-            {[
-              { id: 'overview', label: t.dashboard.tabs.overview || 'Tableau de bord' },
-              { id: 'budget', label: t.dashboard.tabs.budget || 'Budget & suivi' },
-              { id: 'boutique', label: t.dashboard.tabs.boutique },
-              { id: 'formations', label: t.dashboard.tabs.myPurchases },
-              { id: 'profil', label: t.dashboard.tabs.profile || 'Profil' }
-            ].map((tab) => (
+            {navItems.map((item) => (
               <button
-                key={tab.id}
+                key={item.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id as 'overview' | 'boutique' | 'formations' | 'budget' | 'profil')}
+                onClick={() => setActiveTab(item.id)}
                 className={`snap-start px-5 sm:px-6 py-3 font-medium transition-all rounded-t-lg whitespace-nowrap ${
-                  activeTab === tab.id ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900 bg-white'
+                  activeTab === item.id ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900 bg-white'
                 }`}
               >
-                {tab.label}
+                {item.label}
               </button>
             ))}
           </div>
@@ -1561,18 +1619,17 @@ function DashboardPageContent() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => router.push('/dashboard/defi-7-jours')}
-                      className="w-full group rounded-2xl border border-amber-200 p-5 text-left bg-gradient-to-br from-amber-50 to-white hover:from-amber-100 hover:to-white transition-colors duration-200"
+                      onClick={() => setActiveTab('fast')}
+                      className="w-full group rounded-2xl border border-sky-200 p-5 text-left bg-gradient-to-br from-sky-50 to-white hover:from-sky-100 hover:to-white transition-colors duration-200"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-lg font-semibold text-amber-900 group-hover:text-amber-950">
-                          {t.dashboard.overview?.secondaryAction || 'Défi 7 jours'}
+                        <h4 className="text-lg font-semibold text-sky-900 group-hover:text-sky-950">
+                          {t.dashboard.tabs.financialFast || 'Jeûne financier'}
                         </h4>
-                        <span className="text-sm text-amber-600 group-hover:text-amber-950">→</span>
+                        <span className="text-sm text-sky-600 group-hover:text-sky-950">→</span>
                       </div>
-                      <p className="text-sm text-amber-900/80 group-hover:text-amber-950">
-                        {/* TODO: connect to challenge progress */}
-                        Construisez votre discipline financière en un exercice par jour.
+                      <p className="text-sm text-sky-900/80 group-hover:text-sky-950">
+                        {t.dashboard.overview?.fastInsightMissing || 'Active ton jeûne financier pour renforcer ta discipline.'}
                       </p>
                     </button>
                   </div>
@@ -1625,6 +1682,12 @@ function DashboardPageContent() {
               <BudgetTracker variant="embedded" onBudgetChange={handleBudgetChange} />
             </div>
           )}
+
+        {activeTab === 'fast' && (
+          <div className="space-y-8">
+            <FinancialFast variant="embedded" onStatusChange={refreshFastSummary} />
+          </div>
+        )}
 
           {/* Contenu de l'onglet "Boutique" */}
           {activeTab === 'boutique' && (
