@@ -86,49 +86,105 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: existingSub } = await supabase
+    const { data: existingSub, error: subError } = await supabase
       .from('user_subscriptions')
-      .select('status, grace_until, stripe_customer_id')
+      .select('status, grace_until, stripe_customer_id, current_period_end')
       .eq('user_id', user.id)
       .maybeSingle()
 
-    if (hasActiveSubscription(existingSub as SubscriptionRecord | null)) {
-      return NextResponse.json(
-        { error: 'Vous avez déjà un abonnement actif.' },
-        { status: 400 }
-      )
+    console.log('[CHECKOUT] Vérification abonnement existant:', {
+      userId: user.id,
+      existingSub: existingSub ? {
+        status: existingSub.status,
+        grace_until: existingSub.grace_until,
+        hasCustomerId: !!existingSub.stripe_customer_id
+      } : null,
+      error: subError
+    })
+
+    // Vérifier si l'utilisateur a un abonnement actif
+    // Permettre le repaiement si l'abonnement est annulé ou n'existe pas
+    if (existingSub) {
+      // Si l'abonnement est annulé, permettre le repaiement immédiatement
+      if (existingSub.status === 'canceled') {
+        console.log('[CHECKOUT] ✅ Abonnement annulé détecté, repaiement autorisé')
+      } else {
+        // Vérifier si l'abonnement est actif
+        const isActive = hasActiveSubscription(existingSub as SubscriptionRecord | null)
+        console.log('[CHECKOUT] Statut abonnement:', {
+          status: existingSub.status,
+          isActive,
+          grace_until: existingSub.grace_until
+        })
+        
+        if (isActive) {
+          console.log('[CHECKOUT] ❌ Abonnement actif détecté, paiement bloqué')
+          return NextResponse.json(
+            { error: 'Vous avez déjà un abonnement actif.' },
+            { status: 400 }
+          )
+        } else {
+          console.log('[CHECKOUT] ✅ Abonnement non actif, repaiement autorisé')
+        }
+      }
+    } else {
+      console.log('[CHECKOUT] ✅ Aucun abonnement existant, paiement autorisé')
     }
 
     const baseUrl = getBaseUrl(request)
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: SALOMON_PRICE_ID,
-          quantity: 1
-        }
-      ],
-      customer: existingSub?.stripe_customer_id || undefined,
-      customer_email: existingSub?.stripe_customer_id ? undefined : user.email || undefined,
-      success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/dashboard?tab=boutique`,
-      metadata: {
-        user_id: user.id,
-        plan: SUBSCRIPTION_PLAN_CODE,
-        items: JSON.stringify([{ id: productId, quantity: 1 }])
-      },
-      subscription_data: {
-        metadata: {
-          user_id: user.id,
-          product_id: productId,
-          plan: SUBSCRIPTION_PLAN_CODE
-        }
-      }
+    // Si l'abonnement est annulé, ne pas réutiliser le customer_id Stripe existant
+    // pour éviter les conflits avec l'ancien abonnement
+    const customerId = existingSub?.status === 'canceled' 
+      ? undefined 
+      : existingSub?.stripe_customer_id || undefined
+    
+    const customerEmail = customerId ? undefined : user.email || undefined
+
+    console.log('[CHECKOUT] Création session Stripe:', {
+      customerId: customerId || 'nouveau',
+      customerEmail: customerEmail || 'utilise customer_id',
+      priceId: SALOMON_PRICE_ID
     })
 
-    return NextResponse.json({ url: session.url })
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: SALOMON_PRICE_ID,
+            quantity: 1
+          }
+        ],
+        customer: customerId,
+        customer_email: customerEmail,
+        success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/dashboard?tab=boutique`,
+        metadata: {
+          user_id: user.id,
+          plan: SUBSCRIPTION_PLAN_CODE,
+          items: JSON.stringify([{ id: productId, quantity: 1 }])
+        },
+        subscription_data: {
+          metadata: {
+            user_id: user.id,
+            product_id: productId,
+            plan: SUBSCRIPTION_PLAN_CODE
+          }
+        }
+      })
+
+      console.log('[CHECKOUT] ✅ Session créée avec succès:', session.id)
+      return NextResponse.json({ url: session.url })
+    } catch (stripeError: any) {
+      console.error('[CHECKOUT] ❌ Erreur Stripe:', {
+        message: stripeError.message,
+        type: stripeError.type,
+        code: stripeError.code
+      })
+      throw stripeError
+    }
   } catch (error: any) {
     console.error('[SUBSCRIPTION CHECKOUT] error', error)
     return NextResponse.json(

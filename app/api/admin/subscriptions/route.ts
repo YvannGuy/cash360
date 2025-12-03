@@ -141,12 +141,15 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Mettre à jour l'abonnement dans la base de données
+    // Ajouter un marqueur pour indiquer que c'est une terminaison manuelle par l'admin
     const { data: updatedSubscription, error: updateError } = await supabaseAdmin!
       .from('user_subscriptions')
       .update({
         status: 'canceled',
         cancel_at_period_end: false,
         grace_until: null,
+        // Stocker dans metadata que c'est une terminaison manuelle
+        metadata: { manually_terminated_by_admin: true, terminated_at: new Date().toISOString() },
         updated_at: new Date().toISOString()
       })
       .eq('id', subscription.id)

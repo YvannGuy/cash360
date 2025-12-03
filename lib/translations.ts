@@ -1045,6 +1045,29 @@ export const translations = {
           title: "Parfait !",
           description: "Vous êtes maintenant prêt à utiliser votre dashboard. N'hésitez pas à explorer toutes les fonctionnalités disponibles. Vous pouvez relancer ce guide depuis les paramètres."
         }
+      },
+      postSubscriptionOnboarding: {
+        welcome: {
+          title: "Félicitations ! Votre abonnement est actif",
+          description: "Découvrez maintenant toutes les fonctionnalités premium de Cash360. Nous allons vous guider à travers les différents onglets disponibles pour maximiser votre transformation financière."
+        },
+        overview: {
+          title: "Tableau de bord",
+          description: "Votre vue d'ensemble : revenus, dépenses, épargne du mois, et suivi personnalisé. C'est ici que vous commencez chaque session pour avoir une vision claire de votre situation financière."
+        },
+        budget: {
+          title: "Budget & suivi",
+          description: "Gérez vos revenus et dépenses mensuels. Ajoutez vos catégories de dépenses, suivez votre taux d'utilisation et visualisez vos principales catégories pour mieux comprendre où va votre argent."
+        },
+        fast: {
+          title: "Jeûne financier",
+          description: "Reprenez le contrôle de vos habitudes de dépenses avec un jeûne financier de 30 jours. Choisissez les catégories à mettre en pause et suivez votre progression quotidienne pour renforcer votre discipline."
+        },
+        complete: {
+          title: "Vous êtes prêt !",
+          description: "Explorez maintenant toutes les fonctionnalités premium. N'hésitez pas à revenir sur cette page pour consulter votre tableau de bord et suivre votre progression financière.",
+          button: "Commencer"
+        }
       }
     },
 
@@ -2191,6 +2214,29 @@ export const translations = {
           title: "Perfect!",
           description: "You are now ready to use your dashboard. Feel free to explore all available features. You can restart this guide from the settings."
         }
+      },
+      postSubscriptionOnboarding: {
+        welcome: {
+          title: "Congratulations! Your subscription is active",
+          description: "Discover all the premium features of Cash360. We'll guide you through the different tabs available to maximize your financial transformation."
+        },
+        overview: {
+          title: "Dashboard",
+          description: "Your overview: monthly income, expenses, savings, and personalized tracking. This is where you start each session to get a clear view of your financial situation."
+        },
+        budget: {
+          title: "Budget & tracking",
+          description: "Manage your monthly income and expenses. Add your expense categories, track your usage rate and visualize your main categories to better understand where your money goes."
+        },
+        fast: {
+          title: "Financial fast",
+          description: "Take control of your spending habits with a 30-day financial fast. Choose categories to pause and track your daily progress to strengthen your discipline."
+        },
+        complete: {
+          title: "You're ready!",
+          description: "Now explore all premium features. Feel free to come back to this page to check your dashboard and track your financial progress.",
+          button: "Get started"
+        }
       }
     },
 
@@ -3336,6 +3382,29 @@ export const translations = {
           title: "¡Perfecto!",
           description: "Ya estás listo para usar tu panel de control. Siéntete libre de explorar todas las funciones disponibles. Puedes reiniciar esta guía desde la configuración."
         }
+      },
+      postSubscriptionOnboarding: {
+        welcome: {
+          title: "¡Felicidades! Tu suscripción está activa",
+          description: "Descubre todas las funciones premium de Cash360. Te guiaremos a través de las diferentes pestañas disponibles para maximizar tu transformación financiera."
+        },
+        overview: {
+          title: "Panel de control",
+          description: "Tu vista general: ingresos, gastos, ahorros del mes y seguimiento personalizado. Aquí es donde comienzas cada sesión para tener una visión clara de tu situación financiera."
+        },
+        budget: {
+          title: "Presupuesto y seguimiento",
+          description: "Gestiona tus ingresos y gastos mensuales. Añade tus categorías de gastos, sigue tu tasa de uso y visualiza tus principales categorías para entender mejor a dónde va tu dinero."
+        },
+        fast: {
+          title: "Ayuno financiero",
+          description: "Toma el control de tus hábitos de gasto con un ayuno financiero de 30 días. Elige las categorías a pausar y sigue tu progreso diario para fortalecer tu disciplina."
+        },
+        complete: {
+          title: "¡Estás listo!",
+          description: "Ahora explora todas las funciones premium. Siéntete libre de volver a esta página para consultar tu panel de control y seguir tu progreso financiero.",
+          button: "Comenzar"
+        }
       }
     },
 
@@ -4480,6 +4549,29 @@ export const translations = {
         complete: {
           title: "Perfeito!",
           description: "Você está pronto para usar seu painel. Sinta-se à vontade para explorar todos os recursos disponíveis. Você pode reiniciar este guia nas configurações."
+        }
+      },
+      postSubscriptionOnboarding: {
+        welcome: {
+          title: "Parabéns! Sua assinatura está ativa",
+          description: "Descubra todos os recursos premium do Cash360. Vamos guiá-lo através das diferentes abas disponíveis para maximizar sua transformação financeira."
+        },
+        overview: {
+          title: "Painel",
+          description: "Sua visão geral: receitas, despesas, economias do mês e acompanhamento personalizado. É aqui que você começa cada sessão para ter uma visão clara de sua situação financeira."
+        },
+        budget: {
+          title: "Orçamento e acompanhamento",
+          description: "Gerencie suas receitas e despesas mensais. Adicione suas categorias de despesas, acompanhe sua taxa de uso e visualize suas principais categorias para entender melhor para onde vai seu dinheiro."
+        },
+        fast: {
+          title: "Jejum financeiro",
+          description: "Assuma o controle de seus hábitos de gastos com um jejum financeiro de 30 dias. Escolha as categorias para pausar e acompanhe seu progresso diário para fortalecer sua disciplina."
+        },
+        complete: {
+          title: "Você está pronto!",
+          description: "Agora explore todos os recursos premium. Sinta-se à vontade para voltar a esta página para consultar seu painel e acompanhar seu progresso financeiro.",
+          button: "Começar"
         }
       }
     },

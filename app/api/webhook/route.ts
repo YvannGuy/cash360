@@ -44,10 +44,53 @@ async function persistSubscriptionRecord(
     return
   }
 
-  const firstItem = subscription.items.data[0]
+  // Récupérer l'abonnement existant pour vérifier s'il a été manuellement terminé
+  const { data: existingSubData } = await supabaseAdmin
+    .from('user_subscriptions')
+    .select('metadata, updated_at')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  const existingMetadata = (existingSubData?.metadata || {}) as any
+  const wasManuallyTerminated = existingMetadata?.manually_terminated_by_admin === true
+
+  // Si l'abonnement a été manuellement terminé par l'admin, vérifier si c'est un nouveau paiement
   const status = statusOverride || subscription.status
-  const currentPeriodEnd = subscription.current_period_end
-  const currentPeriodStart = subscription.current_period_start
+  if (wasManuallyTerminated && status === 'active') {
+    const terminatedAt = existingMetadata?.terminated_at ? new Date(existingMetadata.terminated_at) : null
+    const subscriptionCreatedAt = new Date(subscription.created * 1000) // Stripe timestamp en secondes
+    
+    // Si l'abonnement Stripe a été créé APRÈS la terminaison, c'est un nouveau paiement légitime
+    if (terminatedAt && subscriptionCreatedAt > terminatedAt) {
+      console.log('[WEBHOOK][SUBSCRIPTION] ✅ Nouveau paiement Stripe après terminaison, webhook autorisé', {
+        userId,
+        subscriptionId: subscription.id,
+        terminatedAt: terminatedAt.toISOString(),
+        subscriptionCreatedAt: subscriptionCreatedAt.toISOString()
+      })
+      // Le marqueur sera effacé ci-dessous
+    } else {
+      console.log('[WEBHOOK][SUBSCRIPTION] ⏸️ Abonnement manuellement terminé par admin, webhook Stripe ignoré', {
+        userId,
+        subscriptionId: subscription.id,
+        terminatedAt: terminatedAt?.toISOString(),
+        subscriptionCreatedAt: subscriptionCreatedAt.toISOString()
+      })
+      return
+    }
+  }
+
+  const firstItem = subscription.items.data[0]
+  const currentPeriodEnd = (subscription as any).current_period_end
+  const currentPeriodStart = (subscription as any).current_period_start
+
+  // Effacer le marqueur de terminaison manuelle si c'est un nouvel abonnement actif
+  const mergedMetadata = (status === 'active' && wasManuallyTerminated) 
+    ? (subscription.metadata || {}) 
+    : {
+        ...(subscription.metadata || {}),
+        ...(wasManuallyTerminated ? { manually_terminated_by_admin: true, terminated_at: existingMetadata?.terminated_at } : {})
+      }
 
   const { error } = await supabaseAdmin
     .from('user_subscriptions')
@@ -64,7 +107,7 @@ async function persistSubscriptionRecord(
         grace_until: computeGraceUntil(currentPeriodEnd, SUBSCRIPTION_GRACE_DAYS),
         cancel_at_period_end: subscription.cancel_at_period_end ?? false,
         cancelled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
-        metadata: subscription.metadata || {}
+        metadata: mergedMetadata
       },
       { onConflict: 'user_id' }
     )
@@ -120,13 +163,13 @@ export async function POST(request: NextRequest) {
 
   if (event.type === 'invoice.paid') {
     const invoice = event.data.object as Stripe.Invoice
-    await syncSubscriptionById(invoice.subscription as string, invoice.metadata?.user_id)
+    await syncSubscriptionById((invoice as any).subscription as string, invoice.metadata?.user_id)
     return NextResponse.json({ received: true })
   }
 
   if (event.type === 'invoice.payment_failed') {
     const invoice = event.data.object as Stripe.Invoice
-    await syncSubscriptionById(invoice.subscription as string, invoice.metadata?.user_id, 'past_due')
+    await syncSubscriptionById((invoice as any).subscription as string, invoice.metadata?.user_id, 'past_due')
     return NextResponse.json({ received: true })
   }
 

@@ -38,6 +38,38 @@ async function activateSubscriptionFromOrder(order: any) {
       return
     }
 
+    // IMPORTANT: Ne pas réactiver un abonnement qui a été explicitement terminé par l'admin
+    // SAUF si la commande est plus récente que la terminaison (nouvelle commande légitime)
+    if (existingSub?.status === 'canceled') {
+      const metadata = existingSub?.metadata as any
+      const manuallyTerminated = metadata?.manually_terminated_by_admin === true
+      
+      if (manuallyTerminated && metadata?.terminated_at) {
+        const terminatedAt = new Date(metadata.terminated_at)
+        const orderCreatedAt = new Date(order.created_at)
+        
+        // Si la commande a été créée AVANT la terminaison, bloquer la réactivation
+        // Si la commande a été créée APRÈS la terminaison, c'est une nouvelle commande légitime
+        if (orderCreatedAt <= terminatedAt) {
+          console.log('[ADMIN/ORDERS] 🚫 Abonnement terminé manuellement par admin, réactivation bloquée (commande ancienne)', {
+            userId: order.user_id,
+            terminatedAt: metadata.terminated_at,
+            orderCreatedAt: order.created_at,
+            orderId: order.id
+          })
+          return
+        } else {
+          console.log('[ADMIN/ORDERS] ✅ Nouvelle commande après terminaison, réactivation autorisée', {
+            userId: order.user_id,
+            terminatedAt: metadata.terminated_at,
+            orderCreatedAt: order.created_at,
+            orderId: order.id
+          })
+          // Le marqueur sera effacé par le payload.metadata = {} plus bas
+        }
+      }
+    }
+
     const previousPeriodEnd = existingSub?.current_period_end ? new Date(existingSub.current_period_end) : null
     const startDate = previousPeriodEnd && previousPeriodEnd > now ? previousPeriodEnd : now
     const startISO = startDate.toISOString()
@@ -55,6 +87,8 @@ async function activateSubscriptionFromOrder(order: any) {
       current_period_end: endISO,
       cancel_at_period_end: false,
       grace_until: graceUntil,
+      // Effacer le marqueur de terminaison manuelle lors de la réactivation
+      metadata: {},
       updated_at: new Date().toISOString()
     }
 

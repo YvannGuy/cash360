@@ -554,7 +554,7 @@ export default function FinancialFast({ variant = 'page', onStatusChange }: Fina
                         <p className="text-sm font-semibold text-[#012F4E]">{details?.label || category}</p>
                         {details?.description && <p className="text-xs text-gray-500">{details.description}</p>}
                       </div>
-                      <span className="text-xs font-medium text-gray-500">{copy.monthLabel || 'Mois en cours'}</span>
+                      <span className="text-xs font-medium text-gray-500">Mois en cours</span>
                     </div>
                     <div className="relative">
                       <input

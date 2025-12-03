@@ -83,7 +83,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const subscriptionId = subscription.stripe_subscription_id
-    let updatedSubscription: Stripe.Response<Stripe.Subscription>
+    let updatedSubscription: Stripe.Subscription
 
     if (action === 'cancel_period_end') {
       updatedSubscription = await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true })
@@ -96,7 +96,7 @@ export async function PATCH(request: NextRequest) {
       subscription: {
         status: updatedSubscription.status,
         cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end,
-        currentPeriodEnd: updatedSubscription.current_period_end
+        currentPeriodEnd: (updatedSubscription as any).current_period_end ? new Date((updatedSubscription as any).current_period_end * 1000).toISOString() : null
       }
     })
   } catch (error) {
