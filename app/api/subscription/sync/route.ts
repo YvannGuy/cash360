@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
           const sorted = allActiveSubscriptions.sort((a, b) => b.created - a.created)
           const mostRecentActive = sorted[0]
           // Toujours prendre le plus récent actif, même si on avait déjà trouvé un abonnement annulé
-          if (!subscription || subscription.status === 'canceled' || mostRecentActive.created > subscription.created) {
+          if (!subscription || (subscription as any).status === 'canceled' || mostRecentActive.created > (subscription as any).created) {
             subscription = mostRecentActive
             console.log('[SYNC] ✅ Abonnement actif/trialing le plus récent trouvé via email:', {
               subscriptionId: subscription.id,

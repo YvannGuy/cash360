@@ -117,52 +117,88 @@ export default function DashboardOnboarding({ userId }: DashboardOnboardingProps
     if (!showOnboarding || currentStep >= steps.length) return
 
     const step = steps[currentStep]
-    if (step.targetSelector) {
-      const element = document.querySelector(step.targetSelector) as HTMLElement
-      if (element) {
-        setHighlightedElement(element)
-        // Scroll amélioré pour mobile avec un délai pour s'assurer que le DOM est prêt
-        setTimeout(() => {
-          const rect = element.getBoundingClientRect()
-          const viewportHeight = window.innerHeight
-          const viewportWidth = window.innerWidth
+    
+    // Fonction pour trouver et positionner l'élément
+    const findAndPositionElement = (attempts = 0) => {
+      if (step.targetSelector) {
+        const element = document.querySelector(step.targetSelector) as HTMLElement
+        if (element) {
+          setHighlightedElement(element)
           
-          // Calculer la position de scroll pour centrer l'élément
-          const scrollX = window.scrollX || window.pageXOffset
-          const scrollY = window.scrollY || window.pageYOffset
-          
-          // Centrer verticalement
-          const elementTop = rect.top + scrollY
-          const elementHeight = rect.height
-          const targetScrollY = elementTop + elementHeight / 2 - viewportHeight / 2
-          
-          // Centrer horizontalement si nécessaire
-          const elementLeft = rect.left + scrollX
-          const elementWidth = rect.width
-          const targetScrollX = elementLeft + elementWidth / 2 - viewportWidth / 2
-          
-          // Scroll smooth
-          window.scrollTo({
-            top: Math.max(0, targetScrollY),
-            left: Math.max(0, targetScrollX),
-            behavior: 'smooth'
-          })
-          
-          // Fallback avec scrollIntoView si window.scrollTo ne fonctionne pas
-          setTimeout(() => {
-            element.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center',
-              inline: 'center'
+          // Utiliser requestAnimationFrame pour s'assurer que le DOM est prêt
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const rect = element.getBoundingClientRect()
+              
+              // Vérifier que l'élément est visible
+              if (rect.width === 0 && rect.height === 0 && attempts < 5) {
+                setTimeout(() => findAndPositionElement(attempts + 1), 200)
+                return
+              }
+              
+              // Scroll vers l'élément avec scrollIntoView (plus fiable)
+              // Utiliser 'nearest' pour éviter les scrolls inutiles
+              element.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'center'
+              })
+              
+              // Pour les éléments dans un conteneur scrollable horizontal (comme les onglets)
+              // Trouver le conteneur parent scrollable et scroller si nécessaire
+              let parent = element.parentElement
+              while (parent) {
+                const style = window.getComputedStyle(parent)
+                if (style.overflowX === 'auto' || style.overflowX === 'scroll' || 
+                    style.overflow === 'auto' || style.overflow === 'scroll') {
+                  const parentRect = parent.getBoundingClientRect()
+                  const elementRect = element.getBoundingClientRect()
+                  
+                  // Vérifier si l'élément est visible horizontalement
+                  if (elementRect.left < parentRect.left) {
+                    parent.scrollTo({
+                      left: parent.scrollLeft + (elementRect.left - parentRect.left) - 20,
+                      behavior: 'smooth'
+                    })
+                  } else if (elementRect.right > parentRect.right) {
+                    parent.scrollTo({
+                      left: parent.scrollLeft + (elementRect.right - parentRect.right) + 20,
+                      behavior: 'smooth'
+                    })
+                  }
+                  break
+                }
+                parent = parent.parentElement
+              }
+              
+              // Mettre à jour la position après le scroll
+              setTimeout(() => {
+                const updatedRect = element.getBoundingClientRect()
+                if (updatedRect.width > 0 && updatedRect.height > 0) {
+                  setHighlightedElement(element)
+                }
+              }, 600)
             })
-          }, 50)
-        }, 150)
+          })
+        } else {
+          // Retry si l'élément n'est pas trouvé (peut être pas encore rendu)
+          if (attempts < 10) {
+            setTimeout(() => findAndPositionElement(attempts + 1), 200)
+          } else {
+            setHighlightedElement(null)
+          }
+        }
       } else {
         setHighlightedElement(null)
       }
-    } else {
-      setHighlightedElement(null)
     }
+    
+    // Démarrer la recherche avec un petit délai pour laisser le DOM se stabiliser
+    const timeoutId = setTimeout(() => {
+      findAndPositionElement(0)
+    }, 100)
+    
+    return () => clearTimeout(timeoutId)
   }, [showOnboarding, currentStep, steps])
 
   const handleNext = () => {
@@ -192,13 +228,42 @@ export default function DashboardOnboarding({ userId }: DashboardOnboardingProps
     setHighlightedElement(null)
   }
 
-  if (!showOnboarding) return null
-
-  const step = steps[currentStep]
-  const stepPosition = highlightedElement?.getBoundingClientRect()
+  // Utiliser un state pour stocker la position mise à jour
+  const [elementPosition, setElementPosition] = useState<DOMRect | null>(null)
+  
+  // Mettre à jour la position de l'élément quand il change ou après scroll
+  useEffect(() => {
+    if (!showOnboarding) return
+    if (!highlightedElement) {
+      setElementPosition(null)
+      return
+    }
+    
+    const updatePosition = () => {
+      const rect = highlightedElement.getBoundingClientRect()
+      if (rect.width > 0 && rect.height > 0) {
+        setElementPosition(rect)
+      }
+    }
+    
+    updatePosition()
+    
+    // Mettre à jour après les animations de scroll
+    const timeoutId = setTimeout(updatePosition, 600)
+    
+    // Écouter les événements de scroll pour mettre à jour la position
+    window.addEventListener('scroll', updatePosition, true)
+    window.addEventListener('resize', updatePosition)
+    
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('scroll', updatePosition, true)
+      window.removeEventListener('resize', updatePosition)
+    }
+  }, [highlightedElement])
 
   // Calculer la position du tooltip en tenant compte des limites de l'écran
-  const getTooltipStyle = (): React.CSSProperties => {
+  const getTooltipStyle = (stepPosition: DOMRect | undefined): React.CSSProperties => {
     if (!highlightedElement || !stepPosition || viewportSize.width === 0) {
       return {
         left: '50%',
@@ -312,6 +377,11 @@ export default function DashboardOnboarding({ userId }: DashboardOnboardingProps
     return style
   }
 
+  if (!showOnboarding) return null
+
+  const step = steps[currentStep]
+  const stepPosition = elementPosition || highlightedElement?.getBoundingClientRect()
+
   return (
     <>
       {/* Overlay sombre avec trou pour l'élément mis en évidence */}
@@ -333,7 +403,7 @@ export default function DashboardOnboarding({ userId }: DashboardOnboardingProps
       {/* Tooltip d'onboarding */}
       <div
         className="fixed z-[9999] bg-white rounded-lg shadow-2xl transition-all mx-4 sm:mx-0 flex flex-col max-h-[calc(100vh-2rem)]"
-        style={getTooltipStyle()}
+        style={getTooltipStyle(stepPosition)}
       >
         {/* Contenu scrollable */}
         <div className="overflow-y-auto overscroll-contain flex-1 min-h-0 p-4 sm:p-6">

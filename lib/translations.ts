@@ -764,7 +764,15 @@ export const translations = {
         myPurchases: "Mes achats",
         profile: "Profil",
         budget: "Budget & suivi",
-        financialFast: "Jeûne financier"
+        financialFast: "Jeûne financier",
+        tooltips: {
+          overview: "Visualisez votre résumé financier mensuel, vos insights personnalisés et votre inspiration du jour",
+          boutique: "Découvrez et achetez nos capsules, analyses financières, packs, ebooks et abonnements",
+          myPurchases: "Accédez à tous vos achats, formations, analyses et gérez votre abonnement",
+          profile: "Gérez vos informations personnelles, votre devise, langue et abonnement",
+          budget: "Suivez vos revenus et dépenses mensuels en temps réel",
+          financialFast: "Lancez un jeûne financier de 30 jours pour reprendre le contrôle de vos dépenses"
+        }
       },
       overview: {
         greeting: "Bonjour,",
@@ -1939,7 +1947,15 @@ export const translations = {
         myPurchases: "My purchases",
         profile: "Profile",
         budget: "Budget & tracking",
-        financialFast: "Financial fast"
+        financialFast: "Financial fast",
+        tooltips: {
+          overview: "View your monthly financial summary, personalized insights and daily inspiration",
+          boutique: "Discover and purchase our capsules, financial analyses, packs, ebooks and subscriptions",
+          myPurchases: "Access all your purchases, training, analyses and manage your subscription",
+          profile: "Manage your personal information, currency, language and subscription",
+          budget: "Track your monthly income and expenses in real-time",
+          financialFast: "Start a 30-day financial fast to regain control of your spending"
+        }
       },
       overview: {
         greeting: "Hello,",
@@ -3113,7 +3129,15 @@ export const translations = {
         myPurchases: "Mis compras",
         profile: "Perfil",
         budget: "Presupuesto y seguimiento",
-        financialFast: "Ayuno financiero"
+        financialFast: "Ayuno financiero",
+        tooltips: {
+          overview: "Visualiza tu resumen financiero mensual, insights personalizados e inspiración diaria",
+          boutique: "Descubre y compra nuestras cápsulas, análisis financieros, packs, ebooks y suscripciones",
+          myPurchases: "Accede a todas tus compras, formaciones, análisis y gestiona tu suscripción",
+          profile: "Gestiona tu información personal, moneda, idioma y suscripción",
+          budget: "Rastrea tus ingresos y gastos mensuales en tiempo real",
+          financialFast: "Inicia un ayuno financiero de 30 días para recuperar el control de tus gastos"
+        }
       },
       overview: {
         greeting: "Hola,",
@@ -4287,7 +4311,15 @@ export const translations = {
         myPurchases: "Minhas compras",
         profile: "Perfil",
         budget: "Orçamento & acompanhamento",
-        financialFast: "Jejum financeiro"
+        financialFast: "Jejum financeiro",
+        tooltips: {
+          overview: "Visualize seu resumo financeiro mensal, insights personalizados e inspiração diária",
+          boutique: "Descubra e compre nossas cápsulas, análises financeiras, packs, ebooks e assinaturas",
+          myPurchases: "Acesse todas as suas compras, formações, análises e gerencie sua assinatura",
+          profile: "Gerencie suas informações pessoais, moeda, idioma e assinatura",
+          budget: "Rastreie suas receitas e despesas mensais em tempo real",
+          financialFast: "Inicie um jejum financeiro de 30 dias para recuperar o controle de seus gastos"
+        }
       },
       overview: {
         greeting: "Olá,",

@@ -99,17 +99,35 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     
-    const monthlyPayments = enrichedPayments.filter(p => new Date(p.created_at) >= firstDayOfMonth)
-    const successfulPayments = enrichedPayments.filter(p => p.status === 'success')
+    // Filtrer les paiements du mois actuel (tous statuts confondus pour le revenu mensuel)
+    const monthlyPayments = enrichedPayments.filter(p => {
+      const paymentDate = new Date(p.created_at)
+      return paymentDate >= firstDayOfMonth && (p.status === 'success' || p.status === 'succeeded' || p.status === 'paid')
+    })
+    
+    // Filtrer tous les paiements réussis (tous statuts valides)
+    const successfulPayments = enrichedPayments.filter(p => 
+      p.status === 'success' || p.status === 'succeeded' || p.status === 'paid'
+    )
+    
     const failedPayments = enrichedPayments.filter(p => p.status === 'failed')
     
     const stats = {
-      monthlyRevenue: monthlyPayments.reduce((sum: number, p) => sum + parseFloat(p.amount), 0),
-      cumulativeRevenue: successfulPayments.reduce((sum: number, p) => sum + parseFloat(p.amount), 0),
+      monthlyRevenue: monthlyPayments.reduce((sum: number, p) => sum + parseFloat(p.amount || 0), 0),
+      cumulativeRevenue: successfulPayments.reduce((sum: number, p) => sum + parseFloat(p.amount || 0), 0),
       transactions: enrichedPayments.length,
       failureRate: enrichedPayments.length > 0 ? (failedPayments.length / enrichedPayments.length) * 100 : 0,
-      averageBasket: successfulPayments.length > 0 ? successfulPayments.reduce((sum: number, p) => sum + parseFloat(p.amount), 0) / successfulPayments.length : 0
+      averageBasket: successfulPayments.length > 0 ? successfulPayments.reduce((sum: number, p) => sum + parseFloat(p.amount || 0), 0) / successfulPayments.length : 0
     }
+    
+    console.log('[PAIEMENTS API] Statistiques calculées:', {
+      totalPayments: enrichedPayments.length,
+      monthlyPayments: monthlyPayments.length,
+      successfulPayments: successfulPayments.length,
+      failedPayments: failedPayments.length,
+      monthlyRevenue: stats.monthlyRevenue,
+      cumulativeRevenue: stats.cumulativeRevenue
+    })
 
     return NextResponse.json({
       success: true,

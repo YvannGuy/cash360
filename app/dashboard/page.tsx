@@ -847,7 +847,7 @@ const refreshFastSummary = useCallback(async () => {
       }
     }
     
-    // Traiter l'abonnement s'il existe
+    // Traiter l'abonnement s'il existe (une seule fois, éviter les doublons)
     // Vérifier dans orders (Mobile Money) OU dans user_subscriptions (Stripe + Mobile Money validé)
     const hasSubscriptionOrder = userOrders.some((o: any) => {
       const isAbonnement = o.product_id === 'abonnement' || 
@@ -865,7 +865,19 @@ const refreshFastSummary = useCallback(async () => {
       subscription.status === 'past_due'
     )
     
-    if (hasSubscriptionOrder || hasActiveSubscription) {
+    // Vérifier si l'abonnement n'a pas déjà été ajouté dans result
+    // Vérifier à la fois par ID et par titre normalisé pour éviter les doublons
+    const subscriptionAlreadyAdded = result.some((item: any) => {
+      const itemId = item.id?.toLowerCase().trim() || ''
+      const itemTitle = item.title?.toLowerCase().trim() || ''
+      return itemId === 'abonnement' || 
+             itemId.includes('abonnement') ||
+             itemTitle.includes('abonnement') ||
+             itemTitle.includes('sagesse')
+    })
+    
+    // Ajouter l'abonnement seulement s'il existe ET qu'il n'a pas déjà été ajouté
+    if ((hasSubscriptionOrder || hasActiveSubscription) && !subscriptionAlreadyAdded) {
       const subscriptionOrder = userOrders.find((o: any) => {
         const isAbonnement = o.product_id === 'abonnement' || 
                             o.product_id?.toLowerCase() === 'abonnement' ||
@@ -907,10 +919,23 @@ const refreshFastSummary = useCallback(async () => {
     }
     
     // Ensuite, traiter les autres produits (en excluant analyse-financiere et abonnement de userCapsules)
-    const otherCapsules = (userCapsules || []).filter((id: string) => id !== 'analyse-financiere' && id !== 'abonnement')
+    const otherCapsules = (userCapsules || []).filter((id: string) => {
+      // Exclure analyse-financiere et abonnement (avec toutes les variations possibles)
+      const normalizedId = id?.toLowerCase().trim() || ''
+      return normalizedId !== 'analyse-financiere' && 
+             normalizedId !== 'abonnement' &&
+             !normalizedId.includes('abonnement') &&
+             !normalizedId.includes('sagesse')
+    })
     
     if (otherCapsules.length > 0) {
       for (const capsuleId of otherCapsules) {
+        // Double vérification pour éviter d'ajouter l'abonnement
+        const normalizedId = capsuleId?.toLowerCase().trim() || ''
+        if (normalizedId === 'abonnement' || normalizedId.includes('abonnement') || normalizedId.includes('sagesse')) {
+          continue
+        }
+        
         const orderStatus = getOrderStatus(capsuleId)
       
       // 1. Chercher d'abord dans les capsules prédéfinies (capsule1-5)
@@ -927,6 +952,16 @@ const refreshFastSummary = useCallback(async () => {
        // 2. Chercher dans tous les produits (y compris non disponibles) pour les nouveaux produits
        const produit = allProducts.find(p => p.id === capsuleId)
        if (produit) {
+         // Vérifier que ce n'est pas l'abonnement avant d'ajouter
+         const produitNormalizedId = produit.id?.toLowerCase().trim() || ''
+         const produitNormalizedTitle = produit.title?.toLowerCase().trim() || ''
+         if (produitNormalizedId === 'abonnement' || 
+             produitNormalizedId.includes('abonnement') || 
+             produitNormalizedTitle.includes('abonnement') ||
+             produitNormalizedTitle.includes('sagesse')) {
+           continue
+         }
+         
          result.push({
            id: produit.id,
            title: produit.title,
@@ -942,6 +977,12 @@ const refreshFastSummary = useCallback(async () => {
        // 3. Si pas trouvé dans les produits, chercher dans les formations pour récupérer les infos
        const formation = formationsData.find(f => f.capsule_id === capsuleId)
        if (formation) {
+         // Vérifier que ce n'est pas l'abonnement avant d'ajouter
+         const formationNormalizedTitle = formation.title?.toLowerCase().trim() || ''
+         if (formationNormalizedTitle.includes('abonnement') || formationNormalizedTitle.includes('sagesse')) {
+           continue
+         }
+         
          // Chercher à nouveau le produit pour récupérer sa catégorie et PDF
          const produitFromAll = allProducts.find(p => p.id === capsuleId)
          result.push({
@@ -969,7 +1010,37 @@ const refreshFastSummary = useCallback(async () => {
       }
     }
     
-    return result
+    // Déduplication finale pour éviter les doublons (notamment pour l'abonnement)
+    // Utiliser à la fois l'ID et le titre normalisé pour détecter les doublons
+    const seenIds = new Set<string>()
+    const seenTitles = new Set<string>()
+    const deduplicatedResult = result.filter((item: any) => {
+      // Normaliser le titre pour la comparaison (enlever les accents, mettre en minuscules)
+      const normalizedTitle = item.title?.toLowerCase().trim() || ''
+      
+      // Vérifier si l'ID existe déjà
+      if (seenIds.has(item.id)) {
+        return false
+      }
+      
+      // Pour l'abonnement spécifiquement, vérifier aussi le titre normalisé
+      // car il peut y avoir des variations (majuscules/minuscules, accents)
+      if (item.id === 'abonnement' || normalizedTitle.includes('abonnement') || normalizedTitle.includes('sagesse')) {
+        // Créer une clé de titre normalisée pour l'abonnement
+        const subscriptionKey = normalizedTitle.replace(/[^a-z0-9]/g, '')
+        if (subscriptionKey && seenTitles.has(subscriptionKey)) {
+          return false
+        }
+        if (subscriptionKey) {
+          seenTitles.add(subscriptionKey)
+        }
+      }
+      
+      seenIds.add(item.id)
+      return true
+    })
+    
+    return deduplicatedResult
   }, [userCapsules, allProducts, availableCapsules, formationsData, userOrders, userAnalyses, subscription])
 
   // Filtrage des achats par catégorie et recherche
@@ -2043,27 +2114,38 @@ const refreshFastSummary = useCallback(async () => {
         {/* Onglets de navigation */}
         <div className="mb-8 border-b border-gray-200 pb-2" data-onboarding="tabs">
           <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveTab(item.id)}
-                data-onboarding={
-                  item.id === 'overview' ? 'overview-tab' : 
-                  item.id === 'budget' ? 'budget-tab' : 
-                  item.id === 'fast' ? 'fast-tab' : 
-                  item.id === 'profile' ? 'profile-tab' : 
-                  item.id === 'boutique' ? 'boutique-tab' : 
-                  item.id === 'myPurchases' ? 'purchases-tab' : 
-                  undefined
-                }
-                className={`snap-start px-5 sm:px-6 py-3 font-medium transition-all rounded-t-lg whitespace-nowrap ${
-                  activeTab === item.id ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900 bg-white'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {navItems.map((item) => {
+              const tooltipMap: Record<DashboardTab, string> = {
+                overview: t.dashboard.tabs.tooltips?.overview || '',
+                boutique: t.dashboard.tabs.tooltips?.boutique || '',
+                formations: t.dashboard.tabs.tooltips?.myPurchases || '',
+                profil: t.dashboard.tabs.tooltips?.profile || '',
+                budget: t.dashboard.tabs.tooltips?.budget || '',
+                fast: t.dashboard.tabs.tooltips?.financialFast || ''
+              }
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveTab(item.id)}
+                  title={tooltipMap[item.id]}
+                  data-onboarding={
+                    item.id === 'overview' ? 'overview-tab' : 
+                    item.id === 'budget' ? 'budget-tab' : 
+                    item.id === 'fast' ? 'fast-tab' : 
+                    item.id === 'profil' ? 'profile-tab' : 
+                    item.id === 'boutique' ? 'boutique-tab' : 
+                    item.id === 'formations' ? 'purchases-tab' : 
+                    undefined
+                  }
+                  className={`snap-start px-5 sm:px-6 py-3 font-medium transition-all rounded-t-lg whitespace-nowrap ${
+                    activeTab === item.id ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900 bg-white'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              )
+            })}
           </div>
         </div>
 
