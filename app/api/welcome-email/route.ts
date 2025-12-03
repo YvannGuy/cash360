@@ -167,6 +167,7 @@ function generateWelcomeEmailHtml(firstName: string, lastName: string, origin: s
                 <li>📊 Tableau de bord financier complet</li>
                 <li>💰 Budget & suivi mois par mois</li>
                 <li>⛔ Jeûne financier 30 jours</li>
+                <li>🛡️ DebtFree – plan de remboursement de dettes intelligent</li>
               </ul>
             </li>
           </ul>
@@ -188,6 +189,7 @@ function generateWelcomeEmailHtml(firstName: string, lastName: string, origin: s
             <li><strong>Tableau de bord</strong> → visualise revenus, dépenses et épargne du mois</li>
             <li><strong>Budget & suivi</strong> → gère ton budget mois par mois</li>
             <li><strong>Jeûne financier</strong> → lance un défi de 30 jours pour reprendre le contrôle</li>
+            <li><strong>DebtFree</strong> → crée ton plan de remboursement de dettes intelligent</li>
             <li><strong>Verset biblique quotidien</strong> → reçois ton inspiration spirituelle chaque jour</li>
           </ul>
           <div style="text-align: center; margin-top: 15px;">
@@ -209,7 +211,7 @@ function generateWelcomeEmailHtml(firstName: string, lastName: string, origin: s
             <li><strong>Profil</strong> → gère tes informations, ta devise, ta langue et ton abonnement</li>
           </ul>
           <p style="color: #065f46; font-size: 14px; line-height: 1.5; margin-top: 15px; margin-bottom: 0;">
-            Avec l'abonnement premium, débloque aussi le <strong>Tableau de bord</strong>, le <strong>Budget & suivi</strong> et le <strong>Jeûne financier</strong> !
+            Avec l'abonnement premium, débloque aussi le <strong>Tableau de bord</strong>, le <strong>Budget & suivi</strong>, le <strong>Jeûne financier</strong> et <strong>DebtFree</strong> !
           </p>
         </div>
 

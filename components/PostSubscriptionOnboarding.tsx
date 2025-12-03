@@ -90,6 +90,13 @@ export default function PostSubscriptionOnboarding({ userId }: PostSubscriptionO
       position: 'bottom'
     },
     {
+      id: 'debtfree',
+      title: t.dashboard?.postSubscriptionOnboarding?.debtFree?.title || '🛡️ DebtFree',
+      description: t.dashboard?.postSubscriptionOnboarding?.debtFree?.description || 'Créez votre plan de remboursement de dettes intelligent. DebtFree analyse automatiquement vos dettes à partir de votre budget et de vos économies du jeûne financier. Visualisez votre date estimée de libération financière et découvrez comment accélérer votre remboursement grâce à vos efforts de discipline.',
+      targetSelector: '[data-onboarding="debtfree-tab"]',
+      position: 'bottom'
+    },
+    {
       id: 'profile',
       title: t.dashboard?.postSubscriptionOnboarding?.profile?.title || '👤 Profil',
       description: t.dashboard?.postSubscriptionOnboarding?.profile?.description || 'Gérez vos informations personnelles, votre devise préférée, votre langue et votre abonnement. Vous pouvez suspendre ou relancer votre abonnement à tout moment depuis cet onglet.',

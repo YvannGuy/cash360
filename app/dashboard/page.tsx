@@ -18,11 +18,12 @@ import DashboardOnboarding from '@/components/DashboardOnboarding'
 import PostSubscriptionOnboarding from '@/components/PostSubscriptionOnboarding'
 import BudgetTracker, { type BudgetSnapshot } from '@/components/dashboard/BudgetTracker'
 import FinancialFast from '@/components/dashboard/FinancialFast'
+import DebtFree from '@/components/dashboard/DebtFree'
 import ModalOMWave from '@/components/ModalOMWave'
 import { hasActiveSubscription } from '@/lib/subscriptionAccess'
 import { EUR_TO_FCFA_RATE } from '@/config/omWave'
 
-type DashboardTab = 'overview' | 'boutique' | 'formations' | 'profil' | 'budget' | 'fast'
+type DashboardTab = 'overview' | 'boutique' | 'formations' | 'profil' | 'budget' | 'fast' | 'debtfree'
 type SubscriptionAction = 'cancel_period_end' | 'resume' | 'terminate_immediately'
 const FAST_TOTAL_DAYS = 30
 const DAY_MS = 1000 * 60 * 60 * 24
@@ -208,6 +209,7 @@ function DashboardPageContent() {
         { id: 'overview', label: t.dashboard.tabs.overview || 'Tableau de bord' },
         { id: 'budget', label: t.dashboard.tabs.budget || 'Budget & suivi' },
         { id: 'fast', label: t.dashboard.tabs.financialFast || 'Jeûne financier' },
+        { id: 'debtfree', label: t.dashboard.tabs.debtFree || 'DebtFree' },
         ...baseTabs
       ]
     }
@@ -2121,7 +2123,8 @@ const refreshFastSummary = useCallback(async () => {
                 formations: t.dashboard.tabs.tooltips?.myPurchases || '',
                 profil: t.dashboard.tabs.tooltips?.profile || '',
                 budget: t.dashboard.tabs.tooltips?.budget || '',
-                fast: t.dashboard.tabs.tooltips?.financialFast || ''
+                fast: t.dashboard.tabs.tooltips?.financialFast || '',
+                debtfree: t.dashboard.tabs.tooltips?.debtFree || ''
               }
               return (
                 <button
@@ -2133,6 +2136,7 @@ const refreshFastSummary = useCallback(async () => {
                     item.id === 'overview' ? 'overview-tab' : 
                     item.id === 'budget' ? 'budget-tab' : 
                     item.id === 'fast' ? 'fast-tab' : 
+                    item.id === 'debtfree' ? 'debtfree-tab' :
                     item.id === 'profil' ? 'profile-tab' : 
                     item.id === 'boutique' ? 'boutique-tab' : 
                     item.id === 'formations' ? 'purchases-tab' : 
@@ -2201,7 +2205,7 @@ const refreshFastSummary = useCallback(async () => {
                       </span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <button
                       type="button"
                       onClick={() => setActiveTab('budget')}
@@ -2231,6 +2235,21 @@ const refreshFastSummary = useCallback(async () => {
                       </div>
                       <p className="text-sm text-sky-900/80 group-hover:text-sky-950">
                         {t.dashboard.overview?.fastInsightMissing || 'Active ton jeûne financier pour renforcer ta discipline.'}
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('debtfree')}
+                      className="w-full group rounded-2xl border border-purple-200 p-5 text-left bg-gradient-to-br from-purple-50 to-white hover:from-purple-100 hover:to-white transition-colors duration-200"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-lg font-semibold text-purple-900 group-hover:text-purple-950">
+                          {t.dashboard.tabs.debtFree || 'DebtFree'}
+                        </h4>
+                        <span className="text-sm text-purple-600 group-hover:text-purple-950">→</span>
+                      </div>
+                      <p className="text-sm text-purple-900/80 group-hover:text-purple-950">
+                        Plan de remboursement de dettes basé sur votre budget et vos économies.
                       </p>
                     </button>
                   </div>
@@ -2289,6 +2308,13 @@ const refreshFastSummary = useCallback(async () => {
             <FinancialFast variant="embedded" onStatusChange={refreshFastSummary} />
           </div>
         )}
+
+          {/* Contenu de l'onglet "DebtFree" */}
+          {hasPremiumAccess && activeTab === 'debtfree' && (
+            <div className="space-y-8">
+              <DebtFree variant="embedded" />
+            </div>
+          )}
 
           {/* Contenu de l'onglet "Boutique" */}
           {activeTab === 'boutique' && (

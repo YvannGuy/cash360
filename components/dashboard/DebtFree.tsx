@@ -1,0 +1,309 @@
+'use client'
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
+import { useCurrency } from '@/lib/CurrencyContext'
+import Link from 'next/link'
+
+type DebtSummary = {
+  totalDebtMonthlyPayments: number
+  estimatedTotalDebtAmount?: number
+  availableMarginMonthly: number
+  fastSavingsMonthly: number
+  estimatedMonthsToFreedom: number
+  estimatedMonthsToFreedomWithFast: number
+}
+
+type DebtFreeProps = {
+  variant?: 'page' | 'embedded'
+}
+
+const localeMap: Record<string, string> = {
+  fr: 'fr-FR',
+  en: 'en-US',
+  es: 'es-ES',
+  pt: 'pt-PT'
+}
+
+export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
+  const isEmbedded = variant === 'embedded'
+  const { t, language } = useLanguage()
+  const { format: formatCurrency, symbol: currencySymbol } = useCurrency()
+  const [loading, setLoading] = useState(true)
+  const [summary, setSummary] = useState<DebtSummary | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [requiresSubscription, setRequiresSubscription] = useState(false)
+
+  const locale = localeMap[language as keyof typeof localeMap] ?? 'fr-FR'
+  const formatMoney = useCallback((value: number) => formatCurrency(value), [formatCurrency])
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await fetch('/api/debt-free/summary', { cache: 'no-store' })
+
+        if (response.status === 402) {
+          setRequiresSubscription(true)
+          return
+        }
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}))
+          throw new Error(data.error || 'Impossible de charger le résumé des dettes')
+        }
+
+        const data = await response.json()
+        setSummary(data)
+      } catch (err: any) {
+        console.error('[DebtFree] fetch error', err)
+        setError(err?.message || 'Erreur lors du chargement')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSummary()
+  }, [])
+
+  const hasDebts = summary && summary.totalDebtMonthlyPayments > 0
+  const hasFast = summary && summary.fastSavingsMonthly > 0
+  const monthsSaved = summary
+    ? summary.estimatedMonthsToFreedom - summary.estimatedMonthsToFreedomWithFast
+    : 0
+
+  const copy = t.dashboard?.debtFree ?? {}
+
+  const subscriptionLock = (
+    <div className={`${isEmbedded ? '' : 'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
+      <div className="bg-white rounded-3xl border border-dashed border-gray-200 p-8 text-center shadow-sm">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 text-yellow-600 mx-auto mb-4">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 15v2m0-8v2m-6 5V6a2 2 0 012-2h6.5a2 2 0 011.6.8l3.5 4.2a2 2 0 01.4 1.2V17a2 2 0 01-2 2H8a2 2 0 01-2-2z"
+            />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-[#012F4E] mb-2">{copy.subscriptionLockedTitle || 'Abonnement requis'}</h2>
+        <p className="text-gray-600 mb-6">
+          {copy.subscriptionLockedDescription || 'Souscrivez à l\'abonnement Sagesse de Salomon pour accéder au plan de remboursement de dettes.'}
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = '/dashboard?tab=boutique#subscription'
+          }}
+          className="inline-flex items-center justify-center rounded-2xl bg-[#012F4E] px-6 py-3 text-white font-semibold shadow-lg hover:bg-[#023d68]"
+        >
+          {copy.subscriptionLockedCta || 'Découvrir l\'abonnement'}
+        </button>
+      </div>
+    </div>
+  )
+
+  if (requiresSubscription) {
+    return subscriptionLock
+  }
+
+  if (loading) {
+    return (
+      <div className={`${isEmbedded ? '' : 'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className={`${isEmbedded ? '' : 'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
+        <div className="bg-white rounded-3xl shadow-sm border border-red-200 p-8">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-[#012F4E] hover:underline"
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!hasDebts) {
+    return (
+      <div className={`${isEmbedded ? '' : 'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
+        <div className="space-y-6">
+          {/* En-tête avec titre et description */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#012F4E]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#012F4E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-[#012F4E] mb-1.5">{copy.title || 'DebtFree'}</h1>
+                <p className="text-sm font-medium text-gray-700 mb-2">{copy.subtitle || 'Votre plan de remboursement de dettes intelligent'}</p>
+                <p className="text-sm text-gray-600 leading-relaxed">{copy.description || 'DebtFree analyse automatiquement vos dettes à partir de votre budget et de vos économies du jeûne financier. Visualisez votre date estimée de libération et découvrez comment accélérer votre remboursement grâce à vos efforts de discipline financière.'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Message aucune dette */}
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mx-auto mb-4">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-[#012F4E] mb-2">{copy.noDebtTitle || 'Aucune dette détectée'}</h2>
+            <p className="text-gray-600 mb-6">
+              {copy.noDebtDescription || 'Aucun paiement de dette n\'a été détecté dans votre budget actuel. Si vous avez des dettes, ajoutez-les dans la section Budget & Suivi avec une catégorie contenant "dette", "crédit" ou "prêt".'}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/dashboard?tab=budget"
+                className="inline-flex items-center justify-center rounded-2xl bg-[#012F4E] px-6 py-3 text-white font-semibold shadow-lg hover:bg-[#023d68]"
+              >
+                {copy.adjustBudget || 'Ajuster mon budget'}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={`${isEmbedded ? '' : 'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
+      <div className="space-y-6">
+        {/* En-tête avec titre et description */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-6">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#012F4E]/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#012F4E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-[#012F4E] mb-1.5">{copy.title || 'DebtFree'}</h1>
+              <p className="text-sm font-medium text-gray-700 mb-2">{copy.subtitle || 'Votre plan de remboursement de dettes intelligent'}</p>
+              <p className="text-sm text-gray-600 leading-relaxed">{copy.description || 'DebtFree analyse automatiquement vos dettes à partir de votre budget et de vos économies du jeûne financier. Visualisez votre date estimée de libération et découvrez comment accélérer votre remboursement grâce à vos efforts de discipline financière.'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Résumé des dettes */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+          <h2 className="text-xl font-bold text-[#012F4E] mb-4">{copy.summaryTitle || 'Résumé de vos dettes'}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-gray-50 rounded-2xl p-4">
+              <p className="text-sm text-gray-600 mb-1">{copy.totalDebtPayments || 'Paiements mensuels de dettes'}</p>
+              <p className="text-2xl font-bold text-[#012F4E]">
+                {formatMoney(summary!.totalDebtMonthlyPayments)}
+              </p>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-4">
+              <p className="text-sm text-gray-600 mb-1">{copy.availableMargin || 'Marge disponible mensuelle'}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {formatMoney(summary!.availableMarginMonthly)}
+              </p>
+            </div>
+            {hasFast && (
+              <div className="bg-yellow-50 rounded-2xl p-4 sm:col-span-2">
+                <p className="text-sm text-gray-600 mb-1">{copy.fastSavings || 'Économies mensuelles du jeûne'}</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  {formatMoney(summary!.fastSavingsMonthly)}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Projection */}
+        <div className="bg-gradient-to-br from-[#012F4E] to-[#023d68] rounded-3xl shadow-lg p-6 sm:p-8 text-white">
+          <h2 className="text-xl font-bold mb-4">{copy.projectionTitle || 'Projection de remboursement'}</h2>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm opacity-90 mb-2">{copy.currentPace || 'Au rythme actuel'}</p>
+              <p className="text-3xl font-bold">
+                {summary!.estimatedMonthsToFreedom === 999
+                  ? (copy.moreThan20Years || 'Plus de 20 ans')
+                  : `${summary!.estimatedMonthsToFreedom} ${copy.months || 'mois'}`}
+              </p>
+              {summary!.estimatedMonthsToFreedom !== 999 && (
+                <p className="text-sm opacity-75 mt-1">
+                  ({copy.yearsAndMonths?.replace('{years}', String(Math.floor(summary!.estimatedMonthsToFreedom / 12)))?.replace('{months}', String(summary!.estimatedMonthsToFreedom % 12)) || `${Math.floor(summary!.estimatedMonthsToFreedom / 12)} ans et ${summary!.estimatedMonthsToFreedom % 12} mois`})
+                </p>
+              )}
+            </div>
+            {hasFast && monthsSaved > 0 && (
+              <div className="border-t border-white/20 pt-4">
+                <p className="text-sm opacity-90 mb-2">{copy.withFastSavings || 'Avec les économies du jeûne'}</p>
+                <p className="text-3xl font-bold">
+                  {summary!.estimatedMonthsToFreedomWithFast === 999
+                    ? (copy.moreThan20Years || 'Plus de 20 ans')
+                    : `${summary!.estimatedMonthsToFreedomWithFast} ${copy.months || 'mois'}`}
+                </p>
+                {summary!.estimatedMonthsToFreedomWithFast !== 999 && (
+                  <p className="text-sm opacity-75 mt-1">
+                    ({copy.yearsAndMonths?.replace('{years}', String(Math.floor(summary!.estimatedMonthsToFreedomWithFast / 12)))?.replace('{months}', String(summary!.estimatedMonthsToFreedomWithFast % 12)) || `${Math.floor(summary!.estimatedMonthsToFreedomWithFast / 12)} ans et ${summary!.estimatedMonthsToFreedomWithFast % 12} mois`})
+                  </p>
+                )}
+                <div className="mt-3 bg-white/10 rounded-xl p-3">
+                  <p className="text-sm font-semibold">
+                    ⚡ {copy.monthsSaved?.replace('{months}', String(monthsSaved)) || `Vous économisez ${monthsSaved} mois grâce au jeûne financier !`}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+          <h2 className="text-xl font-bold text-[#012F4E] mb-4">{copy.accelerateTitle || 'Accélérer votre remboursement'}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              href="/dashboard?tab=budget"
+              className="flex items-center justify-center rounded-2xl bg-[#012F4E] px-6 py-3 text-white font-semibold shadow-lg hover:bg-[#023d68] transition-colors"
+            >
+              {copy.adjustBudget || 'Ajuster mon budget'}
+            </Link>
+            <Link
+              href="/dashboard?tab=fast"
+              className="flex items-center justify-center rounded-2xl bg-yellow-500 px-6 py-3 text-white font-semibold shadow-lg hover:bg-yellow-600 transition-colors"
+            >
+              {hasFast ? (copy.extendFast || 'Prolonger mon jeûne') : (copy.launchFast || 'Lancer un jeûne financier')}
+            </Link>
+          </div>
+        </div>
+
+        {/* Note informative */}
+        <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
+          <p className="text-sm text-blue-800">
+            <strong>{copy.noteTitle || 'Note'} :</strong> {copy.noteText || 'Cette projection est une estimation basée sur vos données actuelles. Le montant total des dettes est estimé à partir de vos paiements mensuels. Pour une projection plus précise, ajoutez le montant total de vos dettes dans votre budget.'}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+

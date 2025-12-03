@@ -765,13 +765,15 @@ export const translations = {
         profile: "Profil",
         budget: "Budget & suivi",
         financialFast: "Jeûne financier",
+        debtFree: "DebtFree",
         tooltips: {
           overview: "Visualisez votre résumé financier mensuel, vos insights personnalisés et votre inspiration du jour",
           boutique: "Découvrez et achetez nos capsules, analyses financières, packs, ebooks et abonnements",
           myPurchases: "Accédez à tous vos achats, formations, analyses et gérez votre abonnement",
           profile: "Gérez vos informations personnelles, votre devise, langue et abonnement",
           budget: "Suivez vos revenus et dépenses mensuels en temps réel",
-          financialFast: "Lancez un jeûne financier de 30 jours pour reprendre le contrôle de vos dépenses"
+          financialFast: "Lancez un jeûne financier de 30 jours pour reprendre le contrôle de vos dépenses",
+          debtFree: "Plan de remboursement de dettes basé sur votre budget et vos économies du jeûne"
         }
       },
       overview: {
@@ -951,8 +953,36 @@ export const translations = {
         },
         loading: "Chargement du jeûne...",
         subscriptionLockedTitle: "Abonnement requis",
-        subscriptionLockedDescription: "Souscrivez à l’abonnement Sagesse de Salomon pour activer le Jeûne financier – 30 jours.",
-        subscriptionLockedCta: "Découvrir l’abonnement"
+        subscriptionLockedDescription: "Souscrivez à l'abonnement Sagesse de Salomon pour activer le Jeûne financier – 30 jours.",
+        subscriptionLockedCta: "Découvrir l'abonnement"
+      },
+      debtFree: {
+        title: "DebtFree",
+        subtitle: "Votre plan de remboursement de dettes intelligent",
+        description: "DebtFree analyse automatiquement vos dettes à partir de votre budget et de vos économies du jeûne financier. Visualisez votre date estimée de libération et découvrez comment accélérer votre remboursement grâce à vos efforts de discipline financière.",
+        noDebtTitle: "Aucune dette détectée",
+        noDebtDescription: "Aucun paiement de dette n'a été détecté dans votre budget actuel. Si vous avez des dettes, ajoutez-les dans la section Budget & Suivi avec une catégorie contenant \"dette\", \"crédit\" ou \"prêt\".",
+        summaryTitle: "Résumé de vos dettes",
+        totalDebtPayments: "Paiements mensuels de dettes",
+        availableMargin: "Marge disponible mensuelle",
+        fastSavings: "Économies mensuelles du jeûne",
+        projectionTitle: "Projection de remboursement",
+        currentPace: "Au rythme actuel",
+        withFastSavings: "Avec les économies du jeûne",
+        monthsSaved: "Vous économisez {months} mois grâce au jeûne financier !",
+        accelerateTitle: "Accélérer votre remboursement",
+        adjustBudget: "Ajuster mon budget",
+        extendFast: "Prolonger mon jeûne",
+        launchFast: "Lancer un jeûne financier",
+        noteTitle: "Note",
+        noteText: "Cette projection est une estimation basée sur vos données actuelles. Le montant total des dettes est estimé à partir de vos paiements mensuels. Pour une projection plus précise, ajoutez le montant total de vos dettes dans votre budget.",
+        moreThan20Years: "Plus de 20 ans",
+        months: "mois",
+        yearsAndMonths: "{years} ans et {months} mois",
+        subscriptionRequired: "Un abonnement actif est nécessaire pour accéder au module DebtFree.",
+        subscriptionLockedTitle: "Abonnement requis",
+        subscriptionLockedDescription: "Souscrivez à l'abonnement Sagesse de Salomon pour accéder au plan de remboursement de dettes.",
+        subscriptionLockedCta: "Découvrir l'abonnement"
       },
       // Analysis section
       analysis: {
@@ -1073,13 +1103,17 @@ export const translations = {
           title: "⛔ Jeûne financier – 30 jours",
           description: "Reprenez le contrôle de vos dépenses impulsives. Lancez un jeûne de 30 jours en choisissant les catégories à éviter (restaurants, vêtements, abonnements...). Suivez votre progrès jour après jour, calculez vos économies potentielles et renforcez votre discipline financière."
         },
+        debtFree: {
+          title: "🛡️ DebtFree",
+          description: "Créez votre plan de remboursement de dettes intelligent. DebtFree analyse automatiquement vos dettes à partir de votre budget et de vos économies du jeûne financier. Visualisez votre date estimée de libération financière et découvrez comment accélérer votre remboursement grâce à vos efforts de discipline."
+        },
         profile: {
           title: "👤 Profil",
           description: "Gérez vos informations personnelles, votre devise préférée, votre langue et votre abonnement. Vous pouvez suspendre ou relancer votre abonnement à tout moment depuis cet onglet."
         },
         complete: {
           title: "✅ Vous êtes prêt à transformer vos finances !",
-          description: "Vous connaissez maintenant tous vos outils premium. Commencez par votre Tableau de bord pour voir votre situation, puis configurez votre Budget & suivi pour suivre vos finances. Prêt pour le changement ? Lancez votre premier Jeûne financier !",
+          description: "Vous connaissez maintenant tous vos outils premium. Commencez par votre Tableau de bord pour voir votre situation, puis configurez votre Budget & suivi pour suivre vos finances. Prêt pour le changement ? Lancez votre premier Jeûne financier ou créez votre plan DebtFree !",
           button: "Commencer"
         }
       }
@@ -1948,13 +1982,15 @@ export const translations = {
         profile: "Profile",
         budget: "Budget & tracking",
         financialFast: "Financial fast",
+        debtFree: "DebtFree",
         tooltips: {
           overview: "View your monthly financial summary, personalized insights and daily inspiration",
           boutique: "Discover and purchase our capsules, financial analyses, packs, ebooks and subscriptions",
           myPurchases: "Access all your purchases, training, analyses and manage your subscription",
           profile: "Manage your personal information, currency, language and subscription",
           budget: "Track your monthly income and expenses in real-time",
-          financialFast: "Start a 30-day financial fast to regain control of your spending"
+          financialFast: "Start a 30-day financial fast to regain control of your spending",
+          debtFree: "Debt repayment plan based on your budget and fast savings"
         }
       },
       overview: {
@@ -2137,6 +2173,34 @@ export const translations = {
         subscriptionLockedDescription: "Subscribe to the Sagesse de Salomon membership to start the 30-day Financial Fast.",
         subscriptionLockedCta: "Discover the membership"
       },
+      debtFree: {
+        title: "DebtFree",
+        subtitle: "Your smart debt repayment plan",
+        description: "DebtFree automatically analyzes your debts from your budget and financial fast savings. Visualize your estimated freedom date and discover how to accelerate your repayment through your financial discipline efforts.",
+        noDebtTitle: "No debt detected",
+        noDebtDescription: "No debt payments were detected in your current budget. If you have debts, add them in the Budget & Tracking section with a category containing \"debt\", \"credit\" or \"loan\".",
+        summaryTitle: "Your debt summary",
+        totalDebtPayments: "Monthly debt payments",
+        availableMargin: "Available monthly margin",
+        fastSavings: "Monthly fast savings",
+        projectionTitle: "Repayment projection",
+        currentPace: "At current pace",
+        withFastSavings: "With fast savings",
+        monthsSaved: "You save {months} months thanks to the financial fast!",
+        accelerateTitle: "Accelerate your repayment",
+        adjustBudget: "Adjust my budget",
+        extendFast: "Extend my fast",
+        launchFast: "Start a financial fast",
+        noteTitle: "Note",
+        noteText: "This projection is an estimate based on your current data. The total debt amount is estimated from your monthly payments. For a more accurate projection, add the total amount of your debts in your budget.",
+        moreThan20Years: "More than 20 years",
+        months: "months",
+        yearsAndMonths: "{years} years and {months} months",
+        subscriptionRequired: "An active membership is required to access the DebtFree module.",
+        subscriptionLockedTitle: "Membership required",
+        subscriptionLockedDescription: "Subscribe to the Sagesse de Salomon membership to access the debt repayment plan.",
+        subscriptionLockedCta: "Discover the membership"
+      },
       // Analysis section
       analysis: {
         title: "My Analyses",
@@ -2256,13 +2320,17 @@ export const translations = {
           title: "⛔ Financial fast – 30 days",
           description: "Take control of your impulsive spending. Launch a 30-day fast by choosing categories to avoid (restaurants, clothes, subscriptions...). Track your progress day by day, calculate your potential savings and strengthen your financial discipline."
         },
+        debtFree: {
+          title: "🛡️ DebtFree",
+          description: "Create your smart debt repayment plan. DebtFree automatically analyzes your debts from your budget and financial fast savings. Visualize your estimated financial freedom date and discover how to accelerate your repayment through your discipline efforts."
+        },
         profile: {
           title: "👤 Profile",
           description: "Manage your personal information, your preferred currency, your language and your subscription. You can suspend or resume your subscription at any time from this tab."
         },
         complete: {
           title: "✅ You're ready to transform your finances!",
-          description: "You now know all your premium tools. Start with your Dashboard to see your situation, then set up your Budget & tracking to monitor your finances. Ready for change? Launch your first Financial fast!",
+          description: "You now know all your premium tools. Start with your Dashboard to see your situation, then set up your Budget & tracking to monitor your finances. Ready for change? Launch your first Financial fast or create your DebtFree plan!",
           button: "Get started"
         }
       }
@@ -3130,13 +3198,15 @@ export const translations = {
         profile: "Perfil",
         budget: "Presupuesto y seguimiento",
         financialFast: "Ayuno financiero",
+        debtFree: "DebtFree",
         tooltips: {
           overview: "Visualiza tu resumen financiero mensual, insights personalizados e inspiración diaria",
           boutique: "Descubre y compra nuestras cápsulas, análisis financieros, packs, ebooks y suscripciones",
           myPurchases: "Accede a todas tus compras, formaciones, análisis y gestiona tu suscripción",
           profile: "Gestiona tu información personal, moneda, idioma y suscripción",
           budget: "Rastrea tus ingresos y gastos mensuales en tiempo real",
-          financialFast: "Inicia un ayuno financiero de 30 días para recuperar el control de tus gastos"
+          financialFast: "Inicia un ayuno financiero de 30 días para recuperar el control de tus gastos",
+          debtFree: "Plan de pago de deudas basado en tu presupuesto y ahorros del ayuno"
         }
       },
       overview: {
@@ -3319,6 +3389,34 @@ export const translations = {
         subscriptionLockedDescription: "Suscríbete a la membresía Sagesse de Salomon para activar el Ayuno financiero de 30 días.",
         subscriptionLockedCta: "Descubrir la membresía"
       },
+      debtFree: {
+        title: "DebtFree",
+        subtitle: "Tu plan inteligente de pago de deudas",
+        description: "DebtFree analiza automáticamente tus deudas a partir de tu presupuesto y tus ahorros del ayuno financiero. Visualiza tu fecha estimada de liberación y descubre cómo acelerar tu pago gracias a tus esfuerzos de disciplina financiera.",
+        noDebtTitle: "No se detectaron deudas",
+        noDebtDescription: "No se detectaron pagos de deudas en tu presupuesto actual. Si tienes deudas, agrégalas en la sección Presupuesto y seguimiento con una categoría que contenga \"deuda\", \"crédito\" o \"préstamo\".",
+        summaryTitle: "Resumen de tus deudas",
+        totalDebtPayments: "Pagos mensuales de deudas",
+        availableMargin: "Margen disponible mensual",
+        fastSavings: "Ahorros mensuales del ayuno",
+        projectionTitle: "Proyección de pago",
+        currentPace: "Al ritmo actual",
+        withFastSavings: "Con los ahorros del ayuno",
+        monthsSaved: "¡Ahorras {months} meses gracias al ayuno financiero!",
+        accelerateTitle: "Acelera tu pago",
+        adjustBudget: "Ajustar mi presupuesto",
+        extendFast: "Prolongar mi ayuno",
+        launchFast: "Iniciar un ayuno financiero",
+        noteTitle: "Nota",
+        noteText: "Esta proyección es una estimación basada en tus datos actuales. El monto total de las deudas se estima a partir de tus pagos mensuales. Para una proyección más precisa, agrega el monto total de tus deudas en tu presupuesto.",
+        moreThan20Years: "Más de 20 años",
+        months: "meses",
+        yearsAndMonths: "{years} años y {months} meses",
+        subscriptionRequired: "Se necesita una membresía activa para acceder al módulo DebtFree.",
+        subscriptionLockedTitle: "Membresía requerida",
+        subscriptionLockedDescription: "Suscríbete a la membresía Sagesse de Salomon para acceder al plan de pago de deudas.",
+        subscriptionLockedCta: "Descubrir la membresía"
+      },
       // Analysis section
       analysis: {
         title: "Mis Análisis",
@@ -3438,13 +3536,17 @@ export const translations = {
           title: "⛔ Ayuno financiero – 30 días",
           description: "Toma el control de tus gastos impulsivos. Lanza un ayuno de 30 días eligiendo las categorías a evitar (restaurantes, ropa, suscripciones...). Sigue tu progreso día a día, calcula tus ahorros potenciales y fortalece tu disciplina financiera."
         },
+        debtFree: {
+          title: "🛡️ DebtFree",
+          description: "Crea tu plan inteligente de pago de deudas. DebtFree analiza automáticamente tus deudas a partir de tu presupuesto y tus ahorros del ayuno financiero. Visualiza tu fecha estimada de liberación financiera y descubre cómo acelerar tu pago gracias a tus esfuerzos de disciplina."
+        },
         profile: {
           title: "👤 Perfil",
           description: "Gestiona tu información personal, tu moneda preferida, tu idioma y tu suscripción. Puedes suspender o reactivar tu suscripción en cualquier momento desde esta pestaña."
         },
         complete: {
           title: "✅ ¡Estás listo para transformar tus finanzas!",
-          description: "Ahora conoces todas tus herramientas premium. Comienza por tu Panel de control para ver tu situación, luego configura tu Presupuesto y seguimiento para monitorear tus finanzas. ¿Listo para el cambio? ¡Lanza tu primer Ayuno financiero!",
+          description: "Ahora conoces todas tus herramientas premium. Comienza por tu Panel de control para ver tu situación, luego configura tu Presupuesto y seguimiento para monitorear tus finanzas. ¿Listo para el cambio? ¡Lanza tu primer Ayuno financiero o crea tu plan DebtFree!",
           button: "Comenzar"
         }
       }
@@ -4312,13 +4414,15 @@ export const translations = {
         profile: "Perfil",
         budget: "Orçamento & acompanhamento",
         financialFast: "Jejum financeiro",
+        debtFree: "DebtFree",
         tooltips: {
           overview: "Visualize seu resumo financeiro mensal, insights personalizados e inspiração diária",
           boutique: "Descubra e compre nossas cápsulas, análises financeiras, packs, ebooks e assinaturas",
           myPurchases: "Acesse todas as suas compras, formações, análises e gerencie sua assinatura",
           profile: "Gerencie suas informações pessoais, moeda, idioma e assinatura",
           budget: "Rastreie suas receitas e despesas mensais em tempo real",
-          financialFast: "Inicie um jejum financeiro de 30 dias para recuperar o controle de seus gastos"
+          financialFast: "Inicie um jejum financeiro de 30 dias para recuperar o controle de seus gastos",
+          debtFree: "Plano de pagamento de dívidas baseado em seu orçamento e economias do jejum"
         }
       },
       overview: {
@@ -4501,6 +4605,34 @@ export const translations = {
         subscriptionLockedDescription: "Assine o Sagesse de Salomon para iniciar o Jejum financeiro de 30 dias.",
         subscriptionLockedCta: "Conhecer a assinatura"
       },
+      debtFree: {
+        title: "DebtFree",
+        subtitle: "Seu plano inteligente de pagamento de dívidas",
+        description: "DebtFree analisa automaticamente suas dívidas a partir do seu orçamento e das suas economias do jejum financeiro. Visualize sua data estimada de liberação e descubra como acelerar seu pagamento através dos seus esforços de disciplina financeira.",
+        noDebtTitle: "Nenhuma dívida detectada",
+        noDebtDescription: "Nenhum pagamento de dívida foi detectado no seu orçamento atual. Se você tem dívidas, adicione-as na seção Orçamento & acompanhamento com uma categoria contendo \"dívida\", \"crédito\" ou \"empréstimo\".",
+        summaryTitle: "Resumo das suas dívidas",
+        totalDebtPayments: "Pagamentos mensais de dívidas",
+        availableMargin: "Margem disponível mensal",
+        fastSavings: "Economias mensais do jejum",
+        projectionTitle: "Projeção de pagamento",
+        currentPace: "No ritmo atual",
+        withFastSavings: "Com as economias do jejum",
+        monthsSaved: "Você economiza {months} meses graças ao jejum financeiro!",
+        accelerateTitle: "Acelere seu pagamento",
+        adjustBudget: "Ajustar meu orçamento",
+        extendFast: "Prolongar meu jejum",
+        launchFast: "Iniciar um jejum financeiro",
+        noteTitle: "Nota",
+        noteText: "Esta projeção é uma estimativa baseada nos seus dados atuais. O valor total das dívidas é estimado a partir dos seus pagamentos mensais. Para uma projeção mais precisa, adicione o valor total das suas dívidas no seu orçamento.",
+        moreThan20Years: "Mais de 20 anos",
+        months: "meses",
+        yearsAndMonths: "{years} anos e {months} meses",
+        subscriptionRequired: "É necessária uma assinatura ativa para acessar o módulo DebtFree.",
+        subscriptionLockedTitle: "Assinatura obrigatória",
+        subscriptionLockedDescription: "Assine o Sagesse de Salomon para acessar o plano de pagamento de dívidas.",
+        subscriptionLockedCta: "Conhecer a assinatura"
+      },
       // Analysis section
       analysis: {
         title: "Minhas Análises",
@@ -4619,6 +4751,10 @@ export const translations = {
         fast: {
           title: "⛔ Jejum financeiro – 30 dias",
           description: "Assuma o controle de seus gastos impulsivos. Lance um jejum de 30 dias escolhendo as categorias a evitar (restaurantes, roupas, assinaturas...). Acompanhe seu progresso dia a dia, calcule suas economias potenciais e fortaleça sua disciplina financeira."
+        },
+        debtFree: {
+          title: "🛡️ DebtFree",
+          description: "Crie seu plano inteligente de pagamento de dívidas. DebtFree analisa automaticamente suas dívidas a partir do seu orçamento e suas economias do jejum financeiro. Visualize sua data estimada de liberação financeira e descubra como acelerar seu pagamento através dos seus esforços de disciplina."
         },
         profile: {
           title: "👤 Perfil",
