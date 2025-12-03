@@ -144,7 +144,7 @@ function generateWelcomeEmailHtml(firstName: string, lastName: string, origin: s
 
         <!-- Explore la boutique -->
         <div style="margin-bottom: 30px;">
-          <h2 style="color: #1f2937; font-size: 22px; font-weight: 600; margin-bottom: 20px;">Explore la boutique Cash360</h2>
+          <h2 style="color: #1f2937; font-size: 22px; font-weight: 600; margin-bottom: 20px;">🛍️ Explore la boutique Cash360</h2>
           <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
             C'est le cœur de la plateforme.<br><br>
             Tu y trouveras tout ce qu'il faut pour avancer pas à pas :
@@ -161,7 +161,14 @@ function generateWelcomeEmailHtml(firstName: string, lastName: string, origin: s
                 <li>L'épargne et l'investissement</li>
               </ul>
             </li>
-            <li><strong>ou le Pack Complet Cash360</strong> à tarif préférentiel</li>
+            <li><strong>Pack Complet Cash360</strong> → toutes les capsules à tarif préférentiel</li>
+            <li><strong>Abonnement Sagesse de Salomon</strong> → accède aux fonctionnalités premium :
+              <ul style="margin-top: 8px; padding-left: 20px;">
+                <li>📊 Tableau de bord financier complet</li>
+                <li>💰 Budget & suivi mois par mois</li>
+                <li>⛔ Jeûne financier 30 jours</li>
+              </ul>
+            </li>
           </ul>
           
           <div style="text-align: center; margin-top: 25px;">
@@ -171,39 +178,38 @@ function generateWelcomeEmailHtml(firstName: string, lastName: string, origin: s
           </div>
         </div>
 
-        <!-- Sessions exclusives -->
+        <!-- Abonnement Premium -->
         <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #FEBE02; margin-bottom: 30px;">
-          <h2 style="color: #92400e; margin-top: 0; font-size: 20px; font-weight: 600;">Participe à nos sessions exclusives</h2>
+          <h2 style="color: #92400e; margin-top: 0; font-size: 20px; font-weight: 600;">✨ Passe au niveau supérieur</h2>
           <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin-bottom: 15px;">
-            Rejoins le Live Cash360 du vendredi 5 décembre à 22h (heure de Paris) :
+            Avec l'abonnement <strong>Sagesse de Salomon</strong>, transforme réellement ta vie financière :
           </p>
-          <p style="color: #92400e; font-size: 16px; font-weight: 600; margin-bottom: 15px;">
-            « Comment partir de zéro jusqu'à la stabilité financière ? »
-          </p>
-          <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin-bottom: 15px;">
-            Tu découvriras les 5 étapes du plan Cash360, partagé par Pasteur Myriam Konan.
-          </p>
+          <ul style="color: #92400e; font-size: 14px; line-height: 1.8; margin: 0 0 15px 0; padding-left: 20px;">
+            <li><strong>Tableau de bord</strong> → visualise revenus, dépenses et épargne du mois</li>
+            <li><strong>Budget & suivi</strong> → gère ton budget mois par mois</li>
+            <li><strong>Jeûne financier</strong> → lance un défi de 30 jours pour reprendre le contrôle</li>
+            <li><strong>Verset biblique quotidien</strong> → reçois ton inspiration spirituelle chaque jour</li>
+          </ul>
           <div style="text-align: center; margin-top: 15px;">
-            <a href="${liveUrl}" style="display: inline-block; background: #FEBE02; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
-              Réserver ma place au Live
+            <a href="${boutiqueUrl}#subscription" style="display: inline-block; background: #FEBE02; color: #012F4E; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+              Découvrir l'abonnement premium
             </a>
           </div>
         </div>
 
-        <!-- Tableau de bord -->
+        <!-- Ton espace personnel -->
         <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 30px;">
-          <h2 style="color: #065f46; margin-top: 0; font-size: 20px; font-weight: 600;">Tableau de bord personnel</h2>
+          <h2 style="color: #065f46; margin-top: 0; font-size: 20px; font-weight: 600;">📦 Ton espace personnel</h2>
           <p style="color: #065f46; font-size: 14px; line-height: 1.5; margin-bottom: 15px;">
-            Dans ton espace, tu peux :
+            Dans ton espace dashboard, tu retrouves :
           </p>
           <ul style="color: #065f46; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
-            <li>Voir tes analyses et les télécharger à tout moment,</li>
-            <li>Retrouver tes capsules achetées,</li>
-            <li>Accéder à tes formations programmées,</li>
-            <li>Et suivre tes progrès pas à pas.</li>
+            <li><strong>Boutique</strong> → explore et achète nos produits</li>
+            <li><strong>Mes achats</strong> → télécharge tes analyses, accède à tes capsules et formations</li>
+            <li><strong>Profil</strong> → gère tes informations, ta devise, ta langue et ton abonnement</li>
           </ul>
           <p style="color: #065f46; font-size: 14px; line-height: 1.5; margin-top: 15px; margin-bottom: 0;">
-            Tout est centralisé, simple et sécurisé.
+            Avec l'abonnement premium, débloque aussi le <strong>Tableau de bord</strong>, le <strong>Budget & suivi</strong> et le <strong>Jeûne financier</strong> !
           </p>
         </div>
 

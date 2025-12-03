@@ -59,56 +59,56 @@ export default function DashboardOnboarding({ userId }: DashboardOnboardingProps
   const steps: OnboardingStep[] = useMemo(() => [
     {
       id: 'welcome',
-      title: t.dashboard?.onboarding?.welcome?.title || 'Bienvenue sur votre dashboard !',
-      description: t.dashboard?.onboarding?.welcome?.description || 'Découvrez comment utiliser votre espace personnel Cash360.',
+      title: t.dashboard?.onboarding?.welcome?.title || '👋 Bienvenue sur Cash360 !',
+      description: t.dashboard?.onboarding?.welcome?.description || 'Découvrez votre espace personnel Cash360. Ce guide rapide vous présentera les fonctionnalités essentielles pour bien démarrer votre transformation financière.',
       position: 'bottom'
     },
     {
       id: 'tabs',
-      title: t.dashboard?.onboarding?.tabs?.title || 'Les 2 onglets principaux',
-      description: t.dashboard?.onboarding?.tabs?.description || 'Naviguez entre la boutique et vos achats grâce aux onglets ci-dessus.',
+      title: t.dashboard?.onboarding?.tabs?.title || '📑 Les onglets principaux',
+      description: t.dashboard?.onboarding?.tabs?.description || 'Naviguez facilement entre les différents onglets : Boutique pour découvrir nos produits, Mes achats pour accéder à vos formations, et Profil pour gérer votre compte.',
       targetSelector: '[data-onboarding="tabs"]',
       position: 'bottom'
     },
     {
       id: 'boutique',
-      title: t.dashboard?.onboarding?.boutique?.title || 'La Boutique',
-      description: t.dashboard?.onboarding?.boutique?.description || 'Découvrez nos produits : capsules, analyses financières, packs, ebooks et abonnements. Utilisez les catégories pour filtrer les produits.',
+      title: t.dashboard?.onboarding?.boutique?.title || '🛍️ La Boutique',
+      description: t.dashboard?.onboarding?.boutique?.description || 'Explorez nos produits pour votre développement financier : capsules d\'enseignement, analyses financières personnalisées, packs de formations, ebooks pratiques et l\'abonnement premium Sagesse de Salomon.',
       targetSelector: '[data-onboarding="boutique-tab"]',
       position: 'bottom'
     },
     {
-      id: 'purchases',
-      title: t.dashboard?.onboarding?.purchases?.title || 'Mes achats',
-      description: t.dashboard?.onboarding?.purchases?.description || 'Accédez à tous vos achats et formations. Vous pouvez télécharger vos PDF et participer aux sessions planifiées.',
-      targetSelector: '[data-onboarding="purchases-tab"]',
-      position: 'bottom'
-    },
-    {
       id: 'categories',
-      title: t.dashboard?.onboarding?.categories?.title || 'Les catégories',
-      description: t.dashboard?.onboarding?.categories?.description || 'Filtrez les produits par catégorie : Capsules, Analyse financière, Pack, Ebook, Abonnement. Cliquez sur une catégorie pour voir les produits correspondants.',
+      title: t.dashboard?.onboarding?.categories?.title || '🏷️ Filtrer par catégorie',
+      description: t.dashboard?.onboarding?.categories?.description || 'Utilisez les filtres pour afficher uniquement la catégorie qui vous intéresse : Capsules, Analyse financière, Pack, Ebook ou Abonnement. Cliquez sur un filtre pour voir les produits correspondants.',
       targetSelector: '[data-onboarding="categories"]',
       position: 'top'
     },
     {
+      id: 'purchases',
+      title: t.dashboard?.onboarding?.purchases?.title || '📦 Mes achats',
+      description: t.dashboard?.onboarding?.purchases?.description || 'Retrouvez tous vos achats ici : téléchargez vos PDF, accédez à vos analyses financières, consultez vos formations et gérez votre abonnement. Tout est centralisé dans cet onglet !',
+      targetSelector: '[data-onboarding="purchases-tab"]',
+      position: 'bottom'
+    },
+    {
       id: 'cart',
-      title: t.dashboard?.onboarding?.cart?.title || 'Le panier',
-      description: t.dashboard?.onboarding?.cart?.description || 'Cliquez sur l\'icône du panier en haut à droite pour voir vos articles ajoutés. Vous pouvez modifier les quantités et procéder au paiement.',
+      title: t.dashboard?.onboarding?.cart?.title || '🛒 Le panier',
+      description: t.dashboard?.onboarding?.cart?.description || 'Ajoutez des produits à votre panier en cliquant sur "Ajouter au panier". Cliquez ensuite sur l\'icône du panier en haut à droite pour voir vos articles, modifier les quantités et finaliser votre commande.',
       targetSelector: '[data-onboarding="cart"]',
       position: 'left'
     },
     {
-      id: 'settings',
-      title: t.dashboard?.onboarding?.settings?.title || 'Paramètres',
-      description: t.dashboard?.onboarding?.settings?.description || 'Cliquez sur votre nom ou l\'icône de paramètres en haut à droite pour modifier vos informations personnelles et préférences.',
-      targetSelector: '[data-onboarding="settings"]',
-      position: 'left'
+      id: 'profile',
+      title: t.dashboard?.onboarding?.profile?.title || '👤 Profil',
+      description: t.dashboard?.onboarding?.profile?.description || 'Gérez vos informations personnelles, changez votre devise et votre langue, et consultez l\'état de votre abonnement depuis l\'onglet Profil. C\'est votre espace de paramétrage personnel.',
+      targetSelector: '[data-onboarding="profile-tab"]',
+      position: 'bottom'
     },
     {
       id: 'complete',
-      title: t.dashboard?.onboarding?.complete?.title || 'Parfait !',
-      description: t.dashboard?.onboarding?.complete?.description || 'Vous êtes maintenant prêt à utiliser votre dashboard. N\'hésitez pas à explorer toutes les fonctionnalités disponibles.',
+      title: t.dashboard?.onboarding?.complete?.title || '✅ Parfait, vous êtes prêt !',
+      description: t.dashboard?.onboarding?.complete?.description || 'Vous connaissez maintenant les bases de votre dashboard Cash360. Explorez la boutique, découvrez nos formations et commencez votre parcours vers une vie financière équilibrée. Besoin d\'aide ? Contactez-nous via WhatsApp en bas à droite !',
       position: 'bottom'
     }
   ], [t])

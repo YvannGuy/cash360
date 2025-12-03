@@ -847,8 +847,67 @@ const refreshFastSummary = useCallback(async () => {
       }
     }
     
-    // Ensuite, traiter les autres produits (en excluant analyse-financiere de userCapsules)
-    const otherCapsules = (userCapsules || []).filter((id: string) => id !== 'analyse-financiere')
+    // Traiter l'abonnement s'il existe
+    // Vérifier dans orders (Mobile Money) OU dans user_subscriptions (Stripe + Mobile Money validé)
+    const hasSubscriptionOrder = userOrders.some((o: any) => {
+      const isAbonnement = o.product_id === 'abonnement' || 
+                          o.product_id?.toLowerCase() === 'abonnement' ||
+                          o.product_name?.toLowerCase()?.includes('abonnement') ||
+                          o.product_name?.toLowerCase()?.includes('sagesse')
+      return isAbonnement && (o.status === 'paid' || o.status === 'pending_review')
+    })
+    
+    // Vérifier aussi si un abonnement existe dans user_subscriptions (pour Stripe)
+    const hasActiveSubscription = subscription && (
+      subscription.hasSubscription || 
+      subscription.status === 'active' || 
+      subscription.status === 'trialing' ||
+      subscription.status === 'past_due'
+    )
+    
+    if (hasSubscriptionOrder || hasActiveSubscription) {
+      const subscriptionOrder = userOrders.find((o: any) => {
+        const isAbonnement = o.product_id === 'abonnement' || 
+                            o.product_id?.toLowerCase() === 'abonnement' ||
+                            o.product_name?.toLowerCase()?.includes('abonnement') ||
+                            o.product_name?.toLowerCase()?.includes('sagesse')
+        return isAbonnement && (o.status === 'paid' || o.status === 'pending_review')
+      })
+      
+      const subscriptionOrderStatus = subscriptionOrder?.status === 'pending_review' 
+        ? { status: 'pending_review', paymentMethod: subscriptionOrder.payment_method }
+        : null
+      
+      // Chercher le produit abonnement dans allProducts
+      let subscriptionProduct = allProducts.find(p => p.id === 'abonnement')
+      
+      if (!subscriptionProduct) {
+        // Valeur par défaut si le produit n'existe pas dans la base
+        subscriptionProduct = {
+          id: 'abonnement',
+          title: 'Abonnement Sagesse de Salomon',
+          img: '/images/kingsalomon.png',
+          blurb: 'Accès premium aux fonctionnalités avancées',
+          category: 'abonnement'
+        }
+      }
+      
+      result.push({
+        id: subscriptionProduct.id,
+        title: subscriptionProduct.title,
+        img: subscriptionProduct.img,
+        blurb: subscriptionProduct.blurb || '',
+        category: subscriptionProduct.category || 'abonnement',
+        orderStatus: subscriptionOrderStatus,
+        subscriptionInfo: hasActiveSubscription ? {
+          status: subscription.status,
+          endDate: subscription.subscription?.current_period_end
+        } : null
+      })
+    }
+    
+    // Ensuite, traiter les autres produits (en excluant analyse-financiere et abonnement de userCapsules)
+    const otherCapsules = (userCapsules || []).filter((id: string) => id !== 'analyse-financiere' && id !== 'abonnement')
     
     if (otherCapsules.length > 0) {
       for (const capsuleId of otherCapsules) {
@@ -911,7 +970,7 @@ const refreshFastSummary = useCallback(async () => {
     }
     
     return result
-  }, [userCapsules, allProducts, availableCapsules, formationsData, userOrders, userAnalyses])
+  }, [userCapsules, allProducts, availableCapsules, formationsData, userOrders, userAnalyses, subscription])
 
   // Filtrage des achats par catégorie et recherche
   // Les produits gardent leur catégorie de la boutique
@@ -1308,9 +1367,10 @@ const refreshFastSummary = useCallback(async () => {
           setUserOrders(ordersData)
           
           // Ajouter les product_id des commandes qui ne sont pas déjà dans capsuleIds
+          // Inclure maintenant l'abonnement dans les achats affichés
           const orderProductIds = ordersData
             .map((o: any) => o.product_id)
-            .filter((productId: string) => productId && productId !== 'abonnement')
+            .filter((productId: string) => productId) // Enlever le filtre d'exclusion de l'abonnement
           
           // Fusionner sans doublons
           const allProductIds = [...new Set([...capsuleIds, ...orderProductIds])]
@@ -1988,7 +2048,15 @@ const refreshFastSummary = useCallback(async () => {
                 key={item.id}
                 type="button"
                 onClick={() => setActiveTab(item.id)}
-                data-onboarding={item.id === 'overview' ? 'overview-tab' : item.id === 'budget' ? 'budget-tab' : item.id === 'fast' ? 'fast-tab' : undefined}
+                data-onboarding={
+                  item.id === 'overview' ? 'overview-tab' : 
+                  item.id === 'budget' ? 'budget-tab' : 
+                  item.id === 'fast' ? 'fast-tab' : 
+                  item.id === 'profile' ? 'profile-tab' : 
+                  item.id === 'boutique' ? 'boutique-tab' : 
+                  item.id === 'myPurchases' ? 'purchases-tab' : 
+                  undefined
+                }
                 className={`snap-start px-5 sm:px-6 py-3 font-medium transition-all rounded-t-lg whitespace-nowrap ${
                   activeTab === item.id ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900 bg-white'
                 }`}
@@ -2287,23 +2355,37 @@ const refreshFastSummary = useCallback(async () => {
                           const isProcessing = subscriptionCheckoutProduct === capsule.id
                           return (
                             <div className="space-y-3">
-                              <button
-                                type="button"
-                                onClick={() => handleSubscriptionCheckout(capsule.id)}
-                                disabled={isProcessing}
-                                className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-[#FEBE02] to-[#F99500] text-[#012F4E] font-semibold shadow hover:from-[#ffd24f] hover:to-[#ffae33] transition disabled:opacity-60"
-                              >
-                                {isProcessing
-                                  ? t.dashboard.subscription?.checkoutLoading || 'Redirection...'
-                                  : t.dashboard.subscription?.cta || 'S’abonner maintenant'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleSubscriptionMobileMoney(capsule)}
-                                className="w-full px-4 py-2 rounded-lg border border-[#FEBE02] text-[#012F4E] font-semibold hover:bg-yellow-50 transition"
-                              >
-                                {t.dashboard.subscription?.mobileButton || 'Payer avec Mobile Money'}
-                              </button>
+                              <div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSubscriptionCheckout(capsule.id)}
+                                  disabled={isProcessing}
+                                  className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-[#FEBE02] to-[#F99500] text-[#012F4E] font-semibold shadow hover:from-[#ffd24f] hover:to-[#ffae33] transition disabled:opacity-60"
+                                >
+                                  {isProcessing
+                                    ? t.dashboard.subscription?.checkoutLoading || 'Redirection...'
+                                    : t.dashboard.subscription?.cta || 'Paiement carte bancaire'}
+                                </button>
+                                {t.dashboard.subscription?.ctaSubtext && (
+                                  <p className="text-xs text-gray-600 mt-1 text-center">
+                                    {t.dashboard.subscription.ctaSubtext}
+                                  </p>
+                                )}
+                              </div>
+                              <div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSubscriptionMobileMoney(capsule)}
+                                  className="w-full px-4 py-2 rounded-lg border border-[#FEBE02] text-[#012F4E] font-semibold hover:bg-yellow-50 transition"
+                                >
+                                  {t.dashboard.subscription?.mobileButton || 'Paiement Mobile Money'}
+                                </button>
+                                {t.dashboard.subscription?.mobileButtonSubtext && (
+                                  <p className="text-xs text-gray-600 mt-1 text-center">
+                                    {t.dashboard.subscription.mobileButtonSubtext}
+                                  </p>
+                                )}
+                              </div>
                               <div className="text-xs text-gray-500 text-center space-y-1">
                                 <p>
                                   {t.dashboard.subscription?.accessSummary ||

@@ -724,8 +724,9 @@ export const translations = {
       subscription: {
         badge: "Exclusif",
         lockedTitle: "Débloquez votre tableau de bord",
-        lockedDescription: "Accédez au tableau de bord complet, Budget & suivi et Jeûne financier grâce à l’abonnement Sagesse de Salomon.",
-        cta: "Découvrir l’abonnement",
+        lockedDescription: "Accédez au tableau de bord complet, Budget & suivi et Jeûne financier grâce à l'abonnement Sagesse de Salomon.",
+        cta: "Paiement carte bancaire",
+        ctaSubtext: "International · Visa, Mastercard",
         activeLabel: "Abonnement actif",
         accessSummary: "Accédez au tableau de bord, Budget & suivi et Jeûne financier.",
         checkoutLoading: "Redirection...",
@@ -734,14 +735,14 @@ export const translations = {
         statusPastDue: "Paiement en attente",
         statusCanceled: "Abonnement arrêté",
         nextRenewal: "Prochain renouvellement",
-        graceUntil: "Accès disponible jusqu’au",
+        graceUntil: "Accès disponible jusqu'au",
         suspendButton: "Résilié prochainement",
-        resumeButton: "Relancer l’abonnement",
-        cancelledInfo: "Ton abonnement est arrêté. Relance-le quand tu veux pour retrouver l’accès complet.",
+        resumeButton: "Relancer l'abonnement",
+        cancelledInfo: "Ton abonnement est arrêté. Relance-le quand tu veux pour retrouver l'accès complet.",
         manageError: "Impossible de mettre à jour votre abonnement.",
         manageSuccess: "Abonnement mis à jour.",
         confirmTitle: "Vous partez déjà ?",
-        confirmDescription: "Vous continuez à profiter de votre accès jusqu’au {date}. Après cette date, l’abonnement prendra fin, mais vous pourrez le relancer à tout moment.",
+        confirmDescription: "Vous continuez à profiter de votre accès jusqu'au {date}. Après cette date, l'abonnement prendra fin, mais vous pourrez le relancer à tout moment.",
         confirmAction: "Confirmer la résiliation",
         confirmCancel: "Annuler",
         terminateButton: "Résiliez l'abonnement",
@@ -749,7 +750,8 @@ export const translations = {
         terminateImmediatelyConfirm: "Êtes-vous sûr de vouloir terminer votre abonnement immédiatement ? Vous perdrez l'accès aux fonctionnalités premium tout de suite.",
         terminateImmediatelySuccess: "Abonnement terminé immédiatement. L'accès aux fonctionnalités premium a été retiré.",
         confirmFallback: "la fin de cette période",
-        mobileButton: "Payer avec Mobile Money",
+        mobileButton: "Paiement Mobile Money",
+        mobileButtonSubtext: "Afrique · Orange Money, Wave",
         mobileInfo: "Orange Money & Wave · Afrique de l’Ouest et Centrale. Activation manuelle sous 24h après validation."
       },
       // Settings
@@ -1014,58 +1016,62 @@ export const translations = {
       // Onboarding
       onboarding: {
         welcome: {
-          title: "Bienvenue sur votre dashboard !",
-          description: "Découvrez comment utiliser votre espace personnel Cash360. Ce guide rapide vous expliquera toutes les fonctionnalités disponibles."
+          title: "👋 Bienvenue sur Cash360 !",
+          description: "Découvrez votre espace personnel Cash360. Ce guide rapide vous présentera les fonctionnalités essentielles pour bien démarrer votre transformation financière."
         },
         tabs: {
-          title: "Les 2 onglets principaux",
-          description: "Naviguez entre la boutique et vos achats grâce aux onglets ci-dessus. Chaque onglet contient des fonctionnalités spécifiques pour gérer vos activités."
+          title: "📑 Les onglets principaux",
+          description: "Naviguez facilement entre les différents onglets : Boutique pour découvrir nos produits, Mes achats pour accéder à vos formations, et Profil pour gérer votre compte."
         },
         boutique: {
-          title: "La Boutique",
-          description: "Découvrez nos produits : capsules, analyses financières, packs, ebooks et abonnements. Utilisez les catégories pour filtrer les produits selon vos besoins."
+          title: "🛍️ La Boutique",
+          description: "Explorez nos produits pour votre développement financier : capsules d'enseignement, analyses financières personnalisées, packs de formations, ebooks pratiques et l'abonnement premium Sagesse de Salomon."
         },
         purchases: {
-          title: "Mes achats",
-          description: "Accédez à tous vos achats et formations : capsules, analyses financières, packs, ebooks et abonnements. Vous pouvez télécharger vos PDF, lancer vos analyses et participer aux sessions planifiées."
+          title: "📦 Mes achats",
+          description: "Retrouvez tous vos achats ici : téléchargez vos PDF, accédez à vos analyses financières, consultez vos formations et gérez votre abonnement. Tout est centralisé dans cet onglet !"
         },
         categories: {
-          title: "Les catégories",
-          description: "Filtrez les produits par catégorie : Capsules, Analyse financière, Pack, Ebook, Abonnement. Cliquez sur une catégorie pour voir uniquement les produits correspondants."
+          title: "🏷️ Filtrer par catégorie",
+          description: "Utilisez les filtres pour afficher uniquement la catégorie qui vous intéresse : Capsules, Analyse financière, Pack, Ebook ou Abonnement. Cliquez sur un filtre pour voir les produits correspondants."
         },
         cart: {
-          title: "Le panier",
-          description: "Cliquez sur l'icône du panier en haut à droite pour voir vos articles ajoutés. Vous pouvez modifier les quantités et procéder au paiement directement depuis le panier."
+          title: "🛒 Le panier",
+          description: "Ajoutez des produits à votre panier en cliquant sur \"Ajouter au panier\". Cliquez ensuite sur l'icône du panier en haut à droite pour voir vos articles, modifier les quantités et finaliser votre commande."
         },
-        settings: {
-          title: "Paramètres",
-          description: "Cliquez sur votre nom ou l'icône de paramètres en haut à droite pour modifier vos informations personnelles, changer votre mot de passe et gérer vos préférences."
+        profile: {
+          title: "👤 Profil",
+          description: "Gérez vos informations personnelles, changez votre devise et votre langue, et consultez l'état de votre abonnement depuis l'onglet Profil. C'est votre espace de paramétrage personnel."
         },
         complete: {
-          title: "Parfait !",
-          description: "Vous êtes maintenant prêt à utiliser votre dashboard. N'hésitez pas à explorer toutes les fonctionnalités disponibles. Vous pouvez relancer ce guide depuis les paramètres."
+          title: "✅ Parfait, vous êtes prêt !",
+          description: "Vous connaissez maintenant les bases de votre dashboard Cash360. Explorez la boutique, découvrez nos formations et commencez votre parcours vers une vie financière équilibrée. Besoin d'aide ? Contactez-nous via WhatsApp en bas à droite !"
         }
       },
       postSubscriptionOnboarding: {
         welcome: {
-          title: "Félicitations ! Votre abonnement est actif",
-          description: "Découvrez maintenant toutes les fonctionnalités premium de Cash360. Nous allons vous guider à travers les différents onglets disponibles pour maximiser votre transformation financière."
+          title: "🎉 Bienvenue dans votre espace premium !",
+          description: "Félicitations pour votre abonnement Sagesse de Salomon ! Vous avez maintenant accès à tous les outils pour transformer votre vie financière. Laissez-nous vous guider à travers vos nouveaux onglets."
         },
         overview: {
-          title: "Tableau de bord",
-          description: "Votre vue d'ensemble : revenus, dépenses, épargne du mois, et suivi personnalisé. C'est ici que vous commencez chaque session pour avoir une vision claire de votre situation financière."
+          title: "📊 Tableau de bord",
+          description: "Votre centre de contrôle financier. Visualisez en un coup d'œil votre résumé du mois (revenus, dépenses, épargne), votre suivi personnalisé avec votre jeûne financier actif, et recevez votre inspiration biblique quotidienne. Commencez toujours ici !"
         },
         budget: {
-          title: "Budget & suivi",
-          description: "Gérez vos revenus et dépenses mensuels. Ajoutez vos catégories de dépenses, suivez votre taux d'utilisation et visualisez vos principales catégories pour mieux comprendre où va votre argent."
+          title: "💰 Budget & suivi",
+          description: "Gérez vos finances mois par mois. Enregistrez vos revenus du mois, ajoutez vos dépenses par catégorie (alimentation, transport, loisirs...), et suivez votre budget en temps réel. Visualisez vos principales catégories de dépenses et votre taux d'utilisation."
         },
         fast: {
-          title: "Jeûne financier",
-          description: "Reprenez le contrôle de vos habitudes de dépenses avec un jeûne financier de 30 jours. Choisissez les catégories à mettre en pause et suivez votre progression quotidienne pour renforcer votre discipline."
+          title: "⛔ Jeûne financier – 30 jours",
+          description: "Reprenez le contrôle de vos dépenses impulsives. Lancez un jeûne de 30 jours en choisissant les catégories à éviter (restaurants, vêtements, abonnements...). Suivez votre progrès jour après jour, calculez vos économies potentielles et renforcez votre discipline financière."
+        },
+        profile: {
+          title: "👤 Profil",
+          description: "Gérez vos informations personnelles, votre devise préférée, votre langue et votre abonnement. Vous pouvez suspendre ou relancer votre abonnement à tout moment depuis cet onglet."
         },
         complete: {
-          title: "Vous êtes prêt !",
-          description: "Explorez maintenant toutes les fonctionnalités premium. N'hésitez pas à revenir sur cette page pour consulter votre tableau de bord et suivre votre progression financière.",
+          title: "✅ Vous êtes prêt à transformer vos finances !",
+          description: "Vous connaissez maintenant tous vos outils premium. Commencez par votre Tableau de bord pour voir votre situation, puis configurez votre Budget & suivi pour suivre vos finances. Prêt pour le changement ? Lancez votre premier Jeûne financier !",
           button: "Commencer"
         }
       }
@@ -1894,7 +1900,8 @@ export const translations = {
         badge: "Exclusive",
         lockedTitle: "Unlock your dashboard",
         lockedDescription: "Get full access to Dashboard, Budget & Tracking and the 30-day Financial Fast with the Sagesse de Salomon membership.",
-        cta: "Explore the membership",
+        cta: "Card payment",
+        ctaSubtext: "International · Visa, Mastercard",
         activeLabel: "Membership active",
         accessSummary: "Access Dashboard, Budget & Tracking and Financial Fast.",
         checkoutLoading: "Redirecting...",
@@ -1910,7 +1917,7 @@ export const translations = {
         manageError: "Unable to update your membership.",
         manageSuccess: "Membership updated.",
         confirmTitle: "Leaving already?",
-        confirmDescription: "You’ll keep your benefits until {date}. After that, the membership will end, but you can restart it whenever you want.",
+        confirmDescription: "You'll keep your benefits until {date}. After that, the membership will end, but you can restart it whenever you want.",
         confirmAction: "Confirm cancellation",
         confirmCancel: "Keep my access",
         terminateButton: "Cancel membership",
@@ -1918,7 +1925,8 @@ export const translations = {
         terminateImmediatelyConfirm: "Are you sure you want to terminate your subscription immediately? You will lose access to premium features right away.",
         terminateImmediatelySuccess: "Subscription terminated immediately. Access to premium features has been removed.",
         confirmFallback: "the end of this period",
-        mobileButton: "Pay with Mobile Money",
+        mobileButton: "Mobile Money payment",
+        mobileButtonSubtext: "Africa · Orange Money, Wave",
         mobileInfo: "Orange Money & Wave · West & Central Africa. Manual activation within 24h after validation."
       },
       // Settings
@@ -2183,58 +2191,62 @@ export const translations = {
       // Onboarding
       onboarding: {
         welcome: {
-          title: "Welcome to your dashboard!",
-          description: "Discover how to use your personal Cash360 space. This quick guide will explain all available features."
+          title: "👋 Welcome to Cash360!",
+          description: "Discover your personal Cash360 space. This quick guide will introduce you to the essential features to start your financial transformation journey."
         },
         tabs: {
-          title: "The 2 main tabs",
-          description: "Navigate between the shop and your purchases using the tabs above. Each tab contains specific features to manage your activities."
+          title: "📑 Main tabs",
+          description: "Navigate easily between tabs: Shop to discover our products, My purchases to access your training, and Profile to manage your account."
         },
         boutique: {
-          title: "The Shop",
-          description: "Discover our products: capsules, financial analyses, packs, ebooks and subscriptions. Use categories to filter products according to your needs."
+          title: "🛍️ The Shop",
+          description: "Explore our products for your financial development: educational capsules, personalized financial analyses, training packs, practical ebooks and the Sagesse de Salomon premium subscription."
         },
         purchases: {
-          title: "My purchases",
-          description: "Access all your purchases and training: capsules, financial analyses, packs, ebooks and subscriptions. You can download your PDFs, launch your analyses and participate in scheduled sessions."
+          title: "📦 My purchases",
+          description: "Find all your purchases here: download your PDFs, access your financial analyses, review your training and manage your subscription. Everything is centralized in this tab!"
         },
         categories: {
-          title: "The categories",
-          description: "Filter products by category: Capsules, Financial Analysis, Pack, Ebook, Subscription. Click on a category to see only the corresponding products."
+          title: "🏷️ Filter by category",
+          description: "Use filters to display only the category you're interested in: Capsules, Financial Analysis, Pack, Ebook or Subscription. Click on a filter to see the corresponding products."
         },
         cart: {
-          title: "The cart",
-          description: "Click on the cart icon in the top right to see your added items. You can modify quantities and proceed to payment directly from the cart."
+          title: "🛒 The cart",
+          description: "Add products to your cart by clicking \"Add to cart\". Then click the cart icon in the top right to see your items, modify quantities and complete your order."
         },
-        settings: {
-          title: "Settings",
-          description: "Click on your name or the settings icon in the top right to modify your personal information, change your password and manage your preferences."
+        profile: {
+          title: "👤 Profile",
+          description: "Manage your personal information, change your currency and language, and check your subscription status from the Profile tab. This is your personal settings space."
         },
         complete: {
-          title: "Perfect!",
-          description: "You are now ready to use your dashboard. Feel free to explore all available features. You can restart this guide from the settings."
+          title: "✅ Perfect, you're ready!",
+          description: "You now know the basics of your Cash360 dashboard. Explore the shop, discover our training and start your journey to balanced financial life. Need help? Contact us via WhatsApp at the bottom right!"
         }
       },
       postSubscriptionOnboarding: {
         welcome: {
-          title: "Congratulations! Your subscription is active",
-          description: "Discover all the premium features of Cash360. We'll guide you through the different tabs available to maximize your financial transformation."
+          title: "🎉 Welcome to your premium space!",
+          description: "Congratulations on your Sagesse de Salomon subscription! You now have access to all the tools to transform your financial life. Let us guide you through your new tabs."
         },
         overview: {
-          title: "Dashboard",
-          description: "Your overview: monthly income, expenses, savings, and personalized tracking. This is where you start each session to get a clear view of your financial situation."
+          title: "📊 Dashboard",
+          description: "Your financial control center. Visualize at a glance your monthly summary (income, expenses, savings), your personalized tracking with your active financial fast, and receive your daily biblical inspiration. Always start here!"
         },
         budget: {
-          title: "Budget & tracking",
-          description: "Manage your monthly income and expenses. Add your expense categories, track your usage rate and visualize your main categories to better understand where your money goes."
+          title: "💰 Budget & tracking",
+          description: "Manage your finances month by month. Record your monthly income, add your expenses by category (food, transport, leisure...), and track your budget in real time. Visualize your main expense categories and your usage rate."
         },
         fast: {
-          title: "Financial fast",
-          description: "Take control of your spending habits with a 30-day financial fast. Choose categories to pause and track your daily progress to strengthen your discipline."
+          title: "⛔ Financial fast – 30 days",
+          description: "Take control of your impulsive spending. Launch a 30-day fast by choosing categories to avoid (restaurants, clothes, subscriptions...). Track your progress day by day, calculate your potential savings and strengthen your financial discipline."
+        },
+        profile: {
+          title: "👤 Profile",
+          description: "Manage your personal information, your preferred currency, your language and your subscription. You can suspend or resume your subscription at any time from this tab."
         },
         complete: {
-          title: "You're ready!",
-          description: "Now explore all premium features. Feel free to come back to this page to check your dashboard and track your financial progress.",
+          title: "✅ You're ready to transform your finances!",
+          description: "You now know all your premium tools. Start with your Dashboard to see your situation, then set up your Budget & tracking to monitor your finances. Ready for change? Launch your first Financial fast!",
           button: "Get started"
         }
       }
@@ -3062,7 +3074,8 @@ export const translations = {
         badge: "Exclusivo",
         lockedTitle: "Desbloquea tu panel",
         lockedDescription: "Accede al Panel, Presupuesto y Seguimiento y al Ayuno financiero de 30 días con la membresía Sagesse de Salomon.",
-        cta: "Descubrir la membresía",
+        cta: "Pago con tarjeta",
+        ctaSubtext: "Internacional · Visa, Mastercard",
         activeLabel: "Membresía activa",
         accessSummary: "Accede al Panel, Presupuesto y Seguimiento y al Ayuno financiero.",
         checkoutLoading: "Redirigiendo...",
@@ -3086,7 +3099,8 @@ export const translations = {
         terminateImmediatelyConfirm: "¿Está seguro de que desea terminar su suscripción inmediatamente? Perderá el acceso a las funciones premium de inmediato.",
         terminateImmediatelySuccess: "Suscripción terminada inmediatamente. El acceso a las funciones premium ha sido eliminado.",
         confirmFallback: "el fin de este período",
-        mobileButton: "Pagar con Mobile Money",
+        mobileButton: "Pago Mobile Money",
+        mobileButtonSubtext: "África · Orange Money, Wave",
         mobileInfo: "Orange Money y Wave · África Occidental y Central. Activación manual en un plazo de 24h tras validación."
       },
       // Settings
@@ -3351,58 +3365,62 @@ export const translations = {
       // Onboarding
       onboarding: {
         welcome: {
-          title: "¡Bienvenido a tu panel de control!",
-          description: "Descubre cómo usar tu espacio personal Cash360. Esta guía rápida te explicará todas las funciones disponibles."
+          title: "👋 ¡Bienvenido a Cash360!",
+          description: "Descubre tu espacio personal Cash360. Esta guía rápida te presentará las funciones esenciales para comenzar tu transformación financiera."
         },
         tabs: {
-          title: "Las 2 pestañas principales",
-          description: "Navega entre la tienda y tus compras usando las pestañas de arriba. Cada pestaña contiene funciones específicas para gestionar tus actividades."
+          title: "📑 Pestañas principales",
+          description: "Navega fácilmente entre las pestañas: Tienda para descubrir nuestros productos, Mis compras para acceder a tus formaciones, y Perfil para gestionar tu cuenta."
         },
         boutique: {
-          title: "La Tienda",
-          description: "Descubre nuestros productos: cápsulas, análisis financieros, paquetes, ebooks y suscripciones. Usa las categorías para filtrar productos según tus necesidades."
+          title: "🛍️ La Tienda",
+          description: "Explora nuestros productos para tu desarrollo financiero: cápsulas educativas, análisis financieros personalizados, paquetes de formación, ebooks prácticos y la suscripción premium Sagesse de Salomon."
         },
         purchases: {
-          title: "Mis compras",
-          description: "Accede a todas tus compras y formaciones: cápsulas, análisis financieros, paquetes, ebooks y suscripciones. Puedes descargar tus PDF, lanzar tus análisis y participar en sesiones planificadas."
+          title: "📦 Mis compras",
+          description: "Encuentra todas tus compras aquí: descarga tus PDF, accede a tus análisis financieros, consulta tus formaciones y gestiona tu suscripción. ¡Todo está centralizado en esta pestaña!"
         },
         categories: {
-          title: "Las categorías",
-          description: "Filtra productos por categoría: Cápsulas, Análisis financiero, Paquete, Ebook, Suscripción. Haz clic en una categoría para ver solo los productos correspondientes."
+          title: "🏷️ Filtrar por categoría",
+          description: "Usa los filtros para mostrar solo la categoría que te interesa: Cápsulas, Análisis financiero, Paquete, Ebook o Suscripción. Haz clic en un filtro para ver los productos correspondientes."
         },
         cart: {
-          title: "El carrito",
-          description: "Haz clic en el icono del carrito en la parte superior derecha para ver tus artículos añadidos. Puedes modificar las cantidades y proceder al pago directamente desde el carrito."
+          title: "🛒 El carrito",
+          description: "Añade productos a tu carrito haciendo clic en \"Añadir al carrito\". Luego haz clic en el ícono del carrito en la parte superior derecha para ver tus artículos, modificar cantidades y finalizar tu pedido."
         },
-        settings: {
-          title: "Configuración",
-          description: "Haz clic en tu nombre o el icono de configuración en la parte superior derecha para modificar tu información personal, cambiar tu contraseña y gestionar tus preferencias."
+        profile: {
+          title: "👤 Perfil",
+          description: "Gestiona tu información personal, cambia tu moneda e idioma, y consulta el estado de tu suscripción desde la pestaña Perfil. Es tu espacio de configuración personal."
         },
         complete: {
-          title: "¡Perfecto!",
-          description: "Ya estás listo para usar tu panel de control. Siéntete libre de explorar todas las funciones disponibles. Puedes reiniciar esta guía desde la configuración."
+          title: "✅ ¡Perfecto, estás listo!",
+          description: "Ahora conoces los conceptos básicos de tu panel Cash360. Explora la tienda, descubre nuestras formaciones y comienza tu camino hacia una vida financiera equilibrada. ¿Necesitas ayuda? ¡Contáctanos por WhatsApp en la parte inferior derecha!"
         }
       },
       postSubscriptionOnboarding: {
         welcome: {
-          title: "¡Felicidades! Tu suscripción está activa",
-          description: "Descubre todas las funciones premium de Cash360. Te guiaremos a través de las diferentes pestañas disponibles para maximizar tu transformación financiera."
+          title: "🎉 ¡Bienvenido a tu espacio premium!",
+          description: "¡Felicidades por tu suscripción Sagesse de Salomon! Ahora tienes acceso a todas las herramientas para transformar tu vida financiera. Déjanos guiarte a través de tus nuevas pestañas."
         },
         overview: {
-          title: "Panel de control",
-          description: "Tu vista general: ingresos, gastos, ahorros del mes y seguimiento personalizado. Aquí es donde comienzas cada sesión para tener una visión clara de tu situación financiera."
+          title: "📊 Panel de control",
+          description: "Tu centro de control financiero. Visualiza de un vistazo tu resumen del mes (ingresos, gastos, ahorros), tu seguimiento personalizado con tu ayuno financiero activo, y recibe tu inspiración bíblica diaria. ¡Comienza siempre aquí!"
         },
         budget: {
-          title: "Presupuesto y seguimiento",
-          description: "Gestiona tus ingresos y gastos mensuales. Añade tus categorías de gastos, sigue tu tasa de uso y visualiza tus principales categorías para entender mejor a dónde va tu dinero."
+          title: "💰 Presupuesto y seguimiento",
+          description: "Gestiona tus finanzas mes a mes. Registra tus ingresos del mes, añade tus gastos por categoría (alimentación, transporte, ocio...), y sigue tu presupuesto en tiempo real. Visualiza tus principales categorías de gastos y tu tasa de uso."
         },
         fast: {
-          title: "Ayuno financiero",
-          description: "Toma el control de tus hábitos de gasto con un ayuno financiero de 30 días. Elige las categorías a pausar y sigue tu progreso diario para fortalecer tu disciplina."
+          title: "⛔ Ayuno financiero – 30 días",
+          description: "Toma el control de tus gastos impulsivos. Lanza un ayuno de 30 días eligiendo las categorías a evitar (restaurantes, ropa, suscripciones...). Sigue tu progreso día a día, calcula tus ahorros potenciales y fortalece tu disciplina financiera."
+        },
+        profile: {
+          title: "👤 Perfil",
+          description: "Gestiona tu información personal, tu moneda preferida, tu idioma y tu suscripción. Puedes suspender o reactivar tu suscripción en cualquier momento desde esta pestaña."
         },
         complete: {
-          title: "¡Estás listo!",
-          description: "Ahora explora todas las funciones premium. Siéntete libre de volver a esta página para consultar tu panel de control y seguir tu progreso financiero.",
+          title: "✅ ¡Estás listo para transformar tus finanzas!",
+          description: "Ahora conoces todas tus herramientas premium. Comienza por tu Panel de control para ver tu situación, luego configura tu Presupuesto y seguimiento para monitorear tus finanzas. ¿Listo para el cambio? ¡Lanza tu primer Ayuno financiero!",
           button: "Comenzar"
         }
       }
@@ -4230,7 +4248,8 @@ export const translations = {
         badge: "Exclusivo",
         lockedTitle: "Desbloqueie o seu painel",
         lockedDescription: "Tenha acesso ao Painel, Orçamento & acompanhamento e ao Jejum financeiro de 30 dias com a assinatura Sagesse de Salomon.",
-        cta: "Conhecer a assinatura",
+        cta: "Pagamento com cartão",
+        ctaSubtext: "Internacional · Visa, Mastercard",
         activeLabel: "Assinatura ativa",
         accessSummary: "Acesse o Painel, Orçamento & acompanhamento e o Jejum financeiro.",
         checkoutLoading: "Redirecionando...",
@@ -4254,7 +4273,8 @@ export const translations = {
         terminateImmediatelyConfirm: "Tem certeza de que deseja encerrar sua assinatura imediatamente? Você perderá o acesso aos recursos premium imediatamente.",
         terminateImmediatelySuccess: "Assinatura encerrada imediatamente. O acesso aos recursos premium foi removido.",
         confirmFallback: "o fim deste período",
-        mobileButton: "Pagar com Mobile Money",
+        mobileButton: "Pagamento Mobile Money",
+        mobileButtonSubtext: "África · Orange Money, Wave",
         mobileInfo: "Orange Money e Wave · África Ocidental e Central. Ativação manual em até 24h após validação."
       },
       // Settings
@@ -4519,58 +4539,62 @@ export const translations = {
       // Onboarding
       onboarding: {
         welcome: {
-          title: "Bem-vindo ao seu painel!",
-          description: "Descubra como usar seu espaço pessoal Cash360. Este guia rápido explicará todos os recursos disponíveis."
+          title: "👋 Bem-vindo ao Cash360!",
+          description: "Descubra seu espaço pessoal Cash360. Este guia rápido apresentará as funcionalidades essenciais para começar sua transformação financeira."
         },
         tabs: {
-          title: "As 2 abas principais",
-          description: "Navegue entre a loja e suas compras usando as abas acima. Cada aba contém recursos específicos para gerenciar suas atividades."
+          title: "📑 Abas principais",
+          description: "Navegue facilmente entre as abas: Loja para descobrir nossos produtos, Minhas compras para acessar suas formações, e Perfil para gerenciar sua conta."
         },
         boutique: {
-          title: "A Loja",
-          description: "Descubra nossos produtos: cápsulas, análises financeiras, pacotes, ebooks e assinaturas. Use as categorias para filtrar produtos de acordo com suas necessidades."
+          title: "🛍️ A Loja",
+          description: "Explore nossos produtos para seu desenvolvimento financeiro: cápsulas educativas, análises financeiras personalizadas, pacotes de formação, ebooks práticos e a assinatura premium Sagesse de Salomon."
         },
         purchases: {
-          title: "Minhas compras",
-          description: "Acesse todas as suas compras e formações: cápsulas, análises financeiras, pacotes, ebooks e assinaturas. Você pode baixar seus PDFs, lançar suas análises e participar de sessões agendadas."
+          title: "📦 Minhas compras",
+          description: "Encontre todas as suas compras aqui: baixe seus PDFs, acesse suas análises financeiras, consulte suas formações e gerencie sua assinatura. Tudo está centralizado nesta aba!"
         },
         categories: {
-          title: "As categorias",
-          description: "Filtre produtos por categoria: Cápsulas, Análise Financeira, Pacote, Ebook, Assinatura. Clique em uma categoria para ver apenas os produtos correspondentes."
+          title: "🏷️ Filtrar por categoria",
+          description: "Use os filtros para exibir apenas a categoria de seu interesse: Cápsulas, Análise Financeira, Pacote, Ebook ou Assinatura. Clique em um filtro para ver os produtos correspondentes."
         },
         cart: {
-          title: "O carrinho",
-          description: "Clique no ícone do carrinho no canto superior direito para ver seus itens adicionados. Você pode modificar as quantidades e prosseguir para o pagamento diretamente do carrinho."
+          title: "🛒 O carrinho",
+          description: "Adicione produtos ao seu carrinho clicando em \"Adicionar ao carrinho\". Em seguida, clique no ícone do carrinho no canto superior direito para ver seus itens, modificar quantidades e finalizar seu pedido."
         },
-        settings: {
-          title: "Configurações",
-          description: "Clique no seu nome ou no ícone de configurações no canto superior direito para modificar suas informações pessoais, alterar sua senha e gerenciar suas preferências."
+        profile: {
+          title: "👤 Perfil",
+          description: "Gerencie suas informações pessoais, altere sua moeda e idioma, e consulte o status de sua assinatura na aba Perfil. Este é seu espaço de configuração pessoal."
         },
         complete: {
-          title: "Perfeito!",
-          description: "Você está pronto para usar seu painel. Sinta-se à vontade para explorar todos os recursos disponíveis. Você pode reiniciar este guia nas configurações."
+          title: "✅ Perfeito, você está pronto!",
+          description: "Agora você conhece o básico do seu painel Cash360. Explore a loja, descubra nossas formações e comece sua jornada rumo a uma vida financeira equilibrada. Precisa de ajuda? Entre em contato conosco pelo WhatsApp no canto inferior direito!"
         }
       },
       postSubscriptionOnboarding: {
         welcome: {
-          title: "Parabéns! Sua assinatura está ativa",
-          description: "Descubra todos os recursos premium do Cash360. Vamos guiá-lo através das diferentes abas disponíveis para maximizar sua transformação financeira."
+          title: "🎉 Bem-vindo ao seu espaço premium!",
+          description: "Parabéns pela sua assinatura Sagesse de Salomon! Agora você tem acesso a todas as ferramentas para transformar sua vida financeira. Deixe-nos guiá-lo através de suas novas abas."
         },
         overview: {
-          title: "Painel",
-          description: "Sua visão geral: receitas, despesas, economias do mês e acompanhamento personalizado. É aqui que você começa cada sessão para ter uma visão clara de sua situação financeira."
+          title: "📊 Painel",
+          description: "Seu centro de controle financeiro. Visualize rapidamente seu resumo do mês (receitas, despesas, economias), seu acompanhamento personalizado com seu jejum financeiro ativo, e receba sua inspiração bíblica diária. Comece sempre aqui!"
         },
         budget: {
-          title: "Orçamento e acompanhamento",
-          description: "Gerencie suas receitas e despesas mensais. Adicione suas categorias de despesas, acompanhe sua taxa de uso e visualize suas principais categorias para entender melhor para onde vai seu dinheiro."
+          title: "💰 Orçamento e acompanhamento",
+          description: "Gerencie suas finanças mês a mês. Registre suas receitas do mês, adicione suas despesas por categoria (alimentação, transporte, lazer...), e acompanhe seu orçamento em tempo real. Visualize suas principais categorias de despesas e sua taxa de uso."
         },
         fast: {
-          title: "Jejum financeiro",
-          description: "Assuma o controle de seus hábitos de gastos com um jejum financeiro de 30 dias. Escolha as categorias para pausar e acompanhe seu progresso diário para fortalecer sua disciplina."
+          title: "⛔ Jejum financeiro – 30 dias",
+          description: "Assuma o controle de seus gastos impulsivos. Lance um jejum de 30 dias escolhendo as categorias a evitar (restaurantes, roupas, assinaturas...). Acompanhe seu progresso dia a dia, calcule suas economias potenciais e fortaleça sua disciplina financeira."
+        },
+        profile: {
+          title: "👤 Perfil",
+          description: "Gerencie suas informações pessoais, sua moeda preferida, seu idioma e sua assinatura. Você pode suspender ou reativar sua assinatura a qualquer momento nesta aba."
         },
         complete: {
-          title: "Você está pronto!",
-          description: "Agora explore todos os recursos premium. Sinta-se à vontade para voltar a esta página para consultar seu painel e acompanhar seu progresso financeiro.",
+          title: "✅ Você está pronto para transformar suas finanças!",
+          description: "Agora você conhece todas as suas ferramentas premium. Comece pelo seu Painel para ver sua situação, depois configure seu Orçamento e acompanhamento para monitorar suas finanças. Pronto para a mudança? Lance seu primeiro Jejum financeiro!",
           button: "Começar"
         }
       }

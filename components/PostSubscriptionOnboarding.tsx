@@ -64,35 +64,42 @@ export default function PostSubscriptionOnboarding({ userId }: PostSubscriptionO
   const steps: OnboardingStep[] = useMemo(() => [
     {
       id: 'welcome',
-      title: t.dashboard?.postSubscriptionOnboarding?.welcome?.title || 'Félicitations ! Votre abonnement est actif',
-      description: t.dashboard?.postSubscriptionOnboarding?.welcome?.description || 'Découvrez maintenant toutes les fonctionnalités premium de Cash360. Nous allons vous guider à travers les différents onglets disponibles.',
+      title: t.dashboard?.postSubscriptionOnboarding?.welcome?.title || '🎉 Bienvenue dans votre espace premium !',
+      description: t.dashboard?.postSubscriptionOnboarding?.welcome?.description || 'Félicitations pour votre abonnement Sagesse de Salomon ! Vous avez maintenant accès à tous les outils pour transformer votre vie financière. Laissez-nous vous guider à travers vos nouveaux onglets.',
       position: 'bottom'
     },
     {
       id: 'overview',
-      title: t.dashboard?.postSubscriptionOnboarding?.overview?.title || 'Tableau de bord',
-      description: t.dashboard?.postSubscriptionOnboarding?.overview?.description || 'Votre vue d\'ensemble : revenus, dépenses, épargne du mois, et suivi personnalisé. C\'est ici que vous commencez chaque session.',
+      title: t.dashboard?.postSubscriptionOnboarding?.overview?.title || '📊 Tableau de bord',
+      description: t.dashboard?.postSubscriptionOnboarding?.overview?.description || 'Votre centre de contrôle financier. Visualisez en un coup d\'œil votre résumé du mois (revenus, dépenses, épargne), votre suivi personnalisé avec votre jeûne financier actif, et recevez votre inspiration biblique quotidienne. Commencez toujours ici !',
       targetSelector: '[data-onboarding="overview-tab"]',
       position: 'bottom'
     },
     {
       id: 'budget',
-      title: t.dashboard?.postSubscriptionOnboarding?.budget?.title || 'Budget & suivi',
-      description: t.dashboard?.postSubscriptionOnboarding?.budget?.description || 'Gérez vos revenus et dépenses mensuels. Ajoutez vos catégories de dépenses, suivez votre taux d\'utilisation et visualisez vos principales catégories.',
+      title: t.dashboard?.postSubscriptionOnboarding?.budget?.title || '💰 Budget & suivi',
+      description: t.dashboard?.postSubscriptionOnboarding?.budget?.description || 'Gérez vos finances mois par mois. Enregistrez vos revenus du mois, ajoutez vos dépenses par catégorie (alimentation, transport, loisirs...), et suivez votre budget en temps réel. Visualisez vos principales catégories de dépenses et votre taux d\'utilisation.',
       targetSelector: '[data-onboarding="budget-tab"]',
       position: 'bottom'
     },
     {
       id: 'fast',
-      title: t.dashboard?.postSubscriptionOnboarding?.fast?.title || 'Jeûne financier',
-      description: t.dashboard?.postSubscriptionOnboarding?.fast?.description || 'Reprenez le contrôle de vos habitudes de dépenses avec un jeûne financier de 30 jours. Choisissez les catégories à mettre en pause et suivez votre progression quotidienne.',
+      title: t.dashboard?.postSubscriptionOnboarding?.fast?.title || '⛔ Jeûne financier – 30 jours',
+      description: t.dashboard?.postSubscriptionOnboarding?.fast?.description || 'Reprenez le contrôle de vos dépenses impulsives. Lancez un jeûne de 30 jours en choisissant les catégories à éviter (restaurants, vêtements, abonnements...). Suivez votre progrès jour après jour, calculez vos économies potentielles et renforcez votre discipline financière.',
       targetSelector: '[data-onboarding="fast-tab"]',
       position: 'bottom'
     },
     {
+      id: 'profile',
+      title: t.dashboard?.postSubscriptionOnboarding?.profile?.title || '👤 Profil',
+      description: t.dashboard?.postSubscriptionOnboarding?.profile?.description || 'Gérez vos informations personnelles, votre devise préférée, votre langue et votre abonnement. Vous pouvez suspendre ou relancer votre abonnement à tout moment depuis cet onglet.',
+      targetSelector: '[data-onboarding="profile-tab"]',
+      position: 'bottom'
+    },
+    {
       id: 'complete',
-      title: t.dashboard?.postSubscriptionOnboarding?.complete?.title || 'Vous êtes prêt !',
-      description: t.dashboard?.postSubscriptionOnboarding?.complete?.description || 'Explorez maintenant toutes les fonctionnalités premium. N\'hésitez pas à revenir sur cette page pour consulter votre tableau de bord.',
+      title: t.dashboard?.postSubscriptionOnboarding?.complete?.title || '✅ Vous êtes prêt à transformer vos finances !',
+      description: t.dashboard?.postSubscriptionOnboarding?.complete?.description || 'Vous connaissez maintenant tous vos outils premium. Commencez par votre Tableau de bord pour voir votre situation, puis configurez votre Budget & suivi pour suivre vos finances. Prêt pour le changement ? Lancez votre premier Jeûne financier !',
       position: 'bottom'
     }
   ], [t])
