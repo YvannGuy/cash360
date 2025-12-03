@@ -30,7 +30,7 @@ export default function Steps() {
   }, [])
 
   const stepsNumbers = ["01", "02", "03"]
-  const stepsIcons = ["🔹", "🛒", "📄"]
+  const stepsIcons = ["📝", "🎯", "💰"]
   const stepsColors = ["from-blue-500 to-blue-600", "from-green-500 to-green-600", "from-purple-500 to-purple-600"]
 
   return (

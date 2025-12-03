@@ -7,6 +7,7 @@ import Hero from '@/components/Hero'
 import Features from '@/components/Features'
 import LiveTikTok from '@/components/LiveTikTok'
 import Steps from '@/components/Steps'
+import PremiumSubscription from '@/components/PremiumSubscription'
 import About from '@/components/About'
 import CTASection from '@/components/CTASection'
 import Footer from '@/components/Footer'
@@ -64,8 +65,11 @@ export default function Home() {
         {/* Steps Section */}
         <Steps />
         
-        {/* Section Analyse */}
-        <SectionAnalyse />
+        {/* Premium Subscription Section */}
+        <PremiumSubscription />
+        
+        {/* Section Analyse - Masquée */}
+        {/* <SectionAnalyse /> */}
         
         {/* Live TikTok Section */}
         <LiveTikTok />

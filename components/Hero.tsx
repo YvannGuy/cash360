@@ -75,7 +75,7 @@ export default function Hero() {
               </a>
               
               <a
-                href="#section-analyse"
+                href="#premium-subscription"
                 className="inline-flex items-center px-8 py-3.5 border border-white/50 text-white text-base font-medium rounded-lg hover:bg-white/10 transition-all duration-200"
               >
                 {t.nav.produitALaUne || "Découvrir nos produits"}

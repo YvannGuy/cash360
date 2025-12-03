@@ -4,11 +4,11 @@ export const translations = {
     nav: {
       home: "Accueil",
       about: "À propos",
-      analysis: "À la une",
+      analysis: "Abonnement",
       login: "Connexion",
       bookCall: "Je m'inscris",
       nosFormations: "Nos formations",
-      produitALaUne: "Découvrir nos produits",
+      produitALaUne: "Abonnement",
       myAccount: "Mon compte",
       signOut: "Se déconnecter",
       connectedAs: "Connecté en tant que"
@@ -25,7 +25,7 @@ export const translations = {
       title: "Reprenez le contrôle de vos",
       titleHighlight: "finances",
       titleEnd: "avec méthode et sérénité",
-      subtitle: "Analyse personnalisée + accompagnement spirituel et pratique pour retrouver",
+      subtitle: "Accompagnement pratique avec des outils de gestion pour retrouver",
       subtitleHighlight: "équilibre et liberté financière",
       videoDescription: "Faites le point en 60 secondes : découvrez votre équilibre financier et passez à l'action.",
       ctaPrimary: "Tester ma situation financière",
@@ -159,6 +159,10 @@ export const translations = {
         {
           title: "Approche alliant foi et intelligence financière",
           description: "Méthodes qui respectent vos valeurs spirituelles tout en appliquant les meilleures pratiques financières."
+        },
+        {
+          title: "Outils de gestion intégrés",
+          description: "Accédez à un tableau de bord complet pour suivre vos finances en temps réel, gérer votre budget mois par mois, renforcer votre discipline avec le jeûne financier, et créer votre plan de remboursement de dettes. Tout en un seul endroit."
         }
       ],
       additionalFeatures: [
@@ -184,33 +188,33 @@ export const translations = {
     steps: {
       title: "Comment ça",
       titleHighlight: "fonctionne",
-      subtitle: "Un processus simple et transparent en 3 étapes pour retrouver l'équilibre financier avec l'accompagnement de Cash360.",
+      subtitle: "Un parcours progressif pour transformer votre relation à l'argent et retrouver l'équilibre financier.",
       stepsList: [
         {
-          title: "Créer un compte",
-          description: "Prenez quelques minutes pour créer votre compte et accéder à votre espace personnel Cash360.",
+          title: "Créer votre compte",
+          description: "Inscrivez-vous gratuitement et accédez à votre espace personnel. Découvrez les formations disponibles et explorez les outils de gestion financière.",
           details: [
-            "Accès à votre espace sécurisé",
-            "Suivi de vos finances et progrès",
-            "Découverte de la méthode Cash360"
+            "Inscription gratuite et sécurisée",
+            "Accès à la boutique et aux formations",
+            "Découverte des outils premium disponibles"
           ]
         },
         {
-          title: "Choisir votre formule",
-          description: "Explorez notre boutique et sélectionnez la solution qui correspond à vos besoins : analyses financières, capsules de formation, packs ou ebooks.",
+          title: "Choisir votre parcours",
+          description: "Deux options s'offrent à vous : accéder aux formations et capsules pour apprendre, ou souscrire à l'abonnement premium pour utiliser les outils de gestion (tableau de bord, budget, jeûne financier, DebtFree).",
           details: [
-            "Large choix de produits adaptés",
-            "Paiement sécurisé (Stripe ou Mobile Money)",
-            "Accès immédiat après validation"
+            "Formations et capsules pour l'apprentissage",
+            "Abonnement premium pour les outils pratiques",
+            "Paiement sécurisé (Stripe ou Mobile Money)"
           ]
         },
         {
-          title: "Utiliser vos produits",
-          description: "Accédez immédiatement à vos contenus achetés : téléchargez vos capsules, lancez vos analyses ou participez aux sessions depuis votre espace personnel.",
+          title: "Transformer votre gestion financière",
+          description: "Utilisez les outils pour suivre vos revenus et dépenses, créer votre budget mensuel, renforcer votre discipline avec le jeûne financier, et créer votre plan de remboursement de dettes. Suivez vos progrès au quotidien.",
           details: [
-            "Accès immédiat à tous vos achats",
-            "Téléchargement des PDF et contenus",
-            "Suivi de vos progrès en temps réel"
+            "Suivi de vos finances en temps réel",
+            "Planification budgétaire mois par mois",
+            "Renforcement de votre discipline financière"
           ]
         }
       ],
@@ -247,13 +251,14 @@ export const translations = {
     about: {
       title: "Qu'est-ce que",
       titleHighlight: "Cash360",
-      intro1: "Cash360 est une plateforme d'éducation et d'analyse financière unique qui aide les particuliers, entrepreneurs et églises à reprendre le contrôle de leurs finances, avec une approche qui unit intelligence pratique et principes spirituels.",
+      intro1: "Cash360 est une plateforme complète d'éducation et d'analyse financière avec des outils de gestion intégrés, qui aide les particuliers, entrepreneurs et églises à reprendre le contrôle de leurs finances, avec une approche qui unit intelligence pratique et principes spirituels.",
       intro2: "Dans un monde où beaucoup vivent dans la confusion financière, entre dettes, dépenses incontrôlées et culpabilité vis-à-vis de l'argent, Cash360 apporte une méthode claire, bienveillante et transformatrice.",
       missionTitle: "Notre mission",
       missionIntro: "Aider chaque personne à retrouver l'équilibre, la clarté et la paix financière, grâce à un accompagnement qui allie :",
       missionPoints: [
         "L'analyse financière personnalisée de vos relevés bancaires,",
         "Des capsules et formations sur la gestion de l'argent, l'investissement et la prospérité,",
+        "Des outils pratiques qui transforment votre gestion financière : suivez vos progrès, visualisez votre évolution, et atteignez vos objectifs financiers mois après mois,",
         "Une approche spirituelle ancrée dans la foi, pour comprendre les lois spirituelles qui gouvernent les finances."
       ],
       forWhoTitle: "Pour qui est fait Cash360 ?",
@@ -294,7 +299,7 @@ export const translations = {
       questions: [
         {
           q: "Quels services et produits propose Cash360 ?",
-          a: "Cash360 propose une analyse personnalisée de vos relevés bancaires, des formations en ligne sur l'éducation financière et la prospérité, des capsules thématiques, ainsi qu'un outil de simulation financière. Nos services combinent expertise financière et accompagnement spirituel pour vous aider à retrouver l'équilibre et la liberté financière."
+          a: "Cash360 propose une analyse personnalisée de vos relevés bancaires, des formations en ligne sur l'éducation financière et la prospérité, des capsules thématiques, ainsi qu'un abonnement premium qui donne accès à des outils de gestion financière pour suivre et transformer vos finances au quotidien. Nos services combinent expertise financière et accompagnement spirituel pour vous aider à retrouver l'équilibre et la liberté financière."
         },
         {
           q: "Puis-je simuler ma situation financière ?",
@@ -364,6 +369,37 @@ export const translations = {
           label: "D'expérience"
         }
       ]
+    },
+    
+    // Premium Subscription Section
+    premiumSubscription: {
+      title: "Passez au niveau supérieur avec",
+      titleHighlight: "l'abonnement Sagesse de Salomon",
+      subtitle: "Accédez à tous les outils pour transformer réellement votre vie financière",
+      features: [
+        {
+          icon: "📊",
+          title: "Tableau de bord",
+          description: "Visualisez votre situation financière en un coup d'œil"
+        },
+        {
+          icon: "💰",
+          title: "Budget & suivi",
+          description: "Gérez vos revenus et dépenses mois par mois"
+        },
+        {
+          icon: "⛔",
+          title: "Jeûne financier",
+          description: "Renforcez votre discipline en 30 jours"
+        },
+        {
+          icon: "🛡️",
+          title: "DebtFree",
+          description: "Créez votre plan de remboursement de dettes intelligent"
+        }
+      ],
+      ctaButton: "Découvrir l'abonnement premium",
+      ctaLink: "/login"
     },
     
     // CTA Section
@@ -1220,11 +1256,11 @@ export const translations = {
     nav: {
       home: "Home",
       about: "About",
-      analysis: "Featured",
+      analysis: "Subscription",
       login: "Login",
       bookCall: "Sign up",
       nosFormations: "Our trainings",
-      produitALaUne: "Discover our products",
+      produitALaUne: "Subscription",
       myAccount: "My account",
       signOut: "Sign out",
       connectedAs: "Connected as"
@@ -1241,7 +1277,7 @@ export const translations = {
       title: "Take back control of your",
       titleHighlight: "finances",
       titleEnd: "with method and serenity",
-      subtitle: "Personalized analysis + spiritual and practical support to regain",
+      subtitle: "Practical support with management tools to regain",
       subtitleHighlight: "balance and financial freedom",
       videoDescription: "Take stock in 60 seconds: discover your financial balance and take action.",
       ctaPrimary: "Test my financial situation",
@@ -1375,6 +1411,10 @@ export const translations = {
         {
           title: "Approach combining faith and financial intelligence",
           description: "Methods that respect your spiritual values while applying best financial practices."
+        },
+        {
+          title: "Integrated management tools",
+          description: "Access a complete dashboard to track your finances in real time, manage your budget month by month, strengthen your discipline with the financial fast, and create your smart debt repayment plan. Everything in one place."
         }
       ],
       additionalFeatures: [
@@ -1400,33 +1440,33 @@ export const translations = {
     steps: {
       title: "How does it",
       titleHighlight: "work",
-      subtitle: "A simple and transparent 3-step process to regain financial balance with Cash360 support.",
+      subtitle: "A progressive journey to transform your relationship with money and regain financial balance.",
       stepsList: [
         {
-          title: "Create an account",
-          description: "Take a few minutes to create your account and access your personal Cash360 space.",
+          title: "Create your account",
+          description: "Sign up for free and access your personal space. Discover available training and explore financial management tools.",
           details: [
-            "Access to your secure space",
-            "Track your finances and progress",
-            "Discover the Cash360 method"
+            "Free and secure registration",
+            "Access to shop and training",
+            "Discover available premium tools"
           ]
         },
         {
-          title: "Choose your formula",
-          description: "Explore our shop and select the solution that suits your needs: financial analyses, training capsules, packs or ebooks.",
+          title: "Choose your path",
+          description: "Two options are available: access training and capsules to learn, or subscribe to the premium plan to use management tools (dashboard, budget, financial fast, DebtFree).",
           details: [
-            "Wide range of adapted products",
-            "Secure payment (Stripe or Mobile Money)",
-            "Immediate access after validation"
+            "Training and capsules for learning",
+            "Premium subscription for practical tools",
+            "Secure payment (Stripe or Mobile Money)"
           ]
         },
         {
-          title: "Use your products",
-          description: "Immediately access your purchased content: download your capsules, launch your analyses or participate in sessions from your personal space.",
+          title: "Transform your financial management",
+          description: "Use the tools to track your income and expenses, create your monthly budget, strengthen your discipline with the financial fast, and create your debt repayment plan. Track your progress daily.",
           details: [
-            "Immediate access to all your purchases",
-            "Download PDFs and content",
-            "Track your progress in real time"
+            "Real-time tracking of your finances",
+            "Monthly budget planning",
+            "Strengthening your financial discipline"
           ]
         }
       ],
@@ -1464,13 +1504,14 @@ export const translations = {
     about: {
       title: "What is",
       titleHighlight: "Cash360",
-      intro1: "Cash360 is a unique financial education and analysis platform that helps individuals, entrepreneurs and churches regain control of their finances, with an approach that unites practical intelligence and spiritual principles.",
+      intro1: "Cash360 is a complete financial education and analysis platform with integrated management tools that helps individuals, entrepreneurs and churches regain control of their finances, with an approach that unites practical intelligence and spiritual principles.",
       intro2: "In a world where many live in financial confusion, between debts, uncontrolled spending and guilt about money, Cash360 brings a clear, caring and transformative method.",
       missionTitle: "Our mission",
       missionIntro: "Help each person regain balance, clarity and financial peace, through support that combines:",
       missionPoints: [
         "Personalized financial analysis of your bank statements,",
         "Capsules and training on money management, investment and prosperity,",
+        "Practical tools that transform your financial management: track your progress, visualize your evolution, and achieve your financial goals month after month,",
         "A spiritual approach rooted in faith, to understand the spiritual laws that govern finances."
       ],
       forWhoTitle: "Who is Cash360 for?",
@@ -1509,6 +1550,10 @@ export const translations = {
       badge: "FAQ",
       title: "Frequently Asked Questions",
       questions: [
+        {
+          q: "What services and products does Cash360 offer?",
+          a: "Cash360 offers a personalized analysis of your bank statements, online training on financial education and prosperity, thematic capsules, as well as a premium subscription that gives access to financial management tools to track and transform your finances on a daily basis. Our services combine financial expertise and spiritual support to help you regain balance and financial freedom."
+        },
         {
           q: "How can Cash360 help me?",
           a: "Cash360 helps you understand where your money goes, identify your priorities and reorganize your finances. Through a simple, human and spiritual approach, you regain balance, serenity and financial freedom."
@@ -1581,6 +1626,37 @@ export const translations = {
           label: "Of experience"
         }
       ]
+    },
+    
+    // Premium Subscription Section
+    premiumSubscription: {
+      title: "Take it to the next level with",
+      titleHighlight: "Sagesse de Salomon subscription",
+      subtitle: "Access all the tools to truly transform your financial life",
+      features: [
+        {
+          icon: "📊",
+          title: "Dashboard",
+          description: "Visualize your financial situation at a glance"
+        },
+        {
+          icon: "💰",
+          title: "Budget & tracking",
+          description: "Manage your income and expenses month by month"
+        },
+        {
+          icon: "⛔",
+          title: "Financial fast",
+          description: "Strengthen your discipline in 30 days"
+        },
+        {
+          icon: "🛡️",
+          title: "DebtFree",
+          description: "Create your smart debt repayment plan"
+        }
+      ],
+      ctaButton: "Discover the premium subscription",
+      ctaLink: "/login"
     },
     
     // CTA Section
@@ -2437,11 +2513,11 @@ export const translations = {
     nav: {
       home: "Inicio",
       about: "Acerca de",
-      analysis: "Destacados",
+      analysis: "Suscripción",
       login: "Iniciar sesión",
       bookCall: "Inscribirse",
       nosFormations: "Nuestras formaciones",
-      produitALaUne: "Descubrir nuestros productos",
+      produitALaUne: "Suscripción",
       myAccount: "Mi cuenta",
       signOut: "Cerrar sesión",
       connectedAs: "Conectado como"
@@ -2458,7 +2534,7 @@ export const translations = {
       title: "Retoma el control de tus",
       titleHighlight: "finanzas",
       titleEnd: "con método y serenidad",
-      subtitle: "Análisis personalizado + acompañamiento espiritual y práctico para recuperar",
+      subtitle: "Acompañamiento práctico con herramientas de gestión para recuperar",
       subtitleHighlight: "equilibrio y libertad financiera",
       videoDescription: "Haz un balance en 60 segundos: descubre tu equilibrio financiero y pasa a la acción.",
       ctaPrimary: "Probar mi situación financiera",
@@ -2591,6 +2667,10 @@ export const translations = {
         {
           title: "Enfoque que combina fe e inteligencia financiera",
           description: "Métodos que respetan tus valores espirituales mientras aplican las mejores prácticas financieras."
+        },
+        {
+          title: "Herramientas de gestión integradas",
+          description: "Accede a un panel completo para seguir tus finanzas en tiempo real, gestionar tu presupuesto mes a mes, fortalecer tu disciplina con el ayuno financiero y crear tu plan inteligente de pago de deudas. Todo en un solo lugar."
         }
       ],
       additionalFeatures: [
@@ -2616,33 +2696,33 @@ export const translations = {
     steps: {
       title: "¿Cómo",
       titleHighlight: "funciona",
-      subtitle: "Un proceso simple y transparente en 3 pasos para recuperar el equilibrio financiero con el apoyo de Cash360.",
+      subtitle: "Un recorrido progresivo para transformar tu relación con el dinero y recuperar el equilibrio financiero.",
       stepsList: [
         {
-          title: "Crear una cuenta",
-          description: "Tómate unos minutos para crear tu cuenta y acceder a tu espacio personal Cash360.",
+          title: "Crear tu cuenta",
+          description: "Regístrate gratis y accede a tu espacio personal. Descubre las formaciones disponibles y explora las herramientas de gestión financiera.",
           details: [
-            "Acceso a tu espacio seguro",
-            "Seguimiento de tus finanzas y progreso",
-            "Descubre el método Cash360"
+            "Registro gratuito y seguro",
+            "Acceso a la tienda y formaciones",
+            "Descubre las herramientas premium disponibles"
           ]
         },
         {
-          title: "Elegir tu fórmula",
-          description: "Explora nuestra tienda y selecciona la solución que se adapte a tus necesidades: análisis financieros, cápsulas de formación, packs o ebooks.",
+          title: "Elegir tu recorrido",
+          description: "Dos opciones están disponibles: acceder a formaciones y cápsulas para aprender, o suscribirte al plan premium para usar las herramientas de gestión (panel de control, presupuesto, ayuno financiero, DebtFree).",
           details: [
-            "Amplia gama de productos adaptados",
-            "Pago seguro (Stripe o Mobile Money)",
-            "Acceso inmediato tras la validación"
+            "Formaciones y cápsulas para el aprendizaje",
+            "Suscripción premium para herramientas prácticas",
+            "Pago seguro (Stripe o Mobile Money)"
           ]
         },
         {
-          title: "Usar tus productos",
-          description: "Accede inmediatamente a tus contenidos comprados: descarga tus cápsulas, lanza tus análisis o participa en sesiones desde tu espacio personal.",
+          title: "Transformar tu gestión financiera",
+          description: "Utiliza las herramientas para seguir tus ingresos y gastos, crear tu presupuesto mensual, fortalecer tu disciplina con el ayuno financiero y crear tu plan de pago de deudas. Sigue tus progresos a diario.",
           details: [
-            "Acceso inmediato a todas tus compras",
-            "Descarga de PDFs y contenidos",
-            "Seguimiento de tu progreso en tiempo real"
+            "Seguimiento de tus finanzas en tiempo real",
+            "Planificación presupuestaria mes a mes",
+            "Fortalecimiento de tu disciplina financiera"
           ]
         }
       ],
@@ -2726,6 +2806,10 @@ export const translations = {
       title: "Preguntas Frecuentes",
       questions: [
         {
+          q: "¿Qué servicios y productos ofrece Cash360?",
+          a: "Cash360 ofrece un análisis personalizado de tus extractos bancarios, formación en línea sobre educación financiera y prosperidad, cápsulas temáticas, así como una suscripción premium que da acceso a herramientas de gestión financiera para seguir y transformar tus finanzas a diario. Nuestros servicios combinan experiencia financiera y apoyo espiritual para ayudarte a recuperar el equilibrio y la libertad financiera."
+        },
+        {
           q: "¿Cómo puede ayudarme Cash360?",
           a: "Cash360 te ayuda a entender dónde va tu dinero, identificar tus prioridades y reorganizar tus finanzas. Gracias a un enfoque simple, humano y espiritual, recuperas equilibrio, serenidad y libertad financiera."
         },
@@ -2797,6 +2881,37 @@ export const translations = {
           label: "De experiencia"
         }
       ]
+    },
+    
+    // Premium Subscription Section
+    premiumSubscription: {
+      title: "Lleve al siguiente nivel con",
+      titleHighlight: "la suscripción Sagesse de Salomon",
+      subtitle: "Accede a todas las herramientas para transformar realmente tu vida financiera",
+      features: [
+        {
+          icon: "📊",
+          title: "Panel de control",
+          description: "Visualiza tu situación financiera de un vistazo"
+        },
+        {
+          icon: "💰",
+          title: "Presupuesto y seguimiento",
+          description: "Gestiona tus ingresos y gastos mes a mes"
+        },
+        {
+          icon: "⛔",
+          title: "Ayuno financiero",
+          description: "Fortalece tu disciplina en 30 días"
+        },
+        {
+          icon: "🛡️",
+          title: "DebtFree",
+          description: "Crea tu plan inteligente de pago de deudas"
+        }
+      ],
+      ctaButton: "Descubrir la suscripción premium",
+      ctaLink: "/login"
     },
     
     // CTA Section
@@ -3653,11 +3768,11 @@ export const translations = {
     nav: {
       home: "Início",
       about: "Sobre",
-      analysis: "Em destaque",
+      analysis: "Assinatura",
       login: "Entrar",
       bookCall: "Inscrever-se",
       nosFormations: "Nossas formações",
-      produitALaUne: "Descobrir nossos produtos",
+      produitALaUne: "Assinatura",
       myAccount: "Minha conta",
       signOut: "Sair",
       connectedAs: "Conectado como"
@@ -3674,7 +3789,7 @@ export const translations = {
       title: "Retome o controle de suas",
       titleHighlight: "finanças",
       titleEnd: "com método e serenidade",
-      subtitle: "Análise personalizada + acompanhamento espiritual e prático para recuperar",
+      subtitle: "Acompanhamento prático com ferramentas de gestão para recuperar",
       subtitleHighlight: "equilíbrio e liberdade financeira",
       videoDescription: "Faça um balanço em 60 segundos: descubra seu equilíbrio financeiro e passe à ação.",
       ctaPrimary: "Testar minha situação financeira",
@@ -3807,6 +3922,10 @@ export const translations = {
         {
           title: "Abordagem que combina fé e inteligência financeira",
           description: "Métodos que respeitam seus valores espirituais enquanto aplicam as melhores práticas financeiras."
+        },
+        {
+          title: "Ferramentas de gestão integradas",
+          description: "Acesse um painel completo para acompanhar suas finanças em tempo real, gerencie seu orçamento mês a mês, fortaleça sua disciplina com o jejum financeiro e crie seu plano inteligente de pagamento de dívidas. Tudo em um só lugar."
         }
       ],
       additionalFeatures: [
@@ -3832,33 +3951,33 @@ export const translations = {
     steps: {
       title: "Como",
       titleHighlight: "funciona",
-      subtitle: "Um processo simples e transparente em 3 etapas para recuperar o equilíbrio financeiro com o apoio da Cash360.",
+      subtitle: "Uma jornada progressiva para transformar sua relação com o dinheiro e recuperar o equilíbrio financeiro.",
       stepsList: [
         {
-          title: "Criar uma conta",
-          description: "Reserve alguns minutos para criar sua conta e acessar seu espaço pessoal Cash360.",
+          title: "Criar sua conta",
+          description: "Cadastre-se gratuitamente e acesse seu espaço pessoal. Descubra as formações disponíveis e explore as ferramentas de gestão financeira.",
           details: [
-            "Acesso ao seu espaço seguro",
-            "Acompanhamento de suas finanças e progresso",
-            "Descubra o método Cash360"
+            "Cadastro gratuito e seguro",
+            "Acesso à loja e formações",
+            "Descubra as ferramentas premium disponíveis"
           ]
         },
         {
-          title: "Escolher sua fórmula",
-          description: "Explore nossa loja e selecione a solução que atende às suas necessidades: análises financeiras, cápsulas de formação, packs ou ebooks.",
+          title: "Escolher seu percurso",
+          description: "Duas opções estão disponíveis: acessar formações e cápsulas para aprender, ou assinar o plano premium para usar as ferramentas de gestão (painel, orçamento, jejum financeiro, DebtFree).",
           details: [
-            "Ampla variedade de produtos adaptados",
-            "Pagamento seguro (Stripe ou Mobile Money)",
-            "Acesso imediato após validação"
+            "Formações e cápsulas para aprendizado",
+            "Assinatura premium para ferramentas práticas",
+            "Pagamento seguro (Stripe ou Mobile Money)"
           ]
         },
         {
-          title: "Usar seus produtos",
-          description: "Acesse imediatamente seus conteúdos comprados: baixe suas cápsulas, lance suas análises ou participe de sessões a partir do seu espaço pessoal.",
+          title: "Transformar sua gestão financeira",
+          description: "Use as ferramentas para acompanhar suas receitas e despesas, criar seu orçamento mensal, fortalecer sua disciplina com o jejum financeiro e criar seu plano de pagamento de dívidas. Acompanhe seus progressos diariamente.",
           details: [
-            "Acesso imediato a todas as suas compras",
-            "Download de PDFs e conteúdos",
-            "Acompanhe seu progresso em tempo real"
+            "Acompanhamento de suas finanças em tempo real",
+            "Planejamento orçamentário mês a mês",
+            "Fortalecimento de sua disciplina financeira"
           ]
         }
       ],
@@ -3942,6 +4061,10 @@ export const translations = {
       title: "Perguntas Frequentes",
       questions: [
         {
+          q: "Quais serviços e produtos o Cash360 oferece?",
+          a: "O Cash360 oferece uma análise personalizada de seus extratos bancários, formação online sobre educação financeira e prosperidade, cápsulas temáticas, bem como uma assinatura premium que dá acesso a ferramentas de gestão financeira para acompanhar e transformar suas finanças diariamente. Nossos serviços combinam experiência financeira e apoio espiritual para ajudá-lo a recuperar o equilíbrio e a liberdade financeira."
+        },
+        {
           q: "Como o Cash360 pode me ajudar?",
           a: "O Cash360 ajuda você a entender para onde vai seu dinheiro, identificar suas prioridades e reorganizar suas finanças. Através de uma abordagem simples, humana e espiritual, você recupera equilíbrio, serenidade e liberdade financeira."
         },
@@ -4013,6 +4136,37 @@ export const translations = {
           label: "De experiência"
         }
       ]
+    },
+    
+    // Premium Subscription Section
+    premiumSubscription: {
+      title: "Leve ao próximo nível com",
+      titleHighlight: "a assinatura Sagesse de Salomon",
+      subtitle: "Acesse todas as ferramentas para transformar realmente sua vida financeira",
+      features: [
+        {
+          icon: "📊",
+          title: "Painel",
+          description: "Visualize sua situação financeira rapidamente"
+        },
+        {
+          icon: "💰",
+          title: "Orçamento e acompanhamento",
+          description: "Gerencie suas receitas e despesas mês a mês"
+        },
+        {
+          icon: "⛔",
+          title: "Jejum financeiro",
+          description: "Fortaleça sua disciplina em 30 dias"
+        },
+        {
+          icon: "🛡️",
+          title: "DebtFree",
+          description: "Crie seu plano inteligente de pagamento de dívidas"
+        }
+      ],
+      ctaButton: "Descobrir a assinatura premium",
+      ctaLink: "/login"
     },
     
     // CTA Section

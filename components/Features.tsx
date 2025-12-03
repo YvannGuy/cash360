@@ -6,8 +6,8 @@ import Link from 'next/link'
 export default function Features() {
   const { t } = useLanguage()
   
-  const featuresIcons = ["🔍", "⚖️", "❤️"]
-  const featuresColors = ["from-blue-500 to-blue-600", "from-green-500 to-green-600", "from-purple-500 to-purple-600"]
+  const featuresIcons = ["🔍", "⚖️", "❤️", "🛠️"]
+  const featuresColors = ["from-blue-500 to-blue-600", "from-green-500 to-green-600", "from-purple-500 to-purple-600", "from-yellow-500 to-yellow-600"]
   
   const additionalFeaturesIcons = ["🎯", "🛡️", "📈"]
 
@@ -29,7 +29,7 @@ export default function Features() {
         </div>
 
         {/* Main Features */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {t.features.mainFeatures.map((feature, index) => (
             <div key={index}>
               <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">

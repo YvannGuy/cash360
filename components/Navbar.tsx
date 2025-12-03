@@ -123,7 +123,7 @@ export default function Navbar() {
                 {t.nav.about}
               </button>
               <button
-                onClick={() => scrollToSection('section-analyse')}
+                onClick={() => scrollToSection('premium-subscription')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
                 {t.nav.analysis}
@@ -237,7 +237,7 @@ export default function Navbar() {
               </button>
               <button
                 onClick={() => {
-                  scrollToSection('section-analyse')
+                  scrollToSection('premium-subscription')
                   setIsMenuOpen(false)
                 }}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
