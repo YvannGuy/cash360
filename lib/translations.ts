@@ -375,31 +375,90 @@ export const translations = {
     premiumSubscription: {
       title: "Passez au niveau supérieur avec",
       titleHighlight: "l'abonnement Sagesse de Salomon",
-      subtitle: "Accédez à tous les outils pour transformer réellement votre vie financière",
+      subtitle: "Transformez votre relation à l'argent avec un accompagnement complet et des outils pratiques",
       features: [
         {
-          icon: "📊",
-          title: "Tableau de bord",
-          description: "Visualisez votre situation financière en un coup d'œil"
+          icon: "🎯",
+          title: "Résultats concrets",
+          description: "Suivez vos progrès mois après mois et visualisez votre transformation financière"
         },
         {
-          icon: "💰",
-          title: "Budget & suivi",
-          description: "Gérez vos revenus et dépenses mois par mois"
+          icon: "⚡",
+          title: "Discipline renforcée",
+          description: "Développez de nouvelles habitudes financières grâce à des défis personnalisés"
         },
         {
-          icon: "⛔",
-          title: "Jeûne financier",
-          description: "Renforcez votre discipline en 30 jours"
+          icon: "🔄",
+          title: "Suivi continu",
+          description: "Accompagnement mensuel pour maintenir votre élan et atteindre vos objectifs"
         },
         {
-          icon: "🛡️",
-          title: "DebtFree",
-          description: "Créez votre plan de remboursement de dettes intelligent"
+          icon: "💎",
+          title: "Liberté financière",
+          description: "Créez votre plan d'action personnalisé pour sortir des dettes et épargner"
         }
       ],
       ctaButton: "Découvrir l'abonnement premium",
       ctaLink: "/login"
+    },
+    
+    dashboardTools: {
+      title: "Vos outils de gestion financière",
+      subtitle: "Découvrez les fonctionnalités complètes de votre tableau de bord premium",
+      subscriptionNote: "Accessible avec l'abonnement Sagesse de Salomon",
+      tools: [
+        {
+          icon: "📊",
+          title: "Tableau de bord",
+          image: "/images/tableaubord.png",
+          description: "Votre vue d'ensemble financière en temps réel. Visualisez vos revenus, dépenses, épargne et suivez votre progression mois après mois.",
+          features: [
+            "Résumé financier du mois en un coup d'œil",
+            "Suivi personnalisé de vos objectifs",
+            "Insights et recommandations adaptés à votre situation",
+            "Accès rapide à tous vos outils"
+          ]
+        },
+        {
+          icon: "💰",
+          title: "Budget & suivi",
+          image: "/images/ budgetsuivi.png",
+          description: "Gérez vos finances mois par mois avec précision. Enregistrez vos revenus, catégorisez vos dépenses et suivez votre taux d'utilisation en temps réel.",
+          features: [
+            "Enregistrement de vos revenus mensuels",
+            "Catégorisation détaillée de vos dépenses",
+            "Suivi du taux d'utilisation de votre budget",
+            "Visualisation des catégories principales"
+          ]
+        },
+        {
+          icon: "⛔",
+          title: "Jeûne financier",
+          image: "/images/jeune.png",
+          description: "Renforcez votre discipline financière avec un défi de 30 jours. Choisissez les catégories à éviter et suivez vos progrès jour après jour.",
+          features: [
+            "Défi de 30 jours personnalisable",
+            "Suivi quotidien de votre discipline",
+            "Calcul automatique de vos économies potentielles",
+            "Journal de réflexion pour ancrer vos progrès"
+          ]
+        },
+        {
+          icon: "🛡️",
+          title: "DebtFree",
+          image: "/images/debt.png",
+          description: "Créez votre plan intelligent de remboursement de dettes. Visualisez votre date estimée de libération financière et accélérez votre remboursement.",
+          features: [
+            "Analyse automatique de vos dettes",
+            "Projection de remboursement personnalisée",
+            "Intégration avec vos économies du jeûne financier",
+            "Plan d'action pour accélérer votre libération"
+          ]
+        }
+      ],
+      ctaTitle: "Prêt à transformer votre gestion financière ?",
+      ctaSubtitle: "Souscrivez à l'abonnement Sagesse de Salomon et accédez à tous ces outils dès aujourd'hui.",
+      ctaButton: "Découvrir l'abonnement"
     },
     
     // CTA Section
@@ -865,6 +924,9 @@ export const translations = {
       budget: {
         title: "Budget & suivi",
         subtitle: "Visualisez vos revenus et vos dépenses pour reprendre le contrôle de votre mois.",
+        introTitle: "Budget & suivi",
+        introSubtitle: "Votre outil de gestion budgétaire mensuel",
+        introDescription: "Gérez vos finances mois par mois. Enregistrez vos revenus du mois, ajoutez vos dépenses par catégorie (alimentation, transport, loisirs...), et suivez votre budget en temps réel. Visualisez vos principales catégories de dépenses et votre taux d'utilisation pour reprendre le contrôle de vos finances.",
         monthlyIncomeLabel: "Revenu mensuel net",
         monthlyIncomePlaceholder: "Ex : 1500",
         expensesTitle: "Mes dépenses",
@@ -1632,31 +1694,90 @@ export const translations = {
     premiumSubscription: {
       title: "Take it to the next level with",
       titleHighlight: "Sagesse de Salomon subscription",
-      subtitle: "Access all the tools to truly transform your financial life",
+      subtitle: "Transform your relationship with money through comprehensive support and practical tools",
       features: [
         {
-          icon: "📊",
-          title: "Dashboard",
-          description: "Visualize your financial situation at a glance"
+          icon: "🎯",
+          title: "Concrete results",
+          description: "Track your progress month after month and visualize your financial transformation"
         },
         {
-          icon: "💰",
-          title: "Budget & tracking",
-          description: "Manage your income and expenses month by month"
+          icon: "⚡",
+          title: "Strengthened discipline",
+          description: "Develop new financial habits through personalized challenges"
         },
         {
-          icon: "⛔",
-          title: "Financial fast",
-          description: "Strengthen your discipline in 30 days"
+          icon: "🔄",
+          title: "Continuous support",
+          description: "Monthly guidance to maintain your momentum and achieve your goals"
         },
         {
-          icon: "🛡️",
-          title: "DebtFree",
-          description: "Create your smart debt repayment plan"
+          icon: "💎",
+          title: "Financial freedom",
+          description: "Create your personalized action plan to get out of debt and save"
         }
       ],
       ctaButton: "Discover the premium subscription",
       ctaLink: "/login"
+    },
+    
+    dashboardTools: {
+      title: "Your financial management tools",
+      subtitle: "Discover the full features of your premium dashboard",
+      subscriptionNote: "Accessible with Sagesse de Salomon subscription",
+      tools: [
+        {
+          icon: "📊",
+          title: "Dashboard",
+          image: "/images/tableaubord.png",
+          description: "Your real-time financial overview. Visualize your income, expenses, savings and track your progress month after month.",
+          features: [
+            "Monthly financial summary at a glance",
+            "Personalized tracking of your goals",
+            "Insights and recommendations tailored to your situation",
+            "Quick access to all your tools"
+          ]
+        },
+        {
+          icon: "💰",
+          title: "Budget & tracking",
+          image: "/images/ budgetsuivi.png",
+          description: "Manage your finances month by month with precision. Record your income, categorize your expenses and track your usage rate in real time.",
+          features: [
+            "Monthly income recording",
+            "Detailed expense categorization",
+            "Budget usage rate tracking",
+            "Visualization of main categories"
+          ]
+        },
+        {
+          icon: "⛔",
+          title: "Financial fast",
+          image: "/images/jeune.png",
+          description: "Strengthen your financial discipline with a 30-day challenge. Choose categories to avoid and track your progress day by day.",
+          features: [
+            "Customizable 30-day challenge",
+            "Daily discipline tracking",
+            "Automatic calculation of potential savings",
+            "Reflection journal to anchor your progress"
+          ]
+        },
+        {
+          icon: "🛡️",
+          title: "DebtFree",
+          image: "/images/debt.png",
+          description: "Create your smart debt repayment plan. Visualize your estimated financial freedom date and accelerate your repayment.",
+          features: [
+            "Automatic debt analysis",
+            "Personalized repayment projection",
+            "Integration with your financial fast savings",
+            "Action plan to accelerate your freedom"
+          ]
+        }
+      ],
+      ctaTitle: "Ready to transform your financial management?",
+      ctaSubtitle: "Subscribe to the Sagesse de Salomon subscription and access all these tools today.",
+      ctaButton: "Discover the subscription"
     },
     
     // CTA Section
@@ -2122,6 +2243,9 @@ export const translations = {
       budget: {
         title: "Budget & tracking",
         subtitle: "Track your income and expenses to regain control of your month.",
+        introTitle: "Budget & tracking",
+        introSubtitle: "Your monthly budget management tool",
+        introDescription: "Manage your finances month by month. Record your monthly income, add your expenses by category (food, transport, leisure...), and track your budget in real time. Visualize your main expense categories and your usage rate to regain control of your finances.",
         monthlyIncomeLabel: "Net monthly income",
         monthlyIncomePlaceholder: "e.g. 1500",
         expensesTitle: "My expenses",
@@ -2887,31 +3011,90 @@ export const translations = {
     premiumSubscription: {
       title: "Lleve al siguiente nivel con",
       titleHighlight: "la suscripción Sagesse de Salomon",
-      subtitle: "Accede a todas las herramientas para transformar realmente tu vida financiera",
+      subtitle: "Transforma tu relación con el dinero con acompañamiento completo y herramientas prácticas",
       features: [
         {
-          icon: "📊",
-          title: "Panel de control",
-          description: "Visualiza tu situación financiera de un vistazo"
+          icon: "🎯",
+          title: "Resultados concretos",
+          description: "Sigue tu progreso mes tras mes y visualiza tu transformación financiera"
         },
         {
-          icon: "💰",
-          title: "Presupuesto y seguimiento",
-          description: "Gestiona tus ingresos y gastos mes a mes"
+          icon: "⚡",
+          title: "Disciplina fortalecida",
+          description: "Desarrolla nuevos hábitos financieros gracias a desafíos personalizados"
         },
         {
-          icon: "⛔",
-          title: "Ayuno financiero",
-          description: "Fortalece tu disciplina en 30 días"
+          icon: "🔄",
+          title: "Seguimiento continuo",
+          description: "Acompañamiento mensual para mantener tu impulso y alcanzar tus objetivos"
         },
         {
-          icon: "🛡️",
-          title: "DebtFree",
-          description: "Crea tu plan inteligente de pago de deudas"
+          icon: "💎",
+          title: "Libertad financiera",
+          description: "Crea tu plan de acción personalizado para salir de deudas y ahorrar"
         }
       ],
       ctaButton: "Descubrir la suscripción premium",
       ctaLink: "/login"
+    },
+    
+    dashboardTools: {
+      title: "Tus herramientas de gestión financiera",
+      subtitle: "Descubre las funcionalidades completas de tu panel premium",
+      subscriptionNote: "Accesible con la suscripción Sagesse de Salomon",
+      tools: [
+        {
+          icon: "📊",
+          title: "Panel de control",
+          image: "/images/tableaubord.png",
+          description: "Tu vista general financiera en tiempo real. Visualiza tus ingresos, gastos, ahorros y sigue tu progreso mes tras mes.",
+          features: [
+            "Resumen financiero mensual de un vistazo",
+            "Seguimiento personalizado de tus objetivos",
+            "Insights y recomendaciones adaptadas a tu situación",
+            "Acceso rápido a todas tus herramientas"
+          ]
+        },
+        {
+          icon: "💰",
+          title: "Presupuesto y seguimiento",
+          image: "/images/ budgetsuivi.png",
+          description: "Gestiona tus finanzas mes a mes con precisión. Registra tus ingresos, categoriza tus gastos y sigue tu tasa de uso en tiempo real.",
+          features: [
+            "Registro de ingresos mensuales",
+            "Categorización detallada de gastos",
+            "Seguimiento de la tasa de uso del presupuesto",
+            "Visualización de las categorías principales"
+          ]
+        },
+        {
+          icon: "⛔",
+          title: "Ayuno financiero",
+          image: "/images/jeune.png",
+          description: "Fortalece tu disciplina financiera con un desafío de 30 días. Elige las categorías a evitar y sigue tu progreso día a día.",
+          features: [
+            "Desafío de 30 días personalizable",
+            "Seguimiento diario de tu disciplina",
+            "Cálculo automático de tus ahorros potenciales",
+            "Diario de reflexión para anclar tu progreso"
+          ]
+        },
+        {
+          icon: "🛡️",
+          title: "DebtFree",
+          image: "/images/debt.png",
+          description: "Crea tu plan inteligente de pago de deudas. Visualiza tu fecha estimada de libertad financiera y acelera tu pago.",
+          features: [
+            "Análisis automático de tus deudas",
+            "Proyección de pago personalizada",
+            "Integración con tus ahorros del ayuno financiero",
+            "Plan de acción para acelerar tu libertad"
+          ]
+        }
+      ],
+      ctaTitle: "¿Listo para transformar tu gestión financiera?",
+      ctaSubtitle: "Suscríbete a la suscripción Sagesse de Salomon y accede a todas estas herramientas hoy mismo.",
+      ctaButton: "Descubrir la suscripción"
     },
     
     // CTA Section
@@ -3377,6 +3560,9 @@ export const translations = {
       budget: {
         title: "Presupuesto y seguimiento",
         subtitle: "Visualiza tus ingresos y gastos para retomar el control de tu mes.",
+        introTitle: "Presupuesto y seguimiento",
+        introSubtitle: "Tu herramienta de gestión presupuestaria mensual",
+        introDescription: "Gestiona tus finanzas mes a mes. Registra tus ingresos del mes, añade tus gastos por categoría (alimentación, transporte, ocio...), y sigue tu presupuesto en tiempo real. Visualiza tus principales categorías de gastos y tu tasa de uso para retomar el control de tus finanzas.",
         monthlyIncomeLabel: "Ingreso mensual neto",
         monthlyIncomePlaceholder: "Ej: 1500",
         expensesTitle: "Mis gastos",
@@ -4142,31 +4328,90 @@ export const translations = {
     premiumSubscription: {
       title: "Leve ao próximo nível com",
       titleHighlight: "a assinatura Sagesse de Salomon",
-      subtitle: "Acesse todas as ferramentas para transformar realmente sua vida financeira",
+      subtitle: "Transforme sua relação com o dinheiro com acompanhamento completo e ferramentas práticas",
       features: [
         {
-          icon: "📊",
-          title: "Painel",
-          description: "Visualize sua situação financeira rapidamente"
+          icon: "🎯",
+          title: "Resultados concretos",
+          description: "Acompanhe seu progresso mês a mês e visualize sua transformação financeira"
         },
         {
-          icon: "💰",
-          title: "Orçamento e acompanhamento",
-          description: "Gerencie suas receitas e despesas mês a mês"
+          icon: "⚡",
+          title: "Disciplina fortalecida",
+          description: "Desenvolva novos hábitos financeiros através de desafios personalizados"
         },
         {
-          icon: "⛔",
-          title: "Jejum financeiro",
-          description: "Fortaleça sua disciplina em 30 dias"
+          icon: "🔄",
+          title: "Acompanhamento contínuo",
+          description: "Orientação mensal para manter seu impulso e alcançar seus objetivos"
         },
         {
-          icon: "🛡️",
-          title: "DebtFree",
-          description: "Crie seu plano inteligente de pagamento de dívidas"
+          icon: "💎",
+          title: "Liberdade financeira",
+          description: "Crie seu plano de ação personalizado para sair das dívidas e economizar"
         }
       ],
       ctaButton: "Descobrir a assinatura premium",
       ctaLink: "/login"
+    },
+    
+    dashboardTools: {
+      title: "Suas ferramentas de gestão financeira",
+      subtitle: "Descubra os recursos completos do seu painel premium",
+      subscriptionNote: "Acessível com a assinatura Sagesse de Salomon",
+      tools: [
+        {
+          icon: "📊",
+          title: "Painel",
+          image: "/images/tableaubord.png",
+          description: "Sua visão geral financeira em tempo real. Visualize suas receitas, despesas, economias e acompanhe seu progresso mês a mês.",
+          features: [
+            "Resumo financeiro mensal de relance",
+            "Acompanhamento personalizado de seus objetivos",
+            "Insights e recomendações adaptadas à sua situação",
+            "Acesso rápido a todas as suas ferramentas"
+          ]
+        },
+        {
+          icon: "💰",
+          title: "Orçamento e acompanhamento",
+          image: "/images/ budgetsuivi.png",
+          description: "Gerencie suas finanças mês a mês com precisão. Registre suas receitas, categorize suas despesas e acompanhe sua taxa de uso em tempo real.",
+          features: [
+            "Registro de receitas mensais",
+            "Categorização detalhada de despesas",
+            "Acompanhamento da taxa de uso do orçamento",
+            "Visualização das categorias principais"
+          ]
+        },
+        {
+          icon: "⛔",
+          title: "Jejum financeiro",
+          image: "/images/jeune.png",
+          description: "Fortaleça sua disciplina financeira com um desafio de 30 dias. Escolha as categorias a evitar e acompanhe seu progresso dia a dia.",
+          features: [
+            "Desafio de 30 dias personalizável",
+            "Acompanhamento diário de sua disciplina",
+            "Cálculo automático de suas economias potenciais",
+            "Diário de reflexão para ancorar seu progresso"
+          ]
+        },
+        {
+          icon: "🛡️",
+          title: "DebtFree",
+          image: "/images/debt.png",
+          description: "Crie seu plano inteligente de pagamento de dívidas. Visualize sua data estimada de liberdade financeira e acelere seu pagamento.",
+          features: [
+            "Análise automática de suas dívidas",
+            "Projeção de pagamento personalizada",
+            "Integração com suas economias do jejum financeiro",
+            "Plano de ação para acelerar sua liberdade"
+          ]
+        }
+      ],
+      ctaTitle: "Pronto para transformar sua gestão financeira?",
+      ctaSubtitle: "Assine a assinatura Sagesse de Salomon e acesse todas essas ferramentas hoje mesmo.",
+      ctaButton: "Descobrir a assinatura"
     },
     
     // CTA Section
@@ -4632,6 +4877,9 @@ export const translations = {
       budget: {
         title: "Orçamento & acompanhamento",
         subtitle: "Visualize sua renda e suas despesas para retomar o controle do mês.",
+        introTitle: "Orçamento e acompanhamento",
+        introSubtitle: "Sua ferramenta de gestão orçamentária mensal",
+        introDescription: "Gerencie suas finanças mês a mês. Registre suas receitas do mês, adicione suas despesas por categoria (alimentação, transporte, lazer...), e acompanhe seu orçamento em tempo real. Visualize suas principais categorias de despesas e sua taxa de uso para retomar o controle de suas finanças.",
         monthlyIncomeLabel: "Renda mensal líquida",
         monthlyIncomePlaceholder: "Ex: 1500",
         expensesTitle: "Minhas despesas",

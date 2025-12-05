@@ -239,36 +239,36 @@ export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
 
         {/* Projection */}
         <div className="bg-gradient-to-br from-[#012F4E] to-[#023d68] rounded-3xl shadow-lg p-6 sm:p-8 text-white">
-          <h2 className="text-xl font-bold mb-4">{copy.projectionTitle || 'Projection de remboursement'}</h2>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm opacity-90 mb-2">{copy.currentPace || 'Au rythme actuel'}</p>
-              <p className="text-3xl font-bold">
+          <h2 className="text-xl font-bold mb-6 text-white">{copy.projectionTitle || 'Projection de remboursement'}</h2>
+          <div className="space-y-6">
+            <div className="bg-white/10 rounded-2xl p-5 backdrop-blur-sm">
+              <p className="text-sm text-white/80 mb-3 font-medium">{copy.currentPace || 'Au rythme actuel'}</p>
+              <p className="text-4xl font-bold text-white mb-1">
                 {summary!.estimatedMonthsToFreedom === 999
                   ? (copy.moreThan20Years || 'Plus de 20 ans')
                   : `${summary!.estimatedMonthsToFreedom} ${copy.months || 'mois'}`}
               </p>
               {summary!.estimatedMonthsToFreedom !== 999 && (
-                <p className="text-sm opacity-75 mt-1">
+                <p className="text-sm text-white/70 mt-1">
                   ({copy.yearsAndMonths?.replace('{years}', String(Math.floor(summary!.estimatedMonthsToFreedom / 12)))?.replace('{months}', String(summary!.estimatedMonthsToFreedom % 12)) || `${Math.floor(summary!.estimatedMonthsToFreedom / 12)} ans et ${summary!.estimatedMonthsToFreedom % 12} mois`})
                 </p>
               )}
             </div>
             {hasFast && monthsSaved > 0 && (
-              <div className="border-t border-white/20 pt-4">
-                <p className="text-sm opacity-90 mb-2">{copy.withFastSavings || 'Avec les économies du jeûne'}</p>
-                <p className="text-3xl font-bold">
+              <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-2xl p-5 backdrop-blur-sm border border-yellow-400/30">
+                <p className="text-sm text-yellow-100 mb-3 font-medium">{copy.withFastSavings || 'Avec les économies du jeûne'}</p>
+                <p className="text-4xl font-bold text-yellow-300 mb-1">
                   {summary!.estimatedMonthsToFreedomWithFast === 999
                     ? (copy.moreThan20Years || 'Plus de 20 ans')
                     : `${summary!.estimatedMonthsToFreedomWithFast} ${copy.months || 'mois'}`}
                 </p>
                 {summary!.estimatedMonthsToFreedomWithFast !== 999 && (
-                  <p className="text-sm opacity-75 mt-1">
+                  <p className="text-sm text-yellow-100/80 mt-1">
                     ({copy.yearsAndMonths?.replace('{years}', String(Math.floor(summary!.estimatedMonthsToFreedomWithFast / 12)))?.replace('{months}', String(summary!.estimatedMonthsToFreedomWithFast % 12)) || `${Math.floor(summary!.estimatedMonthsToFreedomWithFast / 12)} ans et ${summary!.estimatedMonthsToFreedomWithFast % 12} mois`})
                   </p>
                 )}
-                <div className="mt-3 bg-white/10 rounded-xl p-3">
-                  <p className="text-sm font-semibold">
+                <div className="mt-4 bg-yellow-400/20 rounded-xl p-3 border border-yellow-300/30">
+                  <p className="text-sm font-semibold text-yellow-100">
                     ⚡ {copy.monthsSaved?.replace('{months}', String(monthsSaved)) || `Vous économisez ${monthsSaved} mois grâce au jeûne financier !`}
                   </p>
                 </div>

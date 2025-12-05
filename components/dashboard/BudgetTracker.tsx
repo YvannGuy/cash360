@@ -313,6 +313,12 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
       }
       try {
         const response = await fetch(`/api/budget?month=${currentMonth}`, { cache: 'no-store' })
+        if (response.status === 401) {
+          // Utilisateur non authentifié - ne pas afficher d'erreur, juste arrêter le chargement
+          setLoading(false)
+          setRequiresSubscription(false)
+          return
+        }
         if (response.status === 402) {
           setRequiresSubscription(true)
           setMonthlyIncome('')
@@ -438,6 +444,22 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
 
   const content = (
     <div className={`${isEmbedded ? 'space-y-8' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8'}`}>
+      {/* Carte d'introduction */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#012F4E]/10 flex items-center justify-center">
+            <svg className="w-5 h-5 text-[#012F4E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-[#012F4E] mb-1">{copy.introTitle || copy.title || 'Budget & suivi'}</h1>
+            <p className="text-sm font-medium text-gray-700 mb-2">{copy.introSubtitle || 'Votre outil de gestion budgétaire mensuel'}</p>
+            <p className="text-sm text-gray-600 leading-relaxed">{copy.introDescription || 'Gérez vos finances mois par mois. Enregistrez vos revenus du mois, ajoutez vos dépenses par catégorie (alimentation, transport, loisirs...), et suivez votre budget en temps réel. Visualisez vos principales catégories de dépenses et votre taux d\'utilisation pour reprendre le contrôle de vos finances.'}</p>
+          </div>
+        </div>
+      </div>
+
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {statsCards.map((card) => (
           <div

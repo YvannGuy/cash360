@@ -8,6 +8,7 @@ import Features from '@/components/Features'
 import LiveTikTok from '@/components/LiveTikTok'
 import Steps from '@/components/Steps'
 import PremiumSubscription from '@/components/PremiumSubscription'
+import DashboardTools from '@/components/DashboardTools'
 import About from '@/components/About'
 import CTASection from '@/components/CTASection'
 import Footer from '@/components/Footer'
@@ -67,6 +68,9 @@ export default function Home() {
         
         {/* Premium Subscription Section */}
         <PremiumSubscription />
+        
+        {/* Dashboard Tools Section */}
+        <DashboardTools />
         
         {/* Section Analyse - Masquée */}
         {/* <SectionAnalyse /> */}
