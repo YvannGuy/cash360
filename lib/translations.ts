@@ -738,6 +738,7 @@ export const translations = {
       whatsAppPopup: {
         title: "Contacter l'équipe Cash360",
         text: "Vous allez être redirigé vers WhatsApp pour contacter notre équipe.",
+        bugReport: "Vous constatez un bug ou un problème ? Signalez-le nous !",
         confirm: "Continuer",
         cancel: "Annuler"
       },
@@ -2126,6 +2127,7 @@ export const translations = {
       whatsAppPopup: {
         title: "Contact Cash360 team",
         text: "You will be redirected to WhatsApp to contact our team.",
+        bugReport: "Found a bug or issue? Let us know!",
         confirm: "Continue",
         cancel: "Cancel"
       },
@@ -3512,6 +3514,7 @@ export const translations = {
       whatsAppPopup: {
         title: "Contactar al equipo Cash360",
         text: "Serás redirigido a WhatsApp para contactar a nuestro equipo.",
+        bugReport: "¿Encontraste un error o un problema? ¡Avísanos!",
         confirm: "Continuar",
         cancel: "Cancelar"
       },
@@ -4898,6 +4901,7 @@ export const translations = {
       whatsAppPopup: {
         title: "Contatar equipe Cash360",
         text: "Você será redirecionado para o WhatsApp para contatar nossa equipe.",
+        bugReport: "Encontrou um bug ou problema? Avise-nos!",
         confirm: "Continuar",
         cancel: "Cancelar"
       },

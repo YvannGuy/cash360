@@ -713,18 +713,36 @@ export async function POST(request: NextRequest) {
             // Attendre 1 seconde pour respecter les limites de rate
             await new Promise(resolve => setTimeout(resolve, 1000))
             
-            // Générer et envoyer l'email client
-            const clientEmailHtml = generatePaymentClientEmailHtml(
-              firstName,
-              uniqueProducts,
-              totalAmount,
-              session.id
-            )
+            // Vérifier si c'est un abonnement
+            const isSubscription = uniqueProducts.some(p => p.type === 'abonnement' || p.id === 'sagesse-salomon' || p.name?.toLowerCase().includes('sagesse'))
             
-            console.log('[WEBHOOK] 📧 Envoi email client à:', userEmail)
+            // Générer et envoyer l'email client
+            let clientEmailHtml: string
+            let emailSubject: string
+            
+            if (isSubscription) {
+              // Email spécialisé pour l'abonnement
+              clientEmailHtml = generateSubscriptionWelcomeEmailHtml(
+                firstName,
+                totalAmount,
+                session.id
+              )
+              emailSubject = '🎉 Bienvenue dans l\'abonnement Sagesse de Salomon – Accès premium activé !'
+            } else {
+              // Email standard pour les autres produits
+              clientEmailHtml = generatePaymentClientEmailHtml(
+                firstName,
+                uniqueProducts,
+                totalAmount,
+                session.id
+              )
+              emailSubject = `Cash360 – Confirmation de paiement – ${session.id.replace(/^cs_test_/, '').substring(0, 8)}`
+            }
+            
+            console.log('[WEBHOOK] 📧 Envoi email client à:', userEmail, isSubscription ? '(abonnement)' : '(produit standard)')
             await sendMail({
               to: userEmail,
-              subject: `Cash360 – Confirmation de paiement – ${session.id.replace(/^cs_test_/, '').substring(0, 8)}`,
+              subject: emailSubject,
               html: clientEmailHtml
             })
             
@@ -1023,6 +1041,179 @@ function generatePaymentClientEmailHtml(
       <!-- Footer -->
       <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
         <p style="margin: 0;">Cash360 - Transformation financière et spirituelle</p>
+      </div>
+    </div>
+  `
+}
+
+// Fonction pour générer l'email de bienvenue pour l'abonnement
+function generateSubscriptionWelcomeEmailHtml(
+  firstName: string,
+  totalAmount: number,
+  transactionId: string
+): string {
+  const dashboardUrl = 'https://cash360.finance'
+  const dashboardOverviewUrl = `${dashboardUrl}/dashboard?tab=overview`
+  const dashboardBudgetUrl = `${dashboardUrl}/dashboard?tab=budget`
+  const dashboardFastUrl = `${dashboardUrl}/dashboard?tab=fast`
+  const dashboardDebtFreeUrl = `${dashboardUrl}/dashboard?tab=debtfree`
+  
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
+      
+      <!-- Header avec logo premium -->
+      <div style="background: linear-gradient(135deg, #FEBE02 0%, #F59E0B 100%); padding: 40px 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(254, 190, 2, 0.3); margin-bottom: 20px; text-align: center; border: 2px solid #FEBE02;">
+        <div style="width: 80px; height: 80px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+          <span style="color: white; font-size: 40px; font-weight: bold;">👑</span>
+        </div>
+        <h1 style="margin: 0; font-size: 32px; color: #012F4E; font-weight: 700;">Félicitations ${firstName} !</h1>
+        <p style="margin: 15px 0 0 0; color: #012F4E; font-size: 20px; font-weight: 600;">Ton abonnement Sagesse de Salomon est activé</p>
+        <p style="margin: 10px 0 0 0; color: #012F4E; font-size: 14px; opacity: 0.9;">Référence: <strong>${transactionId.replace(/^cs_test_/, '').substring(0, 8)}</strong></p>
+      </div>
+
+      <!-- Contenu principal -->
+      <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        
+        <p style="color: #374151; font-size: 18px; line-height: 1.7; margin-bottom: 30px; text-align: center;">
+          <strong>🎉 Bienvenue dans l'abonnement premium Cash360 !</strong><br><br>
+          Tu as maintenant accès à tous les outils pour transformer ta vie financière. C'est le début d'un nouveau chapitre vers la liberté financière.
+        </p>
+
+        <!-- Section outils premium -->
+        <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 5px solid #00A1C6;">
+          <h2 style="color: #012F4E; margin-top: 0; font-size: 24px; font-weight: 700; margin-bottom: 20px; text-align: center;">✨ Tes outils premium sont maintenant disponibles</h2>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+            <h3 style="color: #012F4E; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 10px;">📊 Tableau de bord</h3>
+            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin-bottom: 12px;">
+              Visualise en un coup d'œil ta situation financière : revenus, dépenses, épargne du mois avec comparaison au mois précédent. Reçois aussi ton verset biblique quotidien pour aligner tes finances avec ta foi.
+            </p>
+            <a href="${dashboardOverviewUrl}" style="display: inline-block; background: #00A1C6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin-top: 5px;">
+              Accéder au tableau de bord →
+            </a>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+            <h3 style="color: #012F4E; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 10px;">💰 Budget & suivi</h3>
+            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin-bottom: 12px;">
+              Gère ton budget mois par mois, catégorie par catégorie. Suis tes dépenses en temps réel et optimise chaque euro. Visualise tes principales catégories et ton taux d'utilisation.
+            </p>
+            <a href="${dashboardBudgetUrl}" style="display: inline-block; background: #00A1C6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin-top: 5px;">
+              Configurer mon budget →
+            </a>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+            <h3 style="color: #012F4E; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 10px;">⛔ Jeûne financier – 30 jours</h3>
+            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin-bottom: 12px;">
+              Reprends le contrôle de tes dépenses impulsives. Lance un jeûne de 30 jours en choisissant les catégories à éviter (restaurants, shopping, etc.). Suis ta progression jour après jour et calcule tes économies.
+            </p>
+            <a href="${dashboardFastUrl}" style="display: inline-block; background: #00A1C6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin-top: 5px;">
+              Lancer mon jeûne financier →
+            </a>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px;">
+            <h3 style="color: #012F4E; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 10px;">🛡️ DebtFree</h3>
+            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin-bottom: 12px;">
+              Crée ton plan de remboursement de dettes intelligent. DebtFree analyse automatiquement tes dettes à partir de ton budget et de tes économies du jeûne. Visualise ta date estimée de libération financière.
+            </p>
+            <a href="${dashboardDebtFreeUrl}" style="display: inline-block; background: #00A1C6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin-top: 5px;">
+              Créer mon plan DebtFree →
+            </a>
+          </div>
+        </div>
+
+        <!-- Section bienfaits -->
+        <div style="background: #fef3c7; padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 5px solid #FEBE02;">
+          <h2 style="color: #92400e; margin-top: 0; font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center;">💎 Ce que tu vas accomplir avec ton abonnement</h2>
+          <ul style="color: #92400e; font-size: 15px; line-height: 2; margin: 0; padding-left: 20px;">
+            <li><strong>Reprendre le contrôle</strong> → Comprends où va ton argent et prends des décisions éclairées</li>
+            <li><strong>Développer la discipline</strong> → Le jeûne financier renforce ta maîtrise de soi</li>
+            <li><strong>Éliminer les dettes</strong> → DebtFree t'aide à créer un plan concret pour retrouver ta liberté</li>
+            <li><strong>Épargner intelligemment</strong> → Suis tes économies et vois-les grandir mois après mois</li>
+            <li><strong>Alignement spirituel</strong> → Reçois chaque jour une inspiration biblique pour guider tes finances</li>
+            <li><strong>Résultats mesurables</strong> → Voie ta progression et célèbre tes victoires</li>
+          </ul>
+        </div>
+
+        <!-- CTA principal -->
+        <div style="text-align: center; margin-bottom: 30px;">
+          <a href="${dashboardOverviewUrl}" style="display: inline-block; background: linear-gradient(135deg, #012F4E 0%, #023d68 100%); color: #FEBE02; padding: 18px 36px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 18px; box-shadow: 0 4px 12px rgba(1, 47, 78, 0.3);">
+            🚀 Accéder à mon dashboard premium
+          </a>
+        </div>
+
+        <!-- Informations abonnement -->
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 30px;">
+          <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px; font-weight: 600;">📋 Informations sur ton abonnement</h3>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Montant mensuel:</span>
+            <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${totalAmount.toFixed(2)} €</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Référence:</span>
+            <span style="color: #1f2937; font-weight: 500; font-size: 14px; font-family: monospace;">${transactionId.replace(/^cs_test_/, '').substring(0, 8)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #6b7280; font-size: 14px;">Statut:</span>
+            <span style="color: #10b981; font-weight: 600; font-size: 14px;">✓ Actif</span>
+          </div>
+          <p style="margin: 15px 0 0 0; color: #6b7280; font-size: 13px; line-height: 1.5;">
+            Tu peux gérer ton abonnement (suspendre, relancer, annuler) depuis ton <strong>Profil</strong> dans le dashboard. L'annulation est possible à tout moment.
+          </p>
+        </div>
+
+        <!-- Contact -->
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <h3 style="margin: 0 0 12px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Besoin d'aide ?</h3>
+          <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">
+            Notre équipe est là pour t'accompagner dans ta transformation financière.
+          </p>
+          <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <div style="width: 20px; height: 20px; margin-right: 8px; color: #6b7280;">
+              <svg style="width: 100%; height: 100%;" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+              </svg>
+            </div>
+            <a href="mailto:cash@cash360.finance" style="color: #3b82f6; text-decoration: none; font-weight: 500;">cash@cash360.finance</a>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; margin-right: 8px; color: #6b7280;">
+              <svg style="width: 100%; height: 100%;" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
+              </svg>
+            </div>
+            <a href="https://wa.me/33756848734" style="color: #3b82f6; text-decoration: none; font-weight: 500;">WhatsApp : +33 7 56 84 87 34</a>
+          </div>
+        </div>
+
+        <!-- Message final -->
+        <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 10px; margin-top: 30px;">
+          <p style="color: #065f46; font-size: 18px; line-height: 1.7; margin: 0 0 15px 0; font-weight: 600;">
+            🎯 Tu as fait le choix de transformer ta vie financière.
+          </p>
+          <p style="color: #065f46; font-size: 16px; line-height: 1.7; margin: 0;">
+            Avec l'abonnement Sagesse de Salomon, tu as tous les outils pour y arriver. Commence dès aujourd'hui et vois la différence dès le premier mois !
+          </p>
+        </div>
+
+        <!-- Signature -->
+        <div style="text-align: center; padding-top: 30px; border-top: 1px solid #e5e7eb; margin-top: 30px;">
+          <p style="color: #6b7280; font-size: 14px; margin: 0 0 5px 0;">À très vite,</p>
+          <p style="color: #1f2937; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">L'équipe Cash360</p>
+          <p style="color: #6b7280; font-size: 12px; font-style: italic; margin: 0;">
+            "La maîtrise de vos finances, de A à Z, avec sagesse et foi."
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
+        <p style="margin: 0;">Cash360 - Abonnement Sagesse de Salomon</p>
+        <p style="margin: 5px 0 0 0; font-size: 12px;">Tu reçois cet email car tu as souscrit à l'abonnement premium Cash360.</p>
       </div>
     </div>
   `

@@ -144,10 +144,9 @@ function generateWelcomeEmailHtml(firstName: string, lastName: string, origin: s
 
         <!-- Explore la boutique -->
         <div style="margin-bottom: 30px;">
-          <h2 style="color: #1f2937; font-size: 22px; font-weight: 600; margin-bottom: 20px;">🛍️ Explore la boutique Cash360</h2>
+          <h2 style="color: #1f2937; font-size: 22px; font-weight: 600; margin-bottom: 20px;">🛍️ Découvre aussi nos formations</h2>
           <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-            C'est le cœur de la plateforme.<br><br>
-            Tu y trouveras tout ce qu'il faut pour avancer pas à pas :
+            En complément de l'abonnement premium, tu peux aussi explorer nos formations pour approfondir ta compréhension financière :
           </p>
           
           <ul style="color: #374151; font-size: 15px; line-height: 1.8; margin-bottom: 20px; padding-left: 20px;">
@@ -162,40 +161,61 @@ function generateWelcomeEmailHtml(firstName: string, lastName: string, origin: s
               </ul>
             </li>
             <li><strong>Pack Complet Cash360</strong> → toutes les capsules à tarif préférentiel</li>
-            <li><strong>Abonnement Sagesse de Salomon</strong> → accède aux fonctionnalités premium :
-              <ul style="margin-top: 8px; padding-left: 20px;">
-                <li>📊 Tableau de bord financier complet</li>
-                <li>💰 Budget & suivi mois par mois</li>
-                <li>⛔ Jeûne financier 30 jours</li>
-                <li>🛡️ DebtFree – plan de remboursement de dettes intelligent</li>
-              </ul>
-            </li>
           </ul>
           
           <div style="text-align: center; margin-top: 25px;">
             <a href="${boutiqueUrl}" style="display: inline-block; background: linear-gradient(135deg, #00A1C6, #FEBE02); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-              Découvrir la boutique maintenant
+              Explorer les formations
             </a>
           </div>
         </div>
 
-        <!-- Abonnement Premium -->
-        <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #FEBE02; margin-bottom: 30px;">
-          <h2 style="color: #92400e; margin-top: 0; font-size: 20px; font-weight: 600;">✨ Passe au niveau supérieur</h2>
-          <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin-bottom: 15px;">
-            Avec l'abonnement <strong>Sagesse de Salomon</strong>, transforme réellement ta vie financière :
-          </p>
-          <ul style="color: #92400e; font-size: 14px; line-height: 1.8; margin: 0 0 15px 0; padding-left: 20px;">
-            <li><strong>Tableau de bord</strong> → visualise revenus, dépenses et épargne du mois</li>
-            <li><strong>Budget & suivi</strong> → gère ton budget mois par mois</li>
-            <li><strong>Jeûne financier</strong> → lance un défi de 30 jours pour reprendre le contrôle</li>
-            <li><strong>DebtFree</strong> → crée ton plan de remboursement de dettes intelligent</li>
-            <li><strong>Verset biblique quotidien</strong> → reçois ton inspiration spirituelle chaque jour</li>
-          </ul>
-          <div style="text-align: center; margin-top: 15px;">
-            <a href="${boutiqueUrl}#subscription" style="display: inline-block; background: #FEBE02; color: #012F4E; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
-              Découvrir l'abonnement premium
-            </a>
+        <!-- Abonnement Premium - MISE EN AVANT -->
+        <div style="background: linear-gradient(135deg, #FEBE02 0%, #F59E0B 100%); padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(254, 190, 2, 0.3); border: 2px solid #FEBE02;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 70px; height: 70px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+              <span style="color: white; font-size: 32px; font-weight: bold;">👑</span>
+            </div>
+            <h2 style="color: #012F4E; margin: 0 0 10px 0; font-size: 26px; font-weight: 700;">🚀 Passe au niveau supérieur avec l'abonnement Sagesse de Salomon</h2>
+            <p style="color: #012F4E; font-size: 18px; font-weight: 600; margin: 0;">9,99€/mois • Transforme ta vie financière dès aujourd'hui</p>
+          </div>
+          
+          <div style="background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 10px; margin-bottom: 20px;">
+            <p style="color: #012F4E; font-size: 16px; line-height: 1.7; margin-bottom: 20px; text-align: center; font-weight: 600;">
+              L'abonnement <strong style="color: #F59E0B;">Sagesse de Salomon</strong> est la clé pour reprendre le contrôle total de tes finances. C'est ton coach financier personnel disponible 24/7.
+            </p>
+            
+            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #FEBE02; margin-bottom: 20px;">
+              <h3 style="color: #92400e; margin-top: 0; font-size: 20px; font-weight: 600; margin-bottom: 15px;">✨ Ce que tu obtiens avec ton abonnement :</h3>
+              <ul style="color: #92400e; font-size: 15px; line-height: 2; margin: 0; padding-left: 20px;">
+                <li><strong>📊 Tableau de bord complet</strong> → Visualise en un coup d'œil tes revenus, dépenses et épargne du mois avec comparaison au mois précédent</li>
+                <li><strong>💰 Budget & suivi mensuel</strong> → Gère ton budget mois par mois, catégorie par catégorie, avec suivi en temps réel</li>
+                <li><strong>⛔ Jeûne financier 30 jours</strong> → Lance un défi personnalisé pour reprendre le contrôle de tes dépenses impulsives et économiser chaque mois</li>
+                <li><strong>🛡️ DebtFree</strong> → Crée ton plan de remboursement de dettes intelligent avec projections et dates de libération</li>
+                <li><strong>📖 Verset biblique quotidien</strong> → Reçois ton inspiration spirituelle chaque jour pour aligner tes finances avec ta foi</li>
+                <li><strong>🎯 Recommandations personnalisées</strong> → Reçois des conseils adaptés à ta situation financière</li>
+              </ul>
+            </div>
+            
+            <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 20px;">
+              <h3 style="color: #065f46; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 12px;">💎 Pourquoi choisir l'abonnement ?</h3>
+              <ul style="color: #065f46; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                <li><strong>Accompagnement continu</strong> → Pas juste un outil, mais un véritable accompagnement mois après mois</li>
+                <li><strong>Résultats mesurables</strong> → Suis ta progression et vois l'impact concret de tes efforts</li>
+                <li><strong>Discipline renforcée</strong> → Le jeûne financier t'aide à développer une discipline durable</li>
+                <li><strong>Liberté financière</strong> → DebtFree t'aide à éliminer tes dettes et retrouver ta liberté</li>
+                <li><strong>Communauté de foi</strong> → Rejoins une communauté qui partage tes valeurs et ta vision</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="${boutiqueUrl}#subscription" style="display: inline-block; background: #012F4E; color: #FEBE02; padding: 16px 32px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 18px; box-shadow: 0 4px 12px rgba(1, 47, 78, 0.3); transition: all 0.3s;">
+                🎯 Souscrire maintenant à l'abonnement premium
+              </a>
+            </div>
+            <p style="text-align: center; color: #012F4E; font-size: 14px; margin-top: 15px; font-style: italic;">
+              Annulation possible à tout moment • Accès immédiat à tous les outils premium
+            </p>
           </div>
         </div>
 

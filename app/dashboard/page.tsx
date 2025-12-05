@@ -3656,8 +3656,11 @@ const refreshFastSummary = useCallback(async () => {
                 </div>
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-800 mb-3">
+                <p className="text-sm text-gray-800 mb-2">
                   {t.dashboard.whatsAppPopup.text}
+                </p>
+                <p className="text-xs text-gray-600 mb-3 italic">
+                  {t.dashboard.whatsAppPopup.bugReport || 'Vous constatez un bug ou un problème ? Signalez-le nous !'}
                 </p>
                 <div className="flex space-x-2">
                   <button
