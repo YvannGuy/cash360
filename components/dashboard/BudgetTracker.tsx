@@ -272,7 +272,9 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
         hint:
           safeRemaining > 0
             ? copy.positiveMessage || 'Vos dépenses sont inférieures à vos revenus.'
-            : copy.negativeMessage || 'Vos dépenses dépassent vos revenus.'
+            : copy.negativeMessage || 'Vos dépenses dépassent vos revenus.',
+        isRemaining: true,
+        remainingValue: safeRemaining
       },
       {
         label: copy.burnRateLabel || 'Burn rate',
@@ -461,16 +463,26 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {statsCards.map((card) => (
-          <div
-            key={card.label}
-            className="bg-white rounded-2xl border border-[#E7EDF5] p-5 shadow-sm"
-          >
-            <p className="text-sm text-gray-500">{card.label}</p>
-            <p className="text-2xl font-bold text-[#012F4E] mt-2">{card.value}</p>
-            {card.hint && <p className="text-xs text-gray-500 mt-1">{card.hint}</p>}
-          </div>
-        ))}
+        {statsCards.map((card) => {
+          const isRemainingNegative = card.isRemaining && card.remainingValue !== undefined && card.remainingValue < 0
+          const isRemainingPositive = card.isRemaining && card.remainingValue !== undefined && card.remainingValue > 0
+          const remainingColor = isRemainingNegative ? 'text-red-600' : isRemainingPositive ? 'text-emerald-600' : ''
+          
+          return (
+            <div
+              key={card.label}
+              className="bg-white rounded-2xl border border-[#E7EDF5] p-5 shadow-sm"
+            >
+              <p className="text-sm text-gray-500">{card.label}</p>
+              <p className={`text-2xl font-bold mt-2 ${
+                card.isRemaining && remainingColor
+                  ? remainingColor
+                  : 'text-[#012F4E]'
+              }`}>{card.value}</p>
+              {card.hint && <p className="text-xs text-gray-500 mt-1">{card.hint}</p>}
+            </div>
+          )
+        })}
       </section>
 
         {status && (
@@ -497,6 +509,13 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
                 <p className="text-sm text-gray-500 mb-4">
                   {copy.subtitle || 'Visualisez vos revenus et vos dépenses pour reprendre le contrôle de votre mois.'}
                 </p>
+                {incomeValue === 0 && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      <strong>{copy.incomeGuidanceTitle || 'Première étape'} :</strong> {copy.incomeGuidanceText || 'Entrez votre revenu mensuel net ci-dessus pour commencer à suivre votre budget.'}
+                    </p>
+                  </div>
+                )}
                   <label htmlFor="monthly-income" className="text-sm font-medium text-gray-700">
                     {copy.monthlyIncomeLabel || 'Revenu mensuel net'}
                   </label>
@@ -510,10 +529,61 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
                       value={monthlyIncome}
                       onChange={(event) => setMonthlyIncome(event.target.value)}
                       placeholder={copy.monthlyIncomePlaceholder || 'Ex : 1500'}
-                      className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-lg font-semibold text-[#012F4E] focus:outline-none focus:ring-2 focus:ring-[#00A1C6]/40"
+                      className={`w-full rounded-2xl border px-4 py-3 text-lg font-semibold text-[#012F4E] focus:outline-none focus:ring-2 ${
+                        incomeValue === 0 
+                          ? 'border-yellow-300 bg-yellow-50 focus:ring-yellow-400' 
+                          : 'border-gray-200 focus:ring-[#00A1C6]/40'
+                      }`}
                     />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">{currencySymbol}</span>
                   </div>
+                  {incomeValue === 0 && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs text-blue-800">
+                        <strong>💡 Astuce :</strong> {copy.incomeHelpText || 'Cliquez dans le champ ci-dessus pour entrer votre revenu mensuel net (après impôts), puis cliquez sur "Enregistrer mon budget" pour valider.'}
+                      </p>
+                    </div>
+                  )}
+                  {incomeValue > 0 && totalExpenses === 0 && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs text-green-800">
+                        <strong>✓ Revenu enregistré :</strong> {copy.incomeCompleteText || 'N\'oubliez pas de cliquer sur "Enregistrer mon budget" pour sauvegarder. Ajoutez maintenant vos dépenses ci-dessous pour suivre votre budget.'}
+                      </p>
+                    </div>
+                  )}
+                  {incomeValue > 0 && totalExpenses > 0 && remaining > 0 && usagePercent >= 90 && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-xs text-yellow-800">
+                        <strong>⚠️ {copy.budgetWarningTitle || 'Budget proche de la limite'} :</strong> {copy.budgetWarningHelp || 'Vous avez utilisé plus de 90% de votre budget. Restez vigilant sur vos dépenses restantes.'}
+                      </p>
+                    </div>
+                  )}
+                  {incomeValue > 0 && totalExpenses > 0 && remaining > 0 && usagePercent < 90 && usagePercent >= 70 && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs text-blue-800">
+                        <strong>👍 {copy.budgetGoodTitle || 'Budget bien géré'} :</strong> {copy.budgetGoodHelp || 'Vous respectez votre budget. Continuez ainsi !'}
+                      </p>
+                    </div>
+                  )}
+                  {incomeValue > 0 && totalExpenses > 0 && remaining > 0 && usagePercent < 70 && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs text-green-800">
+                        <strong>🎉 {copy.budgetExcellentTitle || 'Excellent'} :</strong> {(copy.budgetExcellentHelp || 'Vous avez {amount} d\'épargne ce mois. Excellent travail !').replace('{amount}', formatMoney(remaining))}
+                      </p>
+                    </div>
+                  )}
+                  {incomeValue > 0 && (
+                    <div className="mt-4">
+                      <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="w-full inline-flex items-center justify-center rounded-2xl bg-[#012F4E] px-6 py-3 text-white font-semibold shadow-lg hover:bg-[#023d68] disabled:opacity-60 transition-colors"
+                      >
+                        {saving ? (copy.saving || 'Enregistrement...') : (copy.saveIncomeButton || 'Enregistrer mes revenus')}
+                      </button>
+                    </div>
+                  )}
                 </div>
               <div className="w-full lg:w-1/2 bg-[#F5FAFF] border border-[#E0ECF5] rounded-2xl p-5">
                 <div className="flex items-center justify-between">
@@ -576,7 +646,17 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
               </div>
 
               <div className="space-y-4">
-              {!hasExpenses && (
+              {!hasExpenses && incomeValue > 0 && (
+                  <div className="rounded-2xl border border-dashed border-yellow-200 bg-yellow-50 p-6 text-center">
+                    <p className="text-sm font-medium text-yellow-900 mb-2">
+                      {copy.expensesGuidanceTitle || 'Ajoutez vos premières dépenses'}
+                    </p>
+                    <p className="text-sm text-yellow-800">
+                      {copy.expensesGuidanceText || 'Cliquez sur "Ajouter une dépense" ci-dessus pour commencer à suivre vos sorties d\'argent.'}
+                    </p>
+                  </div>
+                )}
+              {!hasExpenses && incomeValue === 0 && (
                   <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
                     {copy.emptyExpenses || 'Ajoutez votre première dépense.'}
                   </div>

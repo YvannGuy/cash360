@@ -19,6 +19,7 @@ import PostSubscriptionOnboarding from '@/components/PostSubscriptionOnboarding'
 import BudgetTracker, { type BudgetSnapshot } from '@/components/dashboard/BudgetTracker'
 import FinancialFast from '@/components/dashboard/FinancialFast'
 import DebtFree from '@/components/dashboard/DebtFree'
+import HelpBanner from '@/components/dashboard/HelpBanner'
 import ModalOMWave from '@/components/ModalOMWave'
 import { hasActiveSubscription } from '@/lib/subscriptionAccess'
 import { EUR_TO_FCFA_RATE } from '@/config/omWave'
@@ -183,6 +184,8 @@ function DashboardPageContent() {
   const [profileError, setProfileError] = useState('')
   const [dailyVerse, setDailyVerse] = useState<{ reference: string; text: string; summary?: string } | null>(null)
   const [budgetSnapshot, setBudgetSnapshot] = useState<BudgetSnapshot | null>(null)
+  const [previousMonthSnapshot, setPreviousMonthSnapshot] = useState<BudgetSnapshot | null>(null)
+  const [debtSummary, setDebtSummary] = useState<{ totalDebtMonthlyPayments: number; availableMarginMonthly: number } | null>(null)
   const hasPremiumAccess = useMemo(() => {
     const access = hasActiveSubscription(subscription)
     console.log('[DASHBOARD] 🎯 hasPremiumAccess calculé:', {
@@ -233,20 +236,37 @@ function DashboardPageContent() {
     }
   }, [])
 
+  const getPreviousMonthSlug = useCallback(() => {
+    const today = new Date()
+    const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    return `${previousMonth.getFullYear()}-${String(previousMonth.getMonth() + 1).padStart(2, '0')}`
+  }, [])
+
   const refreshBudgetSnapshot = useCallback(async () => {
     try {
       const response = await fetch('/api/budget', { cache: 'no-store' })
       if (response.status === 402) {
         setBudgetSnapshot(null)
+        setPreviousMonthSnapshot(null)
         return
       }
       if (!response.ok) return
       const data = await response.json()
       setBudgetSnapshot(computeBudgetSnapshot(data))
+
+      // Récupérer le mois précédent
+      const previousMonthSlug = getPreviousMonthSlug()
+      const prevResponse = await fetch(`/api/budget?month=${previousMonthSlug}`, { cache: 'no-store' })
+      if (prevResponse.ok) {
+        const prevData = await prevResponse.json()
+        setPreviousMonthSnapshot(computeBudgetSnapshot(prevData))
+      } else {
+        setPreviousMonthSnapshot(null)
+      }
     } catch (error) {
       console.error('Failed to load budget snapshot', error)
     }
-  }, [computeBudgetSnapshot])
+  }, [computeBudgetSnapshot, getPreviousMonthSlug])
 
 const refreshFastSummary = useCallback(async () => {
   try {
@@ -279,21 +299,37 @@ const refreshFastSummary = useCallback(async () => {
   }
 }, [])
 
-  useEffect(() => {
-    if (!hasPremiumAccess) {
-      setBudgetSnapshot(null)
-      return
+  const refreshDebtSummary = useCallback(async () => {
+    try {
+      const response = await fetch('/api/debt-free/summary', { cache: 'no-store' })
+      if (response.status === 402) {
+        setDebtSummary(null)
+        return
+      }
+      if (!response.ok) {
+        return
+      }
+      const data = await response.json()
+      setDebtSummary(data)
+    } catch (error) {
+      console.error('Failed to load debt summary', error)
     }
-    refreshBudgetSnapshot()
-  }, [hasPremiumAccess, refreshBudgetSnapshot])
+  }, [])
 
   useEffect(() => {
     if (!hasPremiumAccess) {
+      // Nettoyer toutes les données premium quand l'accès est perdu
+      setBudgetSnapshot(null)
+      setPreviousMonthSnapshot(null)
       setFastSummary({ status: 'none' })
+      setDebtSummary(null)
       return
     }
+    // Charger toutes les données premium quand l'accès est obtenu
+    refreshBudgetSnapshot()
     refreshFastSummary()
-  }, [hasPremiumAccess, refreshFastSummary])
+    refreshDebtSummary()
+  }, [hasPremiumAccess, refreshBudgetSnapshot, refreshFastSummary, refreshDebtSummary])
 
   useEffect(() => {
     if (!hasPremiumAccess) return
@@ -427,29 +463,137 @@ const refreshFastSummary = useCallback(async () => {
     [refreshSubscription, t.dashboard.subscription]
   )
 
+  const financialHealthStatus = useMemo(() => {
+    if (!budgetSnapshot || budgetSnapshot.monthlyIncome === 0) {
+      return {
+        status: 'setup',
+        label: t.dashboard.overview?.healthStatusSetup || 'Configuration requise',
+        color: 'text-gray-500',
+        bgColor: 'bg-gray-50',
+        borderColor: 'border-gray-200'
+      }
+    }
+
+    const usagePercent = budgetSnapshot.monthlyIncome > 0 
+      ? (budgetSnapshot.totalExpenses / budgetSnapshot.monthlyIncome) * 100 
+      : 0
+
+    if (budgetSnapshot.remaining < 0) {
+      return {
+        status: 'critical',
+        label: t.dashboard.overview?.healthStatusCritical || 'Action requise',
+        color: 'text-red-600',
+        bgColor: 'bg-red-50',
+        borderColor: 'border-red-200'
+      }
+    }
+
+    if (usagePercent >= 90) {
+      return {
+        status: 'warning',
+        label: t.dashboard.overview?.healthStatusWarning || 'Attention',
+        color: 'text-yellow-600',
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-200'
+      }
+    }
+
+    if (usagePercent >= 70) {
+      return {
+        status: 'good',
+        label: t.dashboard.overview?.healthStatusGood || 'Situation bonne',
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-50',
+        borderColor: 'border-blue-200'
+      }
+    }
+
+    return {
+      status: 'excellent',
+      label: t.dashboard.overview?.healthStatusExcellent || 'Situation saine',
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50',
+      borderColor: 'border-emerald-200'
+    }
+  }, [budgetSnapshot, t.dashboard.overview])
+
   const summaryCards = useMemo(() => {
-    const fallbackIncome = 1500
-    const fallbackExpenses = 1050
-    const incomeValue = budgetSnapshot?.monthlyIncome ?? fallbackIncome
-    const expensesValue = budgetSnapshot?.totalExpenses ?? fallbackExpenses
-    const savingsValue =
-      budgetSnapshot?.remaining ?? incomeValue - expensesValue
+    if (!budgetSnapshot) {
+      return [
+        {
+          label: t.dashboard.overview?.incomeLabel || 'Revenu du mois',
+          value: '—',
+          isEmpty: true,
+          isSavings: false,
+          comparison: null
+        },
+        {
+          label: t.dashboard.overview?.expensesLabel || 'Dépenses',
+          value: '—',
+          isEmpty: true,
+          isSavings: false,
+          comparison: null
+        },
+        {
+          label: t.dashboard.overview?.savingsLabel || 'Épargne',
+          value: '—',
+          isEmpty: true,
+          isSavings: true,
+          savingsValue: 0,
+          comparison: null
+        }
+      ]
+    }
+
+    const incomeValue = budgetSnapshot.monthlyIncome
+    const expensesValue = budgetSnapshot.totalExpenses
+    const savingsValue = budgetSnapshot.remaining
+
+    const prevIncome = previousMonthSnapshot?.monthlyIncome ?? 0
+    const prevExpenses = previousMonthSnapshot?.totalExpenses ?? 0
+    const prevSavings = previousMonthSnapshot?.remaining ?? 0
+
+    const getComparison = (current: number, previous: number, isExpense = false) => {
+      if (previous === 0 && current === 0) return null
+      if (previous === 0) {
+        return {
+          label: t.dashboard.overview?.firstMonth || 'Premier mois',
+          isPositive: true
+        }
+      }
+      const diff = current - previous
+      const isPositive = isExpense ? diff < 0 : diff > 0
+      return {
+        label: `${isPositive ? '+' : ''}${formatPrice(diff)} ${t.dashboard.overview?.vsLastMonth || 'vs mois dernier'}`,
+        isPositive
+      }
+    }
 
     return [
       {
         label: t.dashboard.overview?.incomeLabel || 'Revenu du mois',
-        value: formatPrice(incomeValue)
+        value: formatPrice(incomeValue),
+        isEmpty: false,
+        isSavings: false,
+        comparison: getComparison(incomeValue, prevIncome)
       },
       {
         label: t.dashboard.overview?.expensesLabel || 'Dépenses',
-        value: formatPrice(expensesValue)
+        value: formatPrice(expensesValue),
+        isEmpty: false,
+        isSavings: false,
+        comparison: getComparison(expensesValue, prevExpenses, true)
       },
       {
         label: t.dashboard.overview?.savingsLabel || 'Épargne',
-        value: formatPrice(savingsValue)
+        value: formatPrice(savingsValue),
+        isEmpty: false,
+        isSavings: true,
+        savingsValue: savingsValue,
+        comparison: getComparison(savingsValue, prevSavings)
       }
     ]
-  }, [budgetSnapshot, formatPrice, t.dashboard.overview])
+  }, [budgetSnapshot, previousMonthSnapshot, formatPrice, t.dashboard.overview])
 
   const overviewInsights = useMemo(() => {
     const items: Array<{ key: string; title: string; description: string; status: string; accent: string }> = []
@@ -2113,7 +2257,7 @@ const refreshFastSummary = useCallback(async () => {
             </p>
           </div>
 
-        {/* Onglets de navigation */}
+          {/* Onglets de navigation */}
         <div className="mb-8 border-b border-gray-200 pb-2" data-onboarding="tabs">
           <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
             {navItems.map((item) => {
@@ -2127,7 +2271,7 @@ const refreshFastSummary = useCallback(async () => {
                 debtfree: t.dashboard.tabs.tooltips?.debtFree || ''
               }
               return (
-                <button
+              <button
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
@@ -2147,7 +2291,7 @@ const refreshFastSummary = useCallback(async () => {
                   }`}
                 >
                   {item.label}
-                </button>
+              </button>
               )
             })}
           </div>
@@ -2156,6 +2300,13 @@ const refreshFastSummary = useCallback(async () => {
           {/* Contenu de l'onglet "Tableau de bord" */}
           {hasPremiumAccess && activeTab === 'overview' && (
             <div className="space-y-8">
+              <HelpBanner
+                tabId="overview"
+                title={t.dashboard.helpBanner?.overviewTitle || 'Comment utiliser votre tableau de bord'}
+                description={t.dashboard.helpBanner?.overviewDescription || 'Découvrez comment naviguer et utiliser toutes les fonctionnalités de votre tableau de bord.'}
+                modalTitle={t.dashboard.helpBanner?.overviewModalTitle || 'Comment utiliser votre tableau de bord'}
+                modalContent={t.dashboard.helpBanner?.overviewModalContent || 'Votre tableau de bord vous donne une vue d\'ensemble de votre situation financière. Vous pouvez voir vos revenus, dépenses et épargne du mois en cours, comparer avec le mois précédent, et accéder rapidement aux différentes sections : Budget & suivi, Jeûne financier et DebtFree.'}
+              />
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(1,47,78,0.08)] border border-[#E7EDF5]">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                   <div>
@@ -2170,20 +2321,88 @@ const refreshFastSummary = useCallback(async () => {
                     </p>
                   </div>
                 </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-                  {summaryCards.map((card) => (
-                    <div
-                      key={card.label}
-                      className="bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-4"
-                    >
-                      <p className="text-sm text-[#7CA7C0]">{card.label}</p>
-                      <div className="flex items-baseline justify-between mt-2">
-                        <p className="text-2xl font-semibold text-[#012F4E]">{card.value}</p>
-                        <span className="text-xs text-[#00A1C6]">•</span>
+                  {summaryCards.map((card) => {
+                    const isSavingsNegative = card.isSavings && !card.isEmpty && card.savingsValue !== undefined && card.savingsValue < 0
+                    const isSavingsPositive = card.isSavings && !card.isEmpty && card.savingsValue !== undefined && card.savingsValue > 0
+                    const savingsColor = isSavingsNegative ? 'text-red-600' : isSavingsPositive ? 'text-emerald-600' : ''
+                    
+                    return (
+                      <div
+                        key={card.label}
+                        className="bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-4"
+                      >
+                        <p className="text-sm text-[#7CA7C0]">{card.label}</p>
+                        <div className="flex items-baseline justify-between mt-2">
+                          <p className={`text-2xl font-semibold ${
+                            card.isEmpty 
+                              ? 'text-gray-400' 
+                              : card.isSavings && savingsColor
+                                ? savingsColor
+                                : 'text-[#012F4E]'
+                          }`}>
+                            {card.value}
+                          </p>
+                          {!card.isEmpty && <span className="text-xs text-[#00A1C6]">•</span>}
+                        </div>
+                      {card.isEmpty && budgetSnapshot === null && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          {t.dashboard.overview?.setupHint || 'Configurez votre budget pour voir vos données'}
+                        </p>
+                      )}
+                      {!card.isEmpty && card.comparison && (
+                        <p className={`text-xs mt-2 ${
+                          card.comparison.isPositive ? 'text-emerald-600' : 'text-gray-500'
+                        }`}>
+                          {card.comparison.label}
+                        </p>
+                      )}
+                      {!card.isEmpty && !card.comparison && previousMonthSnapshot === null && budgetSnapshot && (
+                        <p className="text-xs text-gray-400 mt-2">
+                          {t.dashboard.overview?.firstMonth || 'Premier mois'}
+                        </p>
+                      )}
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
+
+                {/* Indicateur de santé financière - placé après les cards pour plus de clarté */}
+                {budgetSnapshot && financialHealthStatus.status !== 'excellent' && (
+                  <div className={`mt-6 flex items-start gap-3 p-4 rounded-xl border ${financialHealthStatus.bgColor} ${financialHealthStatus.borderColor}`}>
+                    <div className={`text-xl flex-shrink-0 ${financialHealthStatus.color}`}>
+                      {financialHealthStatus.status === 'critical' ? '🚨' : 
+                       financialHealthStatus.status === 'warning' ? '⚠️' :
+                       financialHealthStatus.status === 'good' ? '👍' : '📝'}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm font-semibold mb-1 ${financialHealthStatus.color}`}>
+                        {financialHealthStatus.label}
+                      </p>
+                      {financialHealthStatus.status === 'critical' && (
+                        <p className="text-xs text-red-700">
+                          {t.dashboard.overview?.healthStatusCriticalDesc || 'Vos dépenses dépassent vos revenus. Rééquilibrez votre budget rapidement.'}
+                        </p>
+                      )}
+                      {financialHealthStatus.status === 'warning' && (
+                        <p className="text-xs text-yellow-700">
+                          {t.dashboard.overview?.healthStatusWarningDesc || 'Vous avez utilisé plus de 90% de votre budget. Restez vigilant.'}
+                        </p>
+                      )}
+                      {financialHealthStatus.status === 'good' && (
+                        <p className="text-xs text-blue-700">
+                          {t.dashboard.overview?.healthStatusGoodDesc || 'Vous respectez votre budget. Continuez ainsi !'}
+                        </p>
+                      )}
+                      {financialHealthStatus.status === 'setup' && (
+                        <p className="text-xs text-gray-600">
+                          {t.dashboard.overview?.healthStatusSetupDesc || 'Configurez votre budget pour voir votre situation financière.'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -2206,50 +2425,135 @@ const refreshFastSummary = useCallback(async () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <button
+              <button
                       type="button"
                       onClick={() => setActiveTab('budget')}
-                      className="w-full group rounded-2xl border border-[#00A1C6]/20 p-5 text-left bg-white hover:border-[#00A1C6] hover:shadow-lg transition-all duration-200"
+                      className={`w-full group rounded-2xl border p-5 text-left bg-white hover:shadow-lg transition-all duration-200 ${
+                        !budgetSnapshot || budgetSnapshot.monthlyIncome === 0
+                          ? 'border-yellow-300 bg-yellow-50 hover:border-yellow-400'
+                          : budgetSnapshot?.remaining < 0
+                            ? 'border-red-300 bg-red-50 hover:border-red-400'
+                            : 'border-[#00A1C6]/20 hover:border-[#00A1C6]'
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-lg font-semibold text-[#012F4E] group-hover:text-[#00A1C6]">
-                          {t.dashboard.overview?.primaryAction || 'Gérer mon budget'}
+                        <h4 className={`text-lg font-semibold group-hover:text-[#00A1C6] ${
+                          !budgetSnapshot || budgetSnapshot.monthlyIncome === 0
+                            ? 'text-yellow-900'
+                            : budgetSnapshot?.remaining < 0
+                              ? 'text-red-900'
+                              : 'text-[#012F4E]'
+                        }`}>
+                          {!budgetSnapshot || budgetSnapshot.monthlyIncome === 0
+                            ? (t.dashboard.overview?.actionSetupBudget || 'Configurer mon budget')
+                            : budgetSnapshot?.remaining < 0
+                              ? (t.dashboard.overview?.actionReviewExpenses || 'Réviser mes dépenses')
+                              : (t.dashboard.overview?.primaryAction || 'Gérer mon budget')}
                         </h4>
-                        <span className="text-sm text-[#00A1C6] group-hover:text-[#012F4E]">→</span>
+                        <span className={`text-sm ${
+                          !budgetSnapshot || budgetSnapshot.monthlyIncome === 0
+                            ? 'text-yellow-600'
+                            : budgetSnapshot?.remaining < 0
+                              ? 'text-red-600'
+                              : 'text-[#00A1C6]'
+                        } group-hover:text-[#012F4E]`}>→</span>
                       </div>
-                      <p className="text-sm text-gray-600 group-hover:text-gray-700">
-                        {/* TODO: connect to budget completion */}
-                        Suivez vos dépenses en temps réel et optimisez chaque euro.
+                      <p className={`text-sm group-hover:text-gray-700 ${
+                        !budgetSnapshot || budgetSnapshot.monthlyIncome === 0
+                          ? 'text-yellow-800'
+                          : budgetSnapshot?.remaining < 0
+                            ? 'text-red-800'
+                            : 'text-gray-600'
+                      }`}>
+                        {!budgetSnapshot || budgetSnapshot.monthlyIncome === 0
+                          ? (t.dashboard.overview?.actionSetupBudgetDesc || 'Commencez par enregistrer vos revenus et dépenses.')
+                          : budgetSnapshot?.remaining < 0
+                            ? (t.dashboard.overview?.actionReviewExpensesDesc || 'Vos dépenses dépassent vos revenus. Rééquilibrez votre budget.')
+                            : (t.dashboard.overview?.actionManageBudgetDesc || 'Suivez vos dépenses en temps réel et optimisez chaque euro.')}
                       </p>
-                    </button>
+              </button>
                     <button
                       type="button"
                       onClick={() => setActiveTab('fast')}
-                      className="w-full group rounded-2xl border border-sky-200 p-5 text-left bg-gradient-to-br from-sky-50 to-white hover:from-sky-100 hover:to-white transition-colors duration-200"
+                      className={`w-full group rounded-2xl border p-5 text-left bg-gradient-to-br transition-colors duration-200 ${
+                        fastSummary.status === 'none'
+                          ? 'border-yellow-300 from-yellow-50 to-white hover:from-yellow-100 hover:to-white'
+                          : fastSummary.status === 'active'
+                            ? 'border-green-300 from-green-50 to-white hover:from-green-100 hover:to-white'
+                            : 'border-sky-200 from-sky-50 to-white hover:from-sky-100 hover:to-white'
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-lg font-semibold text-sky-900 group-hover:text-sky-950">
-                          {t.dashboard.tabs.financialFast || 'Jeûne financier'}
+                        <h4 className={`text-lg font-semibold group-hover:text-sky-950 ${
+                          fastSummary.status === 'none'
+                            ? 'text-yellow-900'
+                            : fastSummary.status === 'active'
+                              ? 'text-green-900'
+                              : 'text-sky-900'
+                        }`}>
+                          {fastSummary.status === 'active' && fastSummary.day
+                            ? `${t.dashboard.tabs.financialFast || 'Jeûne financier'} - Jour ${fastSummary.day}/30`
+                            : fastSummary.status === 'completed'
+                              ? `${t.dashboard.tabs.financialFast || 'Jeûne financier'} - Terminé`
+                              : (t.dashboard.tabs.financialFast || 'Jeûne financier')}
                         </h4>
-                        <span className="text-sm text-sky-600 group-hover:text-sky-950">→</span>
+                        <span className={`text-sm group-hover:text-sky-950 ${
+                          fastSummary.status === 'none'
+                            ? 'text-yellow-600'
+                            : fastSummary.status === 'active'
+                              ? 'text-green-600'
+                              : 'text-sky-600'
+                        }`}>→</span>
                       </div>
-                      <p className="text-sm text-sky-900/80 group-hover:text-sky-950">
-                        {t.dashboard.overview?.fastInsightMissing || 'Active ton jeûne financier pour renforcer ta discipline.'}
+                      <p className={`text-sm group-hover:text-sky-950 ${
+                        fastSummary.status === 'none'
+                          ? 'text-yellow-800'
+                          : fastSummary.status === 'active'
+                            ? 'text-green-800'
+                            : 'text-sky-900/80'
+                      }`}>
+                        {fastSummary.status === 'active' && fastSummary.day
+                          ? (t.dashboard.overview?.fastInsightActive?.replace('{day}', fastSummary.day.toString()) || `Jour ${fastSummary.day}/30 – Continue, tu avances.`)
+                          : fastSummary.status === 'completed'
+                            ? (t.dashboard.overview?.fastInsightCompleted || 'Jeûne terminé : décide quoi faire de cette économie.')
+                            : (t.dashboard.overview?.fastInsightMissing || 'Active ton jeûne financier pour renforcer ta discipline.')}
                       </p>
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveTab('debtfree')}
-                      className="w-full group rounded-2xl border border-purple-200 p-5 text-left bg-gradient-to-br from-purple-50 to-white hover:from-purple-100 hover:to-white transition-colors duration-200"
+                      className={`w-full group rounded-2xl border p-5 text-left bg-gradient-to-br transition-colors duration-200 ${
+                        debtSummary && debtSummary.totalDebtMonthlyPayments > 0 && debtSummary.availableMarginMonthly <= 0
+                          ? 'border-red-300 from-red-50 to-white hover:from-red-100 hover:to-white'
+                          : debtSummary && debtSummary.totalDebtMonthlyPayments > 0
+                            ? 'border-purple-200 from-purple-50 to-white hover:from-purple-100 hover:to-white'
+                            : 'border-purple-200 from-purple-50 to-white hover:from-purple-100 hover:to-white'
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-lg font-semibold text-purple-900 group-hover:text-purple-950">
+                        <h4 className={`text-lg font-semibold group-hover:text-purple-950 ${
+                          debtSummary && debtSummary.totalDebtMonthlyPayments > 0 && debtSummary.availableMarginMonthly <= 0
+                            ? 'text-red-900'
+                            : 'text-purple-900'
+                        }`}>
                           {t.dashboard.tabs.debtFree || 'DebtFree'}
                         </h4>
-                        <span className="text-sm text-purple-600 group-hover:text-purple-950">→</span>
+                        <span className={`text-sm group-hover:text-purple-950 ${
+                          debtSummary && debtSummary.totalDebtMonthlyPayments > 0 && debtSummary.availableMarginMonthly <= 0
+                            ? 'text-red-600'
+                            : 'text-purple-600'
+                        }`}>→</span>
                       </div>
-                      <p className="text-sm text-purple-900/80 group-hover:text-purple-950">
-                        Plan de remboursement de dettes basé sur votre budget et vos économies.
+                      <p className={`text-sm group-hover:text-purple-950 ${
+                        debtSummary && debtSummary.totalDebtMonthlyPayments > 0 && debtSummary.availableMarginMonthly <= 0
+                          ? 'text-red-800'
+                          : 'text-purple-900/80'
+                      }`}>
+                        {debtSummary && debtSummary.totalDebtMonthlyPayments > 0 && debtSummary.availableMarginMonthly <= 0
+                          ? (t.dashboard.overview?.debtCriticalMessage || 'Situation critique : pas de marge pour rembourser.')
+                          : debtSummary && debtSummary.totalDebtMonthlyPayments > 0
+                            ? (t.dashboard.overview?.debtActiveMessage || 'Plan de remboursement basé sur votre budget.')
+                            : (t.dashboard.overview?.debtNoDebtMessage || 'Plan de remboursement de dettes basé sur votre budget et vos économies.')}
                       </p>
                     </button>
                   </div>
@@ -2272,7 +2576,7 @@ const refreshFastSummary = useCallback(async () => {
                     </p>
                   )}
                 </div>
-              </div>
+            </div>
 
               {/* Insights personnalisés */}
               <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
@@ -2299,12 +2603,26 @@ const refreshFastSummary = useCallback(async () => {
           {/* Contenu de l'onglet "Budget & suivi" */}
           {hasPremiumAccess && activeTab === 'budget' && (
             <div className="space-y-8">
+              <HelpBanner
+                tabId="budget"
+                title={t.dashboard.helpBanner?.budgetTitle || 'Comment utiliser Budget & suivi'}
+                description={t.dashboard.helpBanner?.budgetDescription || 'Découvrez comment gérer vos revenus et dépenses mensuels efficacement.'}
+                modalTitle={t.dashboard.helpBanner?.budgetModalTitle || 'Comment utiliser Budget & suivi'}
+                modalContent={t.dashboard.helpBanner?.budgetModalContent || 'Dans Budget & suivi, vous pouvez :\n\n1. Enregistrer votre revenu mensuel net\n2. Ajouter vos dépenses par catégorie (alimentation, transport, loisirs, etc.)\n3. Suivre votre taux d\'utilisation en temps réel\n4. Visualiser vos principales catégories de dépenses\n\nN\'oubliez pas de cliquer sur "Enregistrer mes revenus" après avoir saisi votre revenu, puis "Enregistrer mon budget" pour sauvegarder toutes vos données.'}
+              />
               <BudgetTracker variant="embedded" onBudgetChange={handleBudgetChange} />
             </div>
           )}
 
         {hasPremiumAccess && activeTab === 'fast' && (
           <div className="space-y-8">
+            <HelpBanner
+              tabId="fast"
+              title={t.dashboard.helpBanner?.fastTitle || 'Comment utiliser le Jeûne financier'}
+              description={t.dashboard.helpBanner?.fastDescription || 'Découvrez comment créer et suivre votre jeûne financier de 30 jours.'}
+              modalTitle={t.dashboard.helpBanner?.fastModalTitle || 'Comment utiliser le Jeûne financier'}
+              modalContent={t.dashboard.helpBanner?.fastModalContent || 'Le Jeûne financier vous aide à reprendre le contrôle de vos habitudes de dépenses en 30 jours :\n\n1. Sélectionnez les catégories de dépenses à jeûner (ex: restaurants, shopping)\n2. Définissez votre intention et votre habitude de remplacement\n3. Suivez votre progression jour par jour\n4. Visualisez vos économies réalisées\n\nUn jeûne actif vous permet de renforcer votre discipline financière et d\'économiser de l\'argent chaque mois.'}
+            />
             <FinancialFast variant="embedded" onStatusChange={refreshFastSummary} />
           </div>
         )}
@@ -2312,6 +2630,13 @@ const refreshFastSummary = useCallback(async () => {
           {/* Contenu de l'onglet "DebtFree" */}
           {hasPremiumAccess && activeTab === 'debtfree' && (
             <div className="space-y-8">
+              <HelpBanner
+                tabId="debtfree"
+                title={t.dashboard.helpBanner?.debtfreeTitle || 'Comment utiliser DebtFree'}
+                description={t.dashboard.helpBanner?.debtfreeDescription || 'Découvrez comment créer votre plan de remboursement de dettes intelligent.'}
+                modalTitle={t.dashboard.helpBanner?.debtfreeModalTitle || 'Comment utiliser DebtFree'}
+                modalContent={t.dashboard.helpBanner?.debtfreeModalContent || 'DebtFree analyse automatiquement vos dettes à partir de votre budget :\n\n1. Ajoutez vos paiements mensuels de dettes dans Budget & suivi (catégories contenant "dette", "crédit" ou "prêt")\n2. DebtFree calcule automatiquement votre marge disponible pour rembourser\n3. Visualisez votre date estimée de libération de dettes\n4. Découvrez comment accélérer votre remboursement avec le jeûne financier\n\nPlus vous économisez avec le jeûne financier, plus vite vous serez libre de dettes !'}
+              />
               <DebtFree variant="embedded" />
             </div>
           )}
@@ -2510,22 +2835,22 @@ const refreshFastSummary = useCallback(async () => {
 
                         if (capsule.isOneTime && userCapsules.includes(capsule.id)) {
                           return (
-                            <button
-                              disabled
-                              className="w-full px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              {t.dashboard.boutique.alreadyBought}
-                            </button>
+                        <button
+                          disabled
+                          className="w-full px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {t.dashboard.boutique.alreadyBought}
+                        </button>
                           )
                         }
 
                         const cartItem = cartItems.find((item) => item.id === capsule.id)
                         const isInCart = cartItem !== undefined
                         const isDisabled = capsuleCategory !== 'analyse-financiere' && isInCart
-
+                        
                         return (
                           <button
                             onClick={() => {
@@ -2547,7 +2872,7 @@ const refreshFastSummary = useCallback(async () => {
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
                           >
-                            {isDisabled
+                            {isDisabled 
                               ? t.dashboard.boutique.alreadyInCart
                               : capsule.isPack
                                 ? t.dashboard.boutique.buyPack
@@ -3002,8 +3327,8 @@ const refreshFastSummary = useCallback(async () => {
                   <p className="text-gray-600">
                     {t.dashboard.profile?.subtitle || 'Mettez à jour vos informations personnelles et vos coordonnées.'}
                   </p>
-                </div>
-              </div>
+        </div>
+      </div>
 
               {profileSuccess && (
                 <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">

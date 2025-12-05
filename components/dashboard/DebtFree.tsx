@@ -211,25 +211,28 @@ export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
         </div>
 
         {/* Résumé des dettes */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+        <div className="bg-white rounded-3xl shadow-sm border border-[#E7EDF5] p-6 sm:p-8">
           <h2 className="text-xl font-bold text-[#012F4E] mb-4">{copy.summaryTitle || 'Résumé de vos dettes'}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <p className="text-sm text-gray-600 mb-1">{copy.totalDebtPayments || 'Paiements mensuels de dettes'}</p>
+            <div className="bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-4">
+              <p className="text-sm text-[#7CA7C0] mb-1">{copy.totalDebtPayments || 'Paiements mensuels de dettes'}</p>
               <p className="text-2xl font-bold text-[#012F4E]">
                 {formatMoney(summary!.totalDebtMonthlyPayments)}
               </p>
             </div>
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <p className="text-sm text-gray-600 mb-1">{copy.availableMargin || 'Marge disponible mensuelle'}</p>
-              <p className="text-2xl font-bold text-green-600">
+            <div className="bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-4">
+              <p className="text-sm text-[#7CA7C0] mb-1">{copy.availableMargin || 'Marge disponible mensuelle'}</p>
+              <p className="text-2xl font-bold text-[#012F4E]">
                 {formatMoney(summary!.availableMarginMonthly)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {copy.availableMarginHelp || 'Argent disponible pour rembourser chaque mois'}
               </p>
             </div>
             {hasFast && (
-              <div className="bg-yellow-50 rounded-2xl p-4 sm:col-span-2">
-                <p className="text-sm text-gray-600 mb-1">{copy.fastSavings || 'Économies mensuelles du jeûne'}</p>
-                <p className="text-2xl font-bold text-yellow-600">
+              <div className="bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-4 sm:col-span-2">
+                <p className="text-sm text-[#7CA7C0] mb-1">{copy.fastSavings || 'Économies mensuelles du jeûne'}</p>
+                <p className="text-2xl font-bold text-[#012F4E]">
                   {formatMoney(summary!.fastSavingsMonthly)}
                 </p>
               </div>
@@ -238,37 +241,100 @@ export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
         </div>
 
         {/* Projection */}
-        <div className="bg-gradient-to-br from-[#012F4E] to-[#023d68] rounded-3xl shadow-lg p-6 sm:p-8 text-white">
-          <h2 className="text-xl font-bold mb-6 text-white">{copy.projectionTitle || 'Projection de remboursement'}</h2>
+        <div className="bg-white rounded-3xl shadow-sm border border-[#E7EDF5] p-6 sm:p-8">
+          <h2 className="text-xl font-bold mb-6 text-[#012F4E]">{copy.projectionTitle || 'Projection de remboursement'}</h2>
+          
+          {/* Timeline visuelle */}
+          {summary!.estimatedMonthsToFreedom !== 999 && (() => {
+            const today = new Date()
+            const targetDate = new Date(today)
+            targetDate.setMonth(targetDate.getMonth() + summary!.estimatedMonthsToFreedom)
+            const progressPercent = Math.min(5, 100) // Toujours au début pour un MVP simple
+            
+            return (
+              <div className="mb-6 bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <span className="text-xs text-[#7CA7C0] font-medium">{copy.timelineStart || 'Aujourd\'hui'}</span>
+                    <p className="text-xs text-gray-500 mt-0.5">{new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(today)}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs text-[#7CA7C0] font-medium">{copy.timelineEnd || 'Libre de dettes'}</span>
+                    <p className="text-xs text-gray-500 mt-0.5">{new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(targetDate)}</p>
+                  </div>
+                </div>
+                <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#00A1C6] to-[#012F4E] rounded-full transition-all duration-500"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                  <div className="absolute inset-0 flex items-center" style={{ left: `${progressPercent}%` }}>
+                    <div className="h-3 w-3 rounded-full bg-[#00A1C6] border-2 border-white shadow-lg -ml-1.5" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>{(copy.timelineProgress || '{months} mois restants').replace('{months}', String(summary!.estimatedMonthsToFreedom))}</span>
+                  <span>{copy.timelineHelper || 'Vous êtes au début de votre parcours'}</span>
+                </div>
+              </div>
+            )
+          })()}
+
           <div className="space-y-6">
-            <div className="bg-white/10 rounded-2xl p-5 backdrop-blur-sm">
-              <p className="text-sm text-white/80 mb-3 font-medium">{copy.currentPace || 'Au rythme actuel'}</p>
-              <p className="text-4xl font-bold text-white mb-1">
+            <div className="bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-5">
+              <p className="text-sm text-[#7CA7C0] mb-3 font-medium">{copy.currentPace || 'Au rythme actuel'}</p>
+              <p className="text-4xl font-bold text-[#012F4E] mb-1">
                 {summary!.estimatedMonthsToFreedom === 999
                   ? (copy.moreThan20Years || 'Plus de 20 ans')
                   : `${summary!.estimatedMonthsToFreedom} ${copy.months || 'mois'}`}
               </p>
               {summary!.estimatedMonthsToFreedom !== 999 && (
-                <p className="text-sm text-white/70 mt-1">
-                  ({copy.yearsAndMonths?.replace('{years}', String(Math.floor(summary!.estimatedMonthsToFreedom / 12)))?.replace('{months}', String(summary!.estimatedMonthsToFreedom % 12)) || `${Math.floor(summary!.estimatedMonthsToFreedom / 12)} ans et ${summary!.estimatedMonthsToFreedom % 12} mois`})
-                </p>
+                <>
+                  <p className="text-sm text-gray-500 mt-1">
+                    ({copy.yearsAndMonths?.replace('{years}', String(Math.floor(summary!.estimatedMonthsToFreedom / 12)))?.replace('{months}', String(summary!.estimatedMonthsToFreedom % 12)) || `${Math.floor(summary!.estimatedMonthsToFreedom / 12)} ans et ${summary!.estimatedMonthsToFreedom % 12} mois`})
+                  </p>
+                  {(() => {
+                    const today = new Date()
+                    const targetDate = new Date(today)
+                    targetDate.setMonth(targetDate.getMonth() + summary!.estimatedMonthsToFreedom)
+                    const dateFormatter = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' })
+                    return (
+                      <p className="text-sm text-[#012F4E] mt-2 font-medium">
+                        {copy.freedomDateLabel || 'Libre de dettes en'} {dateFormatter.format(targetDate)}
+                      </p>
+                    )
+                  })()}
+                </>
               )}
             </div>
             {hasFast && monthsSaved > 0 && (
-              <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-2xl p-5 backdrop-blur-sm border border-yellow-400/30">
-                <p className="text-sm text-yellow-100 mb-3 font-medium">{copy.withFastSavings || 'Avec les économies du jeûne'}</p>
-                <p className="text-4xl font-bold text-yellow-300 mb-1">
+              <div className="bg-[#F8FBFF] border border-[#E0ECF5] rounded-2xl p-5">
+                <p className="text-sm text-[#7CA7C0] mb-3 font-medium">{copy.withFastSavings || 'Avec les économies du jeûne'}</p>
+                <p className="text-4xl font-bold text-[#012F4E] mb-1">
                   {summary!.estimatedMonthsToFreedomWithFast === 999
                     ? (copy.moreThan20Years || 'Plus de 20 ans')
                     : `${summary!.estimatedMonthsToFreedomWithFast} ${copy.months || 'mois'}`}
                 </p>
                 {summary!.estimatedMonthsToFreedomWithFast !== 999 && (
-                  <p className="text-sm text-yellow-100/80 mt-1">
-                    ({copy.yearsAndMonths?.replace('{years}', String(Math.floor(summary!.estimatedMonthsToFreedomWithFast / 12)))?.replace('{months}', String(summary!.estimatedMonthsToFreedomWithFast % 12)) || `${Math.floor(summary!.estimatedMonthsToFreedomWithFast / 12)} ans et ${summary!.estimatedMonthsToFreedomWithFast % 12} mois`})
-                  </p>
+                  <>
+                    <p className="text-sm text-gray-500 mt-1">
+                      ({copy.yearsAndMonths?.replace('{years}', String(Math.floor(summary!.estimatedMonthsToFreedomWithFast / 12)))?.replace('{months}', String(summary!.estimatedMonthsToFreedomWithFast % 12)) || `${Math.floor(summary!.estimatedMonthsToFreedomWithFast / 12)} ans et ${summary!.estimatedMonthsToFreedomWithFast % 12} mois`})
+                    </p>
+                    {(() => {
+                      const today = new Date()
+                      const targetDate = new Date(today)
+                      targetDate.setMonth(targetDate.getMonth() + summary!.estimatedMonthsToFreedomWithFast)
+                      const dateFormatter = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' })
+                      return (
+                        <p className="text-sm text-[#012F4E] mt-2 font-medium">
+                          {copy.freedomDateLabel || 'Libre de dettes en'} {dateFormatter.format(targetDate)}
+                        </p>
+                      )
+                    })()}
+                  </>
                 )}
-                <div className="mt-4 bg-yellow-400/20 rounded-xl p-3 border border-yellow-300/30">
-                  <p className="text-sm font-semibold text-yellow-100">
+                <div className="mt-4 bg-white border border-[#E0ECF5] rounded-xl p-3">
+                  <p className="text-sm font-semibold text-[#012F4E]">
                     ⚡ {copy.monthsSaved?.replace('{months}', String(monthsSaved)) || `Vous économisez ${monthsSaved} mois grâce au jeûne financier !`}
                   </p>
                 </div>
@@ -278,27 +344,32 @@ export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
         </div>
 
         {/* Actions */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+        <div className="bg-white rounded-3xl shadow-sm border border-[#E7EDF5] p-6 sm:p-8">
           <h2 className="text-xl font-bold text-[#012F4E] mb-4">{copy.accelerateTitle || 'Accélérer votre remboursement'}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link
               href="/dashboard?tab=budget"
-              className="flex items-center justify-center rounded-2xl bg-[#012F4E] px-6 py-3 text-white font-semibold shadow-lg hover:bg-[#023d68] transition-colors"
+              className="flex flex-col items-center justify-center rounded-2xl bg-[#F8FBFF] border border-[#E0ECF5] px-6 py-4 hover:border-[#00A1C6] transition-colors"
             >
-              {copy.adjustBudget || 'Ajuster mon budget'}
+              <span className="text-base font-semibold text-[#012F4E]">{copy.adjustBudget || 'Modifier mon budget'}</span>
+              <span className="text-xs font-normal text-[#7CA7C0] mt-1">
+                {copy.adjustBudgetHelp || 'Pour augmenter votre marge disponible'}
+              </span>
             </Link>
             <Link
               href="/dashboard?tab=fast"
-              className="flex items-center justify-center rounded-2xl bg-yellow-500 px-6 py-3 text-white font-semibold shadow-lg hover:bg-yellow-600 transition-colors"
+              className="flex items-center justify-center rounded-2xl bg-[#F8FBFF] border border-[#E0ECF5] px-6 py-4 hover:border-[#00A1C6] transition-colors"
             >
-              {hasFast ? (copy.extendFast || 'Prolonger mon jeûne') : (copy.launchFast || 'Lancer un jeûne financier')}
+              <span className="font-semibold text-[#012F4E]">
+                {hasFast ? (copy.extendFast || 'Prolonger mon jeûne') : (copy.launchFast || 'Lancer un jeûne financier')}
+              </span>
             </Link>
           </div>
         </div>
 
         {/* Note informative */}
-        <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-          <p className="text-sm text-blue-800">
+        <div className="bg-[#F8FBFF] rounded-2xl p-4 border border-[#E0ECF5]">
+          <p className="text-sm text-[#012F4E]">
             <strong>{copy.noteTitle || 'Note'} :</strong> {copy.noteText || 'Cette projection est une estimation basée sur vos données actuelles. Le montant total des dettes est estimé à partir de vos paiements mensuels. Pour une projection plus précise, ajoutez le montant total de vos dettes dans votre budget.'}
           </p>
         </div>
