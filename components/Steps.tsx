@@ -107,7 +107,6 @@ export default function Steps() {
               href="/login"
               className="inline-flex items-center px-8 py-4 bg-white text-gray-900 font-bold text-lg rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              <span className="w-5 h-5 mr-2">📅</span>
               {t.steps.ctaButton}
             </a>
           </div>
