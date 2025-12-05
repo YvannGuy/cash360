@@ -1525,11 +1525,21 @@ const refreshFastSummary = useCallback(async () => {
           const adaptedProducts = allProductsData
             .filter((p: any) => p.available !== false)
             .map((p: any) => {
+              // Normaliser l'URL de l'image : convertir @public/images/... en /images/...
+              let normalizedImageUrl = p.image_url || '/images/pack.png'
+              if (normalizedImageUrl) {
+                normalizedImageUrl = normalizedImageUrl.replace(/^@public\/images\//, '/images/')
+                // S'assurer que ça commence par /images/ si c'est une image locale
+                if (normalizedImageUrl.startsWith('images/') && !normalizedImageUrl.startsWith('/images/')) {
+                  normalizedImageUrl = '/' + normalizedImageUrl
+                }
+              }
+              
               // Utiliser les traductions multilingues
               return {
                 id: p.id,
                 title: getProductName(p),
-                img: p.image_url || '/images/pack.png',
+                img: normalizedImageUrl,
                 blurb: getProductDescription(p),
                 price: parseFloat(p.price),
                 originalPrice: p.original_price ? parseFloat(p.original_price) : undefined,
@@ -1543,11 +1553,21 @@ const refreshFastSummary = useCallback(async () => {
           
           // Stocker TOUS les produits (y compris non disponibles) pour les achats
           const allProductsForFormations = allProductsData.map((p: any) => {
+            // Normaliser l'URL de l'image : convertir @public/images/... en /images/...
+            let normalizedImageUrl = p.image_url || '/images/pack.png'
+            if (normalizedImageUrl) {
+              normalizedImageUrl = normalizedImageUrl.replace(/^@public\/images\//, '/images/')
+              // S'assurer que ça commence par /images/ si c'est une image locale
+              if (normalizedImageUrl.startsWith('images/') && !normalizedImageUrl.startsWith('/images/')) {
+                normalizedImageUrl = '/' + normalizedImageUrl
+              }
+            }
+            
             // Utiliser les traductions multilingues
             return {
               id: p.id,
               title: getProductName(p),
-              img: p.image_url || '/images/pack.png',
+              img: normalizedImageUrl,
               blurb: getProductDescription(p),
               category: p.category || 'capsules', // Ajouter la catégorie du produit depuis la boutique
               pdf_url: p.pdf_url || null, // URL du PDF pour ebook
@@ -1768,11 +1788,21 @@ const refreshFastSummary = useCallback(async () => {
         
         if (allProductsData) {
           const allProductsForFormations = allProductsData.map((p: any) => {
+            // Normaliser l'URL de l'image : convertir @public/images/... en /images/...
+            let normalizedImageUrl = p.image_url || '/images/pack.png'
+            if (normalizedImageUrl) {
+              normalizedImageUrl = normalizedImageUrl.replace(/^@public\/images\//, '/images/')
+              // S'assurer que ça commence par /images/ si c'est une image locale
+              if (normalizedImageUrl.startsWith('images/') && !normalizedImageUrl.startsWith('/images/')) {
+                normalizedImageUrl = '/' + normalizedImageUrl
+              }
+            }
+            
             // Utiliser les traductions multilingues
             return {
               id: p.id,
               title: getProductName(p),
-              img: p.image_url || '/images/pack.png',
+              img: normalizedImageUrl,
               blurb: getProductDescription(p),
               category: p.category || 'capsules',
               pdf_url: p.pdf_url || null,
@@ -1792,11 +1822,21 @@ const refreshFastSummary = useCallback(async () => {
         
         if (boutiqueProductsData) {
           const adaptedProducts = boutiqueProductsData.map((p: any) => {
+            // Normaliser l'URL de l'image : convertir @public/images/... en /images/...
+            let normalizedImageUrl = p.image_url || '/images/pack.png'
+            if (normalizedImageUrl) {
+              normalizedImageUrl = normalizedImageUrl.replace(/^@public\/images\//, '/images/')
+              // S'assurer que ça commence par /images/ si c'est une image locale
+              if (normalizedImageUrl.startsWith('images/') && !normalizedImageUrl.startsWith('/images/')) {
+                normalizedImageUrl = '/' + normalizedImageUrl
+              }
+            }
+            
             // Utiliser les traductions multilingues
             return {
               id: p.id,
               title: getProductName(p),
-              img: p.image_url || '/images/pack.png',
+              img: normalizedImageUrl,
               blurb: getProductDescription(p),
               price: parseFloat(p.price),
               originalPrice: p.original_price ? parseFloat(p.original_price) : undefined,
@@ -2747,6 +2787,10 @@ const refreshFastSummary = useCallback(async () => {
                         alt={capsule.title}
                         fill
                         className="object-cover"
+                        onError={(e) => {
+                          console.error('Erreur chargement image:', capsule.img, e)
+                        }}
+                        unoptimized
                       />
                     </div>
 

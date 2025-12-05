@@ -227,6 +227,17 @@ export default function AdminBoutiquePage() {
         pdfUrl = (editingProduct as any).pdf_url || null
       }
 
+      // Normaliser l'URL de l'image : convertir @public/images/... en /images/...
+      let normalizedImageUrl = formData.imageUrl || null
+      if (normalizedImageUrl) {
+        // Remplacer @public/images/ par /images/
+        normalizedImageUrl = normalizedImageUrl.replace(/^@public\/images\//, '/images/')
+        // S'assurer que ça commence par /images/ si c'est une image locale
+        if (normalizedImageUrl.startsWith('images/') && !normalizedImageUrl.startsWith('/images/')) {
+          normalizedImageUrl = '/' + normalizedImageUrl
+        }
+      }
+
       // Créer/mettre à jour le produit d'abord
       const response = await fetch(url, {
         method: method,
@@ -248,7 +259,7 @@ export default function AdminBoutiquePage() {
           price: parseFloat(formData.price),
           originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
           isPack: formData.isPack,
-          imageUrl: formData.imageUrl || null,
+          imageUrl: normalizedImageUrl,
           available: formData.available,
           isOneTime: formData.isOneTime,
           productType: formData.productType || null,
@@ -306,7 +317,7 @@ export default function AdminBoutiquePage() {
               price: parseFloat(formData.price),
               originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
               isPack: formData.isPack,
-              imageUrl: formData.imageUrl || null,
+              imageUrl: normalizedImageUrl,
               available: formData.available,
               isOneTime: formData.isOneTime,
               productType: formData.productType || null,
@@ -613,6 +624,15 @@ export default function AdminBoutiquePage() {
                       productImage = '/images/stab.jpg'
                     }
                     
+                    // Normaliser l'URL de l'image : convertir @public/images/... en /images/...
+                    if (productImage) {
+                      productImage = productImage.replace(/^@public\/images\//, '/images/')
+                      // S'assurer que ça commence par /images/ si c'est une image locale
+                      if (productImage.startsWith('images/') && !productImage.startsWith('/images/')) {
+                        productImage = '/' + productImage
+                      }
+                    }
+                    
                     return productImage ? (
                       <Image
                         src={productImage}
@@ -620,6 +640,10 @@ export default function AdminBoutiquePage() {
                         fill
                         className="object-cover"
                         style={{ filter: product.available ? 'none' : 'grayscale(100%)' }}
+                        onError={(e) => {
+                          console.error('Erreur chargement image:', productImage, e)
+                        }}
+                        unoptimized
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-200 flex items-center justify-center">
