@@ -135,24 +135,6 @@ export default function Testimonials() {
             ))}
           </div>
         )}
-
-        {/* Stats Section */}
-        {t.testimonials?.stats && (
-          <div className={`mt-16 transition-all duration-1000 delay-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="bg-gradient-to-r from-slate-900 to-blue-900 rounded-3xl p-8 text-white">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-                {t.testimonials.stats.map((stat: any, index: number) => (
-                  <div key={index}>
-                    <div className={`text-3xl font-bold mb-2 ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-blue-400' : index === 2 ? 'text-green-400' : 'text-purple-400'}`}>
-                      {stat.value}
-                    </div>
-                    <div className="text-gray-300">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   )
