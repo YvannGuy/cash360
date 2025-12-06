@@ -163,6 +163,7 @@ export default function AdminFormationsPage() {
         time: existingFormation.time,
         description: '',
         zoomLink: existingFormation.zoom_link || '',
+        calendlyLink: existingFormation.calendly_link || '',
         maxParticipants: 50,
         timezone: 'Europe/Paris'
       })
@@ -510,6 +511,7 @@ export default function AdminFormationsPage() {
                     time: '',
                     description: '',
                     zoomLink: '',
+                    calendlyLink: '',
                     maxParticipants: 50,
                     timezone: 'Europe/Paris'
                   })

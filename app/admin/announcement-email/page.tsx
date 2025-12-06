@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
+import { emailTemplates } from '@/lib/email-templates'
 
 interface AdminSession {
   isAdmin: boolean
@@ -15,7 +16,9 @@ export default function AnnouncementEmailPage() {
   const [loading, setLoading] = useState(true)
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [preview, setPreview] = useState<string>('')
-  const [subject, setSubject] = useState<string>('')
+  const [selectedTemplate, setSelectedTemplate] = useState<number>(1)
+  const [emailSubject, setEmailSubject] = useState<string>('')
+  const [emailBody, setEmailBody] = useState<string>('')
   const [loadingPreview, setLoadingPreview] = useState(false)
   const [sending, setSending] = useState(false)
   const [sendResult, setSendResult] = useState<any>(null)
@@ -39,21 +42,30 @@ export default function AnnouncementEmailPage() {
     checkAdminSession()
   }, [router])
 
-  useEffect(() => {
-    if (adminSession?.isAdmin) {
-      loadPreview()
-    }
-  }, [adminSession])
-
   const loadPreview = async () => {
+    if (!emailSubject.trim() || !emailBody.trim()) {
+      alert('Veuillez remplir le sujet et le corps du mail avant de prévisualiser')
+      return
+    }
+
     setLoadingPreview(true)
     try {
-      const response = await fetch('/api/admin/send-announcement-email')
+      const response = await fetch('/api/admin/send-announcement-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preview: true,
+          templateId: selectedTemplate,
+          subject: emailSubject,
+          body: emailBody
+        }),
+      })
       const data = await response.json()
       
       if (data.success) {
         setPreview(data.preview)
-        setSubject(data.subject)
       } else {
         console.error('Erreur lors du chargement du preview:', data.error)
         alert('Erreur lors du chargement du preview: ' + data.error)
@@ -67,6 +79,11 @@ export default function AnnouncementEmailPage() {
   }
 
   const handleSend = async () => {
+    if (!emailSubject.trim() || !emailBody.trim()) {
+      alert('Veuillez remplir le sujet et le corps du mail avant d\'envoyer')
+      return
+    }
+
     if (!confirm('Êtes-vous sûr de vouloir envoyer cet email à TOUS les utilisateurs de la plateforme ?')) {
       return
     }
@@ -84,7 +101,12 @@ export default function AnnouncementEmailPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ confirm: true }),
+        body: JSON.stringify({
+          confirm: true,
+          templateId: selectedTemplate,
+          subject: emailSubject,
+          body: emailBody
+        }),
       })
       
       const data = await response.json()
@@ -127,6 +149,8 @@ export default function AnnouncementEmailPage() {
     )
   }
 
+  const selectedTemplateData = emailTemplates.find(t => t.id === selectedTemplate)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminSidebar 
@@ -149,19 +173,68 @@ export default function AnnouncementEmailPage() {
             </button>
             
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              📧 Email d'annonce - Cash360
+              📧 Newsletter - Cash360
             </h1>
             <p className="text-gray-600">
-              Prévisualisez et envoyez l'email d'annonce des nouveautés à tous les utilisateurs
+              Créez et envoyez des emails à tous les utilisateurs avec différents templates
             </p>
           </div>
 
-          {/* Sujet de l'email */}
+          {/* Configuration */}
           <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Sujet de l'email</h2>
-            <div className="bg-gray-50 p-4 rounded border border-gray-200">
-              <p className="text-lg font-medium text-gray-800">
-                {subject || 'Chargement...'}
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Configuration de l'email</h2>
+            
+            {/* Sélection du template */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Template de design
+              </label>
+              <select
+                value={selectedTemplate}
+                onChange={(e) => setSelectedTemplate(Number(e.target.value))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent"
+              >
+                {emailTemplates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name} - {template.description}
+                  </option>
+                ))}
+              </select>
+              {selectedTemplateData && (
+                <p className="mt-2 text-sm text-gray-500">
+                  {selectedTemplateData.description}
+                </p>
+              )}
+            </div>
+
+            {/* Sujet de l'email */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sujet de l'email *
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: 🎉 Cash360 évolue ! Découvrez nos nouveautés"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent"
+              />
+            </div>
+
+            {/* Corps de l'email */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Corps de l'email *
+              </label>
+              <textarea
+                placeholder="Tapez votre message ici...&#10;&#10;Vous pouvez utiliser plusieurs lignes.&#10;Les retours à la ligne seront conservés dans l'email."
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                rows={10}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent resize-y"
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Les retours à la ligne seront automatiquement convertis en sauts de ligne dans l'email.
               </p>
             </div>
           </div>
@@ -171,15 +244,15 @@ export default function AnnouncementEmailPage() {
             <div className="flex flex-wrap gap-4">
               <button
                 onClick={loadPreview}
-                disabled={loadingPreview}
+                disabled={loadingPreview || !emailSubject.trim() || !emailBody.trim()}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
-                {loadingPreview ? 'Chargement...' : '🔄 Actualiser le preview'}
+                {loadingPreview ? 'Chargement...' : '👁️ Prévisualiser'}
               </button>
               
               <button
                 onClick={handleSend}
-                disabled={sending || !preview}
+                disabled={sending || !emailSubject.trim() || !emailBody.trim()}
                 className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-500 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg"
               >
                 {sending ? '⏳ Envoi en cours...' : '🚀 Envoyer à tous les utilisateurs'}
@@ -234,13 +307,7 @@ export default function AnnouncementEmailPage() {
               </div>
             ) : (
               <div className="text-center py-12 text-gray-500">
-                <p>Aucun preview disponible</p>
-                <button
-                  onClick={loadPreview}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Charger le preview
-                </button>
+                <p>Remplissez le sujet et le corps du mail, puis cliquez sur "Prévisualiser"</p>
               </div>
             )}
           </div>
