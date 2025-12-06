@@ -61,20 +61,12 @@ export default function Testimonials() {
     loadTestimonials()
   }, [])
 
-  const testimonialImages = [
-    "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
-  ]
-
   // Utiliser uniquement les témoignages de la DB (approuvés)
-  const displayTestimonials = testimonials.slice(0, 4).map((t, index) => ({
+  const displayTestimonials = testimonials.slice(0, 4).map((t) => ({
     name: `${t.first_name} ${t.last_name}`,
     content: t.content,
     role: 'Client Cash360',
-    rating: t.rating,
-    imageIndex: index % testimonialImages.length
+    rating: t.rating
   }))
 
   return (
@@ -135,13 +127,6 @@ export default function Testimonials() {
 
                   {/* Author */}
                   <div className="text-center">
-                    <div className="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden">
-                      <img
-                        src={testimonialImages[testimonial.imageIndex || index]}
-                        alt={testimonial.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
                     <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
                     <p className="text-sm text-gray-600">{testimonial.role}</p>
                   </div>
