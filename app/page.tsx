@@ -15,6 +15,7 @@ import Footer from '@/components/Footer'
 import FAQ from '@/components/FAQ'
 import SectionAnalyse from '@/components/SectionAnalyse'
 import CookieConsentBanner from '@/components/CookieConsentBanner'
+import Testimonials from '@/components/Testimonials'
 
 export default function Home() {
   const { t } = useLanguage()
@@ -77,6 +78,9 @@ export default function Home() {
         
         {/* Live TikTok Section */}
         <LiveTikTok />
+        
+        {/* Testimonials Section */}
+        <Testimonials />
         
         {/* CTA Section */}
         <CTASection />
