@@ -19,6 +19,11 @@ export default function Testimonials() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Ne créer l'observer que si des témoignages sont disponibles
+    if (testimonials.length === 0 && !loading) {
+      return
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -38,7 +43,7 @@ export default function Testimonials() {
         observer.unobserve(element)
       }
     }
-  }, [])
+  }, [testimonials.length, loading])
 
   useEffect(() => {
     const loadTestimonials = async () => {
@@ -69,6 +74,11 @@ export default function Testimonials() {
     rating: t.rating
   }))
 
+  // Masquer la section si aucun témoignage n'est disponible
+  if (!loading && testimonials.length === 0) {
+    return null
+  }
+
   return (
     <section id="testimonials" className="py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,11 +100,6 @@ export default function Testimonials() {
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div>
             <p className="mt-4 text-gray-600">Chargement des témoignages...</p>
-          </div>
-        ) : displayTestimonials.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">Aucun témoignage disponible pour le moment.</p>
-            <p className="text-gray-500 text-sm mt-2">Les témoignages approuvés apparaîtront ici.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
