@@ -3178,6 +3178,13 @@ const refreshFastSummary = useCallback(async () => {
                       }
                       const status = getStatus(formation)
                       
+                      // Vérifier si c'est "Diagnostic Finance Express"
+                      const isDiagnosticFinanceExpress = c.title && (
+                        c.title.toLowerCase().includes('diagnostic') && 
+                        c.title.toLowerCase().includes('finance') && 
+                        c.title.toLowerCase().includes('express')
+                      )
+                      
                       return (
                         <div key={c.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                           <div className="p-6">
@@ -3266,6 +3273,25 @@ const refreshFastSummary = useCallback(async () => {
                                   <div className="text-sm text-gray-600 italic">
                                       {t.dashboard.purchases.purchaseConfirmed}
                                   </div>
+                                  )
+                                ) : isDiagnosticFinanceExpress ? (
+                                  // Pour Diagnostic Finance Express : utiliser calendly_link
+                                  formation && formation.calendly_link ? (
+                                    <a
+                                      href={formation.calendly_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                      Prendre rdv avec Pasteur Myriam
+                                    </a>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium">
+                                      En attente de configuration
+                                    </span>
                                   )
                                 ) : formation && formation.zoom_link && formation.date_scheduled && formation.time_scheduled && status && status.label !== t.dashboard.purchases.sessionStatus.completed ? (
                                   <a

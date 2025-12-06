@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       time,
       description,
       zoomLink,
+      calendlyLink,
       maxParticipants,
       timezone,
       accessType,
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
         time_scheduled: time || null,
         description: description || null,
         zoom_link: zoomLink || null,
+        calendly_link: calendlyLink || null,
         max_participants: maxParticipants || 50,
         timezone: timezone || 'Europe/Paris',
         access_type: accessType || 'tous',
@@ -111,6 +113,7 @@ export async function PUT(request: NextRequest) {
       time,
       description,
       zoomLink,
+      calendlyLink,
       maxParticipants,
       timezone,
       accessType,
@@ -139,6 +142,7 @@ export async function PUT(request: NextRequest) {
         time_scheduled: time || null,
         description: description || null,
         zoom_link: zoomLink || null,
+        calendly_link: calendlyLink || null,
         max_participants: maxParticipants || 50,
         timezone: timezone || 'Europe/Paris',
         access_type: accessType || 'tous',
@@ -267,6 +271,7 @@ export async function GET(request: NextRequest) {
         time: timeScheduled,
         inscrits: formation.inscrits || 0,
         zoom_link: formation.zoom_link || null,
+        calendly_link: formation.calendly_link || null,
         status: formation.status || 'a_venir'
       }
     })

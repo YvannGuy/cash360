@@ -19,6 +19,7 @@ interface Formation {
   time: string
   inscrits: number
   zoom_link: string
+  calendly_link?: string
   status: string
 }
 
@@ -63,6 +64,7 @@ export default function AdminFormationsPage() {
     time: '',
     description: '',
     zoomLink: '',
+    calendlyLink: '',
     maxParticipants: 50,
     timezone: 'Europe/Paris'
   })
@@ -176,6 +178,7 @@ export default function AdminFormationsPage() {
         time: '',
         description: '',
         zoomLink: '',
+        calendlyLink: '',
         maxParticipants: 50,
         timezone: 'Europe/Paris'
       }
@@ -194,6 +197,7 @@ export default function AdminFormationsPage() {
       time: formation.time || '',
       description: '',
       zoomLink: formation.zoom_link || '',
+      calendlyLink: (formation as any).calendly_link || '',
       maxParticipants: 50,
       timezone: 'Europe/Paris'
     })
@@ -256,6 +260,7 @@ export default function AdminFormationsPage() {
         time: '',
         description: '',
         zoomLink: '',
+        calendlyLink: '',
         maxParticipants: 50,
         timezone: 'Europe/Paris'
       })
@@ -561,6 +566,9 @@ export default function AdminFormationsPage() {
                             </p>
                             <p className="text-xs text-gray-500">
                               {formation.zoom_link ? 'Lien Zoom configuré' : 'Pas de lien Zoom'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {(formation as any).calendly_link ? 'Lien Calendly configuré' : 'Pas de lien Calendly'}
                             </p>
                           </div>
                         </div>
@@ -929,6 +937,23 @@ export default function AdminFormationsPage() {
                     placeholder="https://zoom.us/..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
                   />
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    Lien Calendly (pour Diagnostic Finance Express)
+                    <svg className="w-4 h-4 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
+                    </svg>
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.calendlyLink}
+                    onChange={(e) => setFormData({...formData, calendlyLink: e.target.value})}
+                    placeholder="https://calendly.com/..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Lien pour prendre rendez-vous avec Pasteur Myriam</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

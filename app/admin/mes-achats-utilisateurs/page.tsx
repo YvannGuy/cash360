@@ -450,14 +450,14 @@ export default function AdminMesAchatsPage() {
                   placeholder="Rechercher par email, nom, produit..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
                 <select
                   value={filters.status}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Tous les statuts</option>
                   <option value="pending_review">En attente</option>
@@ -469,7 +469,7 @@ export default function AdminMesAchatsPage() {
                 <select
                   value={filters.paymentMethod}
                   onChange={(e) => setFilters({ ...filters, paymentMethod: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Toutes les méthodes</option>
                   <option value="stripe">Stripe</option>
@@ -480,7 +480,7 @@ export default function AdminMesAchatsPage() {
                 <select
                   value={filters.userId}
                   onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Tous les utilisateurs</option>
                   {users.map((user: any) => (

@@ -422,7 +422,7 @@ export default function AdminPaiementsPage() {
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
+                <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
                   <option>Tous les statuts</option>
                   <option>Réussi</option>
                   <option>Échec</option>
@@ -433,7 +433,7 @@ export default function AdminPaiementsPage() {
                 </svg>
               </div>
               <div className="relative">
-                <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
+                <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
                   <option>Toutes les méthodes</option>
                   <option>PayPal</option>
                   <option>Stripe</option>
@@ -444,7 +444,7 @@ export default function AdminPaiementsPage() {
                 </svg>
               </div>
               <div className="relative">
-                <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
+                <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
                   <option>Ce mois</option>
                   <option>Cette semaine</option>
                   <option>Cette année</option>
@@ -454,7 +454,7 @@ export default function AdminPaiementsPage() {
                 </svg>
               </div>
               <div className="relative">
-                <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
+                <select className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00A1C6] cursor-pointer">
                   <option>Tous les types</option>
                   <option>Analyse financière</option>
                   <option>Capsule</option>
