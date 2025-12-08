@@ -227,6 +227,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const paymentMethod = searchParams.get('paymentMethod')
 
+    // Récupérer les commandes de la table orders
     let query = supabaseAdmin!
       .from('orders')
       .select('*')
@@ -252,28 +253,254 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('[ORDERS API]', orders?.length || 0, 'commandes récupérées')
+    console.log('[ORDERS API]', orders?.length || 0, 'commandes récupérées depuis orders')
 
-    // Récupérer tous les utilisateurs pour enrichir les commandes avec email et nom
-    const { data: allUsers } = await supabaseAdmin!.auth.admin.listUsers()
-    const userMap = new Map<string, { email: string, name?: string }>()
+    // Récupérer aussi TOUS les achats depuis user_capsules pour avoir une vue complète
+    // Cela inclut TOUS les types de produits : masterclass, coaching, capsules, packs, etc.
+    // qui peuvent ne pas être dans orders
+    let capsulesQuery = supabaseAdmin!
+      .from('user_capsules')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (userId) {
+      capsulesQuery = capsulesQuery.eq('user_id', userId)
+    }
+
+    const { data: userCapsules, error: capsulesError } = await capsulesQuery
+
+    if (capsulesError) {
+      console.error('[ORDERS API] Erreur récupération user_capsules:', capsulesError)
+      // On continue quand même avec les orders
+    }
+
+    console.log('[ORDERS API]', userCapsules?.length || 0, 'achats récupérés depuis user_capsules')
+
+    // Récupérer aussi tous les abonnements depuis user_subscriptions
+    let subscriptionsQuery = supabaseAdmin!
+      .from('user_subscriptions')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (userId) {
+      subscriptionsQuery = subscriptionsQuery.eq('user_id', userId)
+    }
+
+    const { data: userSubscriptions, error: subscriptionsError } = await subscriptionsQuery
+
+    if (subscriptionsError) {
+      console.error('[ORDERS API] Erreur récupération user_subscriptions:', subscriptionsError)
+      // On continue quand même
+    }
+
+    console.log('[ORDERS API]', userSubscriptions?.length || 0, 'abonnements récupérés depuis user_subscriptions')
+
+    // Récupérer les informations des produits pour enrichir les données
+    const { data: allProducts } = await supabaseAdmin!
+      .from('products')
+      .select('id, name, category, price')
     
-    if (allUsers?.users) {
-      allUsers.users.forEach((user) => {
-        userMap.set(user.id, {
-          email: user.email || '',
-          name: user.user_metadata?.full_name || user.user_metadata?.name || undefined
-        })
+    const productMap = new Map<string, any>()
+    if (allProducts) {
+      allProducts.forEach((product: any) => {
+        productMap.set(product.id, product)
       })
     }
 
+    // Trouver le produit abonnement pour avoir son prix
+    const subscriptionProduct = allProducts?.find((p: any) => 
+      p.category === 'abonnement' || p.id === 'abonnement' || p.id?.toLowerCase() === 'abonnement'
+    )
+
+    // Créer des entrées "orders" virtuelles pour les achats qui n'ont pas de commande correspondante
+    const virtualOrders: any[] = []
+    
+    // 1. Traiter les achats depuis user_capsules (masterclass, coaching, capsules, packs, etc.)
+    if (userCapsules) {
+      for (const capsule of userCapsules) {
+        // Appliquer les filtres aux capsules
+        if (userId && capsule.user_id !== userId) {
+          continue
+        }
+
+        // Vérifier si une commande existe déjà pour cet achat (tous statuts, pas seulement 'paid')
+        // Comparer aussi par nom de produit au cas où le product_id serait différent
+        const existingOrder = orders?.find((o: any) => 
+          o.user_id === capsule.user_id && 
+          (o.product_id === capsule.capsule_id || 
+           o.product_id?.toLowerCase() === capsule.capsule_id?.toLowerCase())
+        )
+
+        // Si pas de commande existante, créer une entrée virtuelle
+        if (!existingOrder) {
+          const product = productMap.get(capsule.capsule_id)
+          const virtualOrder = {
+            id: `virtual-${capsule.id}`,
+            user_id: capsule.user_id,
+            product_id: capsule.capsule_id,
+            product_name: product?.name || capsule.capsule_id,
+            amount: product?.price || 0,
+            amount_fcfa: null,
+            payment_method: 'stripe', // Par défaut, on suppose Stripe si pas d'info
+            status: 'paid', // Les achats dans user_capsules sont considérés comme payés
+            operator: null,
+            msisdn: null,
+            tx_ref: null,
+            proof_path: null,
+            transaction_id: `virtual-${capsule.capsule_id}-${capsule.user_id}`,
+            created_at: capsule.created_at,
+            updated_at: capsule.created_at,
+            validated_at: capsule.created_at,
+            validated_by: null,
+            is_virtual: true // Marqueur pour indiquer que c'est une entrée virtuelle
+          }
+
+          // Appliquer les filtres de statut et méthode de paiement
+          if (status && virtualOrder.status !== status) {
+            continue
+          }
+          if (paymentMethod && virtualOrder.payment_method !== paymentMethod) {
+            continue
+          }
+
+          virtualOrders.push(virtualOrder)
+        }
+      }
+    }
+
+    // 2. Traiter les abonnements depuis user_subscriptions
+    if (userSubscriptions) {
+      for (const subscription of userSubscriptions) {
+        // Appliquer les filtres
+        if (userId && subscription.user_id !== userId) {
+          continue
+        }
+
+        // Vérifier si une commande existe déjà pour cet abonnement
+        const existingOrder = orders?.find((o: any) => 
+          o.user_id === subscription.user_id && 
+          (o.product_id === 'abonnement' || o.product_id?.toLowerCase() === 'abonnement' || 
+           o.product_name?.toLowerCase()?.includes('abonnement') || 
+           o.product_name?.toLowerCase()?.includes('sagesse'))
+        )
+
+        // Si pas de commande existante et que l'abonnement est actif ou a été actif, créer une entrée virtuelle
+        if (!existingOrder && (subscription.status === 'active' || subscription.status === 'canceled' || subscription.status === 'past_due')) {
+          const subscriptionName = subscriptionProduct?.name || 'Abonnement Sagesse de Salomon'
+          const subscriptionPrice = subscriptionProduct?.price || 0
+          
+          // Déterminer la méthode de paiement selon si c'est Stripe ou Mobile Money
+          const paymentMethodSub = subscription.stripe_subscription_id ? 'stripe' : 'mobile_money'
+          
+          const virtualOrder = {
+            id: `virtual-subscription-${subscription.user_id}`,
+            user_id: subscription.user_id,
+            product_id: 'abonnement',
+            product_name: subscriptionName,
+            amount: subscriptionPrice,
+            amount_fcfa: null,
+            payment_method: paymentMethodSub,
+            status: subscription.status === 'active' ? 'paid' : (subscription.status === 'canceled' ? 'rejected' : 'paid'),
+            operator: null,
+            msisdn: null,
+            tx_ref: null,
+            proof_path: null,
+            transaction_id: subscription.stripe_subscription_id || `subscription-${subscription.user_id}`,
+            created_at: subscription.created_at || subscription.current_period_start || new Date().toISOString(),
+            updated_at: subscription.updated_at || subscription.current_period_start || new Date().toISOString(),
+            validated_at: subscription.created_at || subscription.current_period_start || new Date().toISOString(),
+            validated_by: null,
+            is_virtual: true
+          }
+
+          // Appliquer les filtres de statut et méthode de paiement
+          if (status && virtualOrder.status !== status) {
+            continue
+          }
+          if (paymentMethod && virtualOrder.payment_method !== paymentMethod) {
+            continue
+          }
+
+          virtualOrders.push(virtualOrder)
+        }
+      }
+    }
+
+    // Combiner les commandes réelles et virtuelles
+    const allOrders = [...(orders || []), ...virtualOrders]
+
+    // Récupérer tous les utilisateurs pour enrichir les commandes avec email et nom
+    // IMPORTANT: listUsers retourne seulement 50 utilisateurs par page par défaut, il faut paginer
+    const MAX_PER_PAGE = 200
+    const allUsersList: any[] = []
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      const { data, error } = await supabaseAdmin!.auth.admin.listUsers({
+        page,
+        perPage: MAX_PER_PAGE
+      })
+
+      if (error) {
+        console.error('[ORDERS API] Erreur récupération utilisateurs (page', page, '):', error)
+        // On continue quand même avec les utilisateurs déjà récupérés
+        break
+      }
+
+      const batch = data?.users || []
+      allUsersList.push(...batch)
+
+      if (batch.length < MAX_PER_PAGE) {
+        hasMore = false
+      } else {
+        page += 1
+      }
+    }
+
+    console.log('[ORDERS API]', allUsersList.length, 'utilisateurs récupérés pour enrichissement')
+
+    const userMap = new Map<string, { email: string, name?: string }>()
+    
+    allUsersList.forEach((user) => {
+      // Essayer plusieurs formats de nom dans les métadonnées
+      const firstName = user.user_metadata?.first_name || ''
+      const lastName = user.user_metadata?.last_name || ''
+      const fullName = firstName && lastName 
+        ? `${firstName} ${lastName}`.trim()
+        : user.user_metadata?.full_name || user.user_metadata?.name || undefined
+      
+      userMap.set(user.id, {
+        email: user.email || '',
+        name: fullName || user.email?.split('@')[0] || 'Utilisateur'
+      })
+    })
+
     // Enrichir les commandes avec les informations utilisateur
-    const enrichedOrders = (orders || []).map((order: any) => {
+    const enrichedOrders = allOrders.map((order: any) => {
       const userInfo = userMap.get(order.user_id)
+      const userEmail = userInfo?.email || null
+      let userName = userInfo?.name || null
+      
+      // Si pas de nom mais qu'on a l'email, utiliser la partie avant @
+      if (!userName && userEmail) {
+        userName = userEmail.split('@')[0]
+      }
+      
+      // Si on n'a toujours pas d'info utilisateur, essayer de récupérer directement
+      if (!userInfo && order.user_id) {
+        // Log pour debug
+        console.log('[ORDERS API] ⚠️ Utilisateur non trouvé dans userMap:', {
+          userId: order.user_id,
+          productId: order.product_id,
+          productName: order.product_name
+        })
+      }
+      
       return {
         ...order,
-        user_email: userInfo?.email || null,
-        user_name: userInfo?.name || userInfo?.email?.split('@')[0] || null
+        user_email: userEmail,
+        user_name: userName
       }
     })
 
@@ -784,6 +1011,53 @@ export async function DELETE(request: NextRequest) {
         { error: 'orderId requis' },
         { status: 400 }
       )
+    }
+
+    // Vérifier si c'est un achat virtuel (commence par "virtual-")
+    if (orderId.startsWith('virtual-')) {
+      // Extraire l'ID réel de user_capsules
+      const capsuleId = orderId.replace('virtual-', '')
+      
+      // Récupérer l'entrée user_capsules
+      const { data: capsule, error: capsuleFetchError } = await supabaseAdmin!
+        .from('user_capsules')
+        .select('*')
+        .eq('id', capsuleId)
+        .single()
+
+      if (capsuleFetchError || !capsule) {
+        return NextResponse.json(
+          { error: 'Achat virtuel non trouvé' },
+          { status: 404 }
+        )
+      }
+
+      console.log('[ADMIN/ORDERS] 🗑️ Suppression achat virtuel:', {
+        capsuleId: capsule.id,
+        userId: capsule.user_id,
+        capsuleId_product: capsule.capsule_id
+      })
+
+      // Supprimer depuis user_capsules
+      const { error: deleteError } = await supabaseAdmin!
+        .from('user_capsules')
+        .delete()
+        .eq('id', capsuleId)
+
+      if (deleteError) {
+        console.error('Erreur suppression achat virtuel:', deleteError)
+        return NextResponse.json(
+          { error: deleteError.message },
+          { status: 500 }
+        )
+      }
+
+      console.log('Achat virtuel supprimé avec succès:', capsuleId)
+
+      return NextResponse.json({
+        success: true,
+        message: 'Achat virtuel supprimé avec succès'
+      })
     }
 
     // Récupérer la commande existante pour vérifier si elle était payée

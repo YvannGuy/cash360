@@ -525,11 +525,20 @@ export default function AdminMesAchatsPage() {
                   {currentOrders.map((order: any) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{order.user_name || 'N/A'}</div>
-                        <div className="text-sm text-gray-500">{order.user_email || 'N/A'}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {order.user_name || order.user_email?.split('@')[0] || 'Utilisateur inconnu'}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {order.user_email || `ID: ${order.user_id?.substring(0, 8)}...` || 'N/A'}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{order.product_name}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {order.product_name}
+                          {order.is_virtual && (
+                            <span className="ml-2 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Virtuel</span>
+                          )}
+                        </div>
                         <div className="text-sm text-gray-500">{order.product_id}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -557,7 +566,7 @@ export default function AdminMesAchatsPage() {
                         >
                           Voir
                         </button>
-                        {order.status === 'pending_review' && (
+                        {!order.is_virtual && order.status === 'pending_review' && (
                           <>
                             <button
                               onClick={() => handleValidateOrder(order.id)}
@@ -579,6 +588,9 @@ export default function AdminMesAchatsPage() {
                         >
                           Supprimer
                         </button>
+                        {order.is_virtual && (
+                          <span className="ml-2 text-xs text-gray-500 italic">(virtuel)</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -722,7 +734,7 @@ export default function AdminMesAchatsPage() {
                   <p className="text-gray-600 text-sm">Créé le: {new Date(selectedOrder.created_at).toLocaleString('fr-FR')}</p>
                 </div>
 
-                {selectedOrder.status === 'pending_review' && (
+                {!selectedOrder.is_virtual && selectedOrder.status === 'pending_review' && (
                   <div className="flex gap-2 pt-4 border-t">
                     <button
                       onClick={() => handleValidateOrder(selectedOrder.id)}
@@ -736,6 +748,13 @@ export default function AdminMesAchatsPage() {
                     >
                       Rejeter
                     </button>
+                  </div>
+                )}
+                {selectedOrder.is_virtual && (
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-gray-500 italic">
+                      Cet achat est une entrée virtuelle créée depuis user_capsules. Il n'est pas possible de le valider ou rejeter car il n'existe pas dans la table orders.
+                    </p>
                   </div>
                 )}
               </div>
