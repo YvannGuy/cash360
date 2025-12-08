@@ -135,14 +135,19 @@ export async function POST(request: NextRequest) {
     // Les autres catégories (analyse-financiere, pack, ebook, abonnement) n'apparaissent pas dans "Formations et Sessions"
     const productCategory = category || 'capsules'
     
-    if (productCategory === 'capsules') {
+    if (productCategory === 'capsules' || productCategory === 'masterclass' || productCategory === 'coaching') {
       console.log('Création de la formation associée au produit (catégorie capsules):', { productId: autoId, productName: name })
       
-      // Déterminer le type de session basé sur productType
+      // Déterminer le type de session basé sur la catégorie du produit
       // La contrainte CHECK semble n'accepter que certaines valeurs
-      // Utiliser 'Capsule' par défaut pour tous les produits créés depuis la boutique
+      // Utiliser le type approprié selon la catégorie
       // L'admin pourra modifier le type plus tard dans "Formations et Sessions"
-      const sessionType = 'Capsule'
+      let sessionType = 'Capsule'
+      if (productCategory === 'masterclass') {
+        sessionType = 'Webinaire'
+      } else if (productCategory === 'coaching') {
+        sessionType = 'Workshop'
+      }
       
       // Utiliser l'ID du produit comme capsule_id pour lier la formation au produit
       const formationCapsuleId = capsuleId || autoId
@@ -309,12 +314,17 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Mettre à jour aussi la formation associée SEULEMENT si la catégorie est "capsules"
+    // Mettre à jour aussi la formation associée si la catégorie est "capsules", "masterclass" ou "coaching"
     const productCategory = category || 'capsules'
     
-    if (productCategory === 'capsules') {
-      // Utiliser 'Capsule' par défaut (l'admin peut modifier le type plus tard)
-      const sessionType = 'Capsule'
+    if (productCategory === 'capsules' || productCategory === 'masterclass' || productCategory === 'coaching') {
+      // Déterminer le type de session basé sur la catégorie
+      let sessionType = 'Capsule'
+      if (productCategory === 'masterclass') {
+        sessionType = 'Webinaire'
+      } else if (productCategory === 'coaching') {
+        sessionType = 'Workshop'
+      }
       const { error: formationError } = await supabaseAdmin!
         .from('formations')
         .update({

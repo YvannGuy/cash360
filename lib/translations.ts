@@ -1184,7 +1184,9 @@ export const translations = {
           analysis: "Analyse financière",
           pack: "Pack",
           ebook: "Ebook",
-          subscription: "Abonnement"
+          subscription: "Abonnement",
+          coaching: "Coaching",
+          masterclass: "Masterclass"
         },
         comingSoon: "Bientôt",
         buy: "Acheter",
@@ -1207,6 +1209,10 @@ export const translations = {
         purchaseConfirmed: "Achat confirmé",
         participate: "Participer",
         pendingValidation: "En attente de validation",
+        takeAppointment: "Prendre rendez-vous",
+        appointmentNotConfigured: "Rendez-vous en cours de configuration",
+        accessZoom: "Accéder au Zoom",
+        zoomNotScheduled: "Session Zoom en cours de planification",
         sessionStatus: {
           planning: "Session en cours de planification",
           completed: "Terminée",
@@ -2569,7 +2575,9 @@ export const translations = {
           analysis: "Financial analysis",
           pack: "Pack",
           ebook: "Ebook",
-          subscription: "Subscription"
+          subscription: "Subscription",
+          coaching: "Coaching",
+          masterclass: "Masterclass"
         },
         comingSoon: "Coming soon",
         buy: "Buy",
@@ -2592,6 +2600,10 @@ export const translations = {
         purchaseConfirmed: "Purchase confirmed",
         participate: "Participate",
         pendingValidation: "Pending validation",
+        takeAppointment: "Book an appointment",
+        appointmentNotConfigured: "Appointment being configured",
+        accessZoom: "Access Zoom",
+        zoomNotScheduled: "Zoom session being scheduled",
         sessionStatus: {
           planning: "Session being planned",
           completed: "Completed",
@@ -3952,7 +3964,9 @@ export const translations = {
           analysis: "Análisis financiero",
           pack: "Pack",
           ebook: "Ebook",
-          subscription: "Suscripción"
+          subscription: "Suscripción",
+          coaching: "Coaching",
+          masterclass: "Masterclass"
         },
         comingSoon: "Próximamente",
         buy: "Comprar",
@@ -3975,6 +3989,10 @@ export const translations = {
         purchaseConfirmed: "Compra confirmada",
         participate: "Participar",
         pendingValidation: "Pendiente de validación",
+        takeAppointment: "Reservar cita",
+        appointmentNotConfigured: "Cita en configuración",
+        accessZoom: "Acceder a Zoom",
+        zoomNotScheduled: "Sesión Zoom en planificación",
         sessionStatus: {
           planning: "Sesión en planificación",
           completed: "Completada",
@@ -5335,7 +5353,9 @@ export const translations = {
           analysis: "Análise financeira",
           pack: "Pacote",
           ebook: "Ebook",
-          subscription: "Assinatura"
+          subscription: "Assinatura",
+          coaching: "Coaching",
+          masterclass: "Masterclass"
         },
         comingSoon: "Em breve",
         buy: "Comprar",
@@ -5358,6 +5378,10 @@ export const translations = {
         purchaseConfirmed: "Compra confirmada",
         participate: "Participar",
         pendingValidation: "Aguardando validação",
+        takeAppointment: "Agendar consulta",
+        appointmentNotConfigured: "Consulta em configuração",
+        accessZoom: "Acessar Zoom",
+        zoomNotScheduled: "Sessão Zoom em planejamento",
         sessionStatus: {
           planning: "Sessão em planejamento",
           completed: "Concluída",

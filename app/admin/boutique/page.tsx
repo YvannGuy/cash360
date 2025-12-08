@@ -1027,6 +1027,8 @@ export default function AdminBoutiquePage() {
                     <option value="pack">Pack</option>
                     <option value="ebook">Ebook (Produits à venir très bientôt)</option>
                     <option value="abonnement">Abonnement (Produits à venir très bientôt)</option>
+                    <option value="coaching">Coaching</option>
+                    <option value="masterclass">Masterclass</option>
                   </select>
                 </div>
 

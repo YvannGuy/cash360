@@ -1631,6 +1631,43 @@ const refreshFastSummary = useCallback(async () => {
           capsuleIds = [...capsuleIds, 'analyse-financiere']
         }
         
+        // Vérifier aussi les paiements Stripe pour masterclass et coaching
+        // (au cas où ils ne seraient pas dans orders mais dans payments)
+        const { data: allPayments } = await supabase
+          .from('payments')
+          .select('product_id')
+          .eq('user_id', user.id)
+          .eq('status', 'success')
+        
+        if (allPayments && allPayments.length > 0) {
+          // Récupérer les produits pour vérifier leur catégorie
+          const { data: productsData } = await supabase
+            .from('products')
+            .select('id, category')
+          
+          const productCategories = new Map<string, string>()
+          if (productsData) {
+            productsData.forEach((p: any) => {
+              productCategories.set(p.id, p.category || 'capsules')
+            })
+          }
+          
+          // Ajouter les produits masterclass et coaching payés qui ne sont pas déjà dans capsuleIds
+          for (const payment of allPayments) {
+            const productId = payment.product_id
+            if (productId && !capsuleIds.includes(productId)) {
+              const productCategory = productCategories.get(productId) || 'capsules'
+              // Ajouter masterclass et coaching (mais pas analyse-financiere ni abonnement)
+              if ((productCategory === 'masterclass' || productCategory === 'coaching') && 
+                  productId !== 'analyse-financiere' && 
+                  productId !== 'abonnement') {
+                capsuleIds = [...capsuleIds, productId]
+                console.log(`[INIT] ✅ Produit ${productId} (${productCategory}) ajouté depuis payments`)
+              }
+            }
+          }
+        }
+        
         setUserCapsules(capsuleIds)
         
         // Charger formations pour ces capsules (capsules prédéfinies ET produits de la boutique)
@@ -1775,6 +1812,43 @@ const refreshFastSummary = useCallback(async () => {
         // Ajouter "analyse-financiere" aux capsules si l'utilisateur a payé
         if (paymentAnalysis && paymentAnalysis.length > 0 && !userCapsulesIds.includes('analyse-financiere')) {
           userCapsulesIds = [...userCapsulesIds, 'analyse-financiere']
+        }
+        
+        // Vérifier aussi les paiements Stripe pour masterclass et coaching
+        // (au cas où ils ne seraient pas dans orders mais dans payments)
+        const { data: allPaymentsRefresh } = await supabase
+          .from('payments')
+          .select('product_id')
+          .eq('user_id', user.id)
+          .eq('status', 'success')
+        
+        if (allPaymentsRefresh && allPaymentsRefresh.length > 0) {
+          // Récupérer les produits pour vérifier leur catégorie
+          const { data: productsData } = await supabase
+            .from('products')
+            .select('id, category')
+          
+          const productCategories = new Map<string, string>()
+          if (productsData) {
+            productsData.forEach((p: any) => {
+              productCategories.set(p.id, p.category || 'capsules')
+            })
+          }
+          
+          // Ajouter les produits masterclass et coaching payés qui ne sont pas déjà dans userCapsulesIds
+          for (const payment of allPaymentsRefresh) {
+            const productId = payment.product_id
+            if (productId && !userCapsulesIds.includes(productId)) {
+              const productCategory = productCategories.get(productId) || 'capsules'
+              // Ajouter masterclass et coaching (mais pas analyse-financiere ni abonnement)
+              if ((productCategory === 'masterclass' || productCategory === 'coaching') && 
+                  productId !== 'analyse-financiere' && 
+                  productId !== 'abonnement') {
+                userCapsulesIds = [...userCapsulesIds, productId]
+                console.log(`[RAFRAÎCHISSEMENT] ✅ Produit ${productId} (${productCategory}) ajouté depuis payments`)
+              }
+            }
+          }
         }
         
         setUserCapsules(userCapsulesIds)
@@ -2705,7 +2779,9 @@ const refreshFastSummary = useCallback(async () => {
                     { id: 'analyse-financiere', label: t.dashboard.boutique.categories.analysis },
                     { id: 'pack', label: t.dashboard.boutique.categories.pack },
                     { id: 'ebook', label: t.dashboard.boutique.categories.ebook, badge: hasEbookProducts ? undefined : t.dashboard.boutique.comingSoon },
-                    { id: 'abonnement', label: t.dashboard.boutique.categories.subscription, badge: hasAbonnementProducts ? undefined : t.dashboard.boutique.comingSoon }
+                    { id: 'abonnement', label: t.dashboard.boutique.categories.subscription, badge: hasAbonnementProducts ? undefined : t.dashboard.boutique.comingSoon },
+                    { id: 'coaching', label: t.dashboard.boutique.categories.coaching },
+                    { id: 'masterclass', label: t.dashboard.boutique.categories.masterclass }
                   ].map((cat) => (
                     <button
                       key={cat.id}
@@ -3031,7 +3107,9 @@ const refreshFastSummary = useCallback(async () => {
                     { id: 'analyse-financiere', label: t.dashboard.boutique.categories.analysis },
                     { id: 'pack', label: t.dashboard.boutique.categories.pack },
                     { id: 'ebook', label: t.dashboard.boutique.categories.ebook, badge: hasEbookProducts ? undefined : t.dashboard.boutique.comingSoon },
-                    { id: 'abonnement', label: t.dashboard.boutique.categories.subscription, badge: hasAbonnementProducts ? undefined : t.dashboard.boutique.comingSoon }
+                    { id: 'abonnement', label: t.dashboard.boutique.categories.subscription, badge: hasAbonnementProducts ? undefined : t.dashboard.boutique.comingSoon },
+                    { id: 'coaching', label: t.dashboard.boutique.categories.coaching },
+                    { id: 'masterclass', label: t.dashboard.boutique.categories.masterclass }
                   ].map((cat) => (
                     <button
                       key={cat.id}
@@ -3152,6 +3230,8 @@ const refreshFastSummary = useCallback(async () => {
                       // Pour ebooks et packs, pas de statut de session (ils n'ont pas de sessions)
                       const isSubscriptionProduct = itemCategory === 'abonnement'
                       const hasNoSession = itemCategory === 'ebook' || itemCategory === 'pack' || isSubscriptionProduct
+                      const isMasterclass = itemCategory === 'masterclass'
+                      const isCoaching = itemCategory === 'coaching'
                       
                       const getStatus = (formation: any) => {
                         // Si c'est un ebook, pack ou analyse financière, pas de statut
@@ -3213,8 +3293,8 @@ const refreshFastSummary = useCallback(async () => {
                                 )}
                                 <p className="text-sm text-gray-600 mb-3">{c.blurb}</p>
                                 
-                                {/* Session info - seulement pour capsules avec sessions */}
-                                {!hasNoSession && formation && formation.date_scheduled && formation.time_scheduled && (
+                                {/* Session info - pour capsules, masterclass et coaching avec sessions */}
+                                {!hasNoSession && (isMasterclass || !isCoaching) && formation && formation.date_scheduled && formation.time_scheduled && (
                                   <div className="space-y-2 mb-4">
                                     <div className="flex items-center gap-2 text-sm">
                                       <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3274,6 +3354,25 @@ const refreshFastSummary = useCallback(async () => {
                                       {t.dashboard.purchases.purchaseConfirmed}
                                   </div>
                                   )
+                                ) : isCoaching ? (
+                                  // Pour Coaching : utiliser calendly_link
+                                  formation && formation.calendly_link ? (
+                                    <a
+                                      href={formation.calendly_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                      {t.dashboard.purchases.takeAppointment || 'Prendre rendez-vous'}
+                                    </a>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium">
+                                      {t.dashboard.purchases.appointmentNotConfigured || 'Rendez-vous en cours de configuration'}
+                                    </span>
+                                  )
                                 ) : isDiagnosticFinanceExpress ? (
                                   // Pour Diagnostic Finance Express : utiliser calendly_link
                                   formation && formation.calendly_link ? (
@@ -3291,6 +3390,25 @@ const refreshFastSummary = useCallback(async () => {
                                   ) : (
                                     <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium">
                                       En attente de configuration
+                                    </span>
+                                  )
+                                ) : isMasterclass ? (
+                                  // Pour Masterclass : utiliser zoom_link avec date/heure
+                                  formation && formation.zoom_link && formation.date_scheduled && formation.time_scheduled ? (
+                                    <a
+                                      href={formation.zoom_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                      </svg>
+                                      {t.dashboard.purchases.accessZoom || 'Accéder au Zoom'}
+                                    </a>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium">
+                                      {t.dashboard.purchases.zoomNotScheduled || 'Session Zoom en cours de planification'}
                                     </span>
                                   )
                                 ) : formation && formation.zoom_link && formation.date_scheduled && formation.time_scheduled && status && status.label !== t.dashboard.purchases.sessionStatus.completed ? (

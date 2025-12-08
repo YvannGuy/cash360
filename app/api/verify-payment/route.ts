@@ -477,9 +477,9 @@ export async function POST(request: NextRequest) {
           created_at: new Date().toISOString()
         })
       } 
-      // Si c'est une capsule de la boutique (category === 'capsules')
-      else if (productCategory === 'capsules') {
-        console.log(`✅ Capsule boutique ${item.id} ajoutée`)
+      // Si c'est une capsule, masterclass ou coaching de la boutique
+      else if (productCategory === 'capsules' || productCategory === 'masterclass' || productCategory === 'coaching') {
+        console.log(`✅ Produit boutique ${item.id} (${productCategory}) ajouté`)
         capsuleEntries.push({
           user_id: user.id,
           capsule_id: item.id,

@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer les formations depuis la base de données
-    // UNIQUEMENT celles liées aux produits de catégorie "capsules"
+    // UNIQUEMENT celles liées aux produits de catégorie "capsules", "masterclass" ou "coaching"
     // Les autres catégories (analyse-financiere, pack, ebook, abonnement) n'apparaissent pas dans "Formations et Sessions"
     
     // Récupérer toutes les formations
@@ -216,7 +216,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Filtrer les formations pour ne garder que celles liées aux produits de catégorie "capsules"
+    // Filtrer les formations pour ne garder que celles liées aux produits de catégorie "capsules", "masterclass" ou "coaching"
     // Ou les capsules prédéfinies (capsule1-5)
     const formations = (allFormations || []).filter((formation: any) => {
       const capsuleId = formation.capsule_id
@@ -226,13 +226,13 @@ export async function GET(request: NextRequest) {
         return true
       }
       
-      // Vérifier si le produit associé est de catégorie "capsules"
+      // Vérifier si le produit associé est de catégorie "capsules", "masterclass" ou "coaching"
       const productCategory = productCategories.get(capsuleId)
-      return productCategory === 'capsules'
+      return productCategory === 'capsules' || productCategory === 'masterclass' || productCategory === 'coaching'
     })
 
     console.log(`Nombre de formations récupérées depuis la base de données: ${(allFormations || []).length}`)
-    console.log(`Nombre de formations filtrées (catégorie capsules uniquement): ${formations.length}`)
+    console.log(`Nombre de formations filtrées (catégories capsules, masterclass, coaching): ${formations.length}`)
     
     // Log toutes les formations brutes pour débogage
     if (formations && formations.length > 0) {
