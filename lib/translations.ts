@@ -58,10 +58,6 @@ export const translations = {
         success: "Inscription réussie ! Nous vous contacterons bientôt.",
         error: "Erreur lors de l'inscription. Veuillez réessayer.",
         disclaimer: "En réservant un appel, vous acceptez de recevoir nos communications sur la formation Cash360."
-      },
-      notification: {
-        title: "Nouvelle inscription !",
-        message: "vient de s'inscrire"
       }
     },
     
@@ -1442,10 +1438,6 @@ export const translations = {
         success: "Registration successful! We will contact you soon.",
         error: "Registration error. Please try again.",
         disclaimer: "By booking a call, you agree to receive our communications about the Cash360 training."
-      },
-      notification: {
-        title: "New registration!",
-        message: "just registered"
       }
     },
     
@@ -2831,10 +2823,6 @@ export const translations = {
         success: "¡Registro exitoso! Te contactaremos pronto.",
         error: "Error al registrarse. Por favor, inténtalo de nuevo.",
         disclaimer: "Al reservar una llamada, aceptas recibir nuestras comunicaciones sobre la formación Cash360."
-      },
-      notification: {
-        title: "¡Nuevo registro!",
-        message: "acaba de registrarse"
       }
     },
     
@@ -4218,10 +4206,6 @@ export const translations = {
         success: "Inscrição bem-sucedida! Entraremos em contato em breve.",
         error: "Erro ao se inscrever. Por favor, tente novamente.",
         disclaimer: "Ao reservar uma chamada, você concorda em receber nossas comunicações sobre a formação Cash360."
-      },
-      notification: {
-        title: "Nova inscrição!",
-        message: "acabou de se inscrever"
       }
     },
     

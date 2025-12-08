@@ -103,10 +103,20 @@ export default function Testimonials() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {displayTestimonials.map((testimonial, index) => (
+            {displayTestimonials.map((testimonial, index) => {
+              // Définir les délais d'animation avec des classes Tailwind prédéfinies
+              const delayClasses = [
+                'delay-0',
+                'delay-200',
+                'delay-400',
+                'delay-600'
+              ]
+              const delayClass = delayClasses[index] || 'delay-0'
+              
+              return (
               <div
                 key={index}
-                className={`group transition-all duration-1000 delay-${index * 200} ${
+                className={`group transition-all duration-1000 ${delayClass} ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
               >
@@ -137,7 +147,8 @@ export default function Testimonials() {
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

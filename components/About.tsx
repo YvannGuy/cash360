@@ -1,33 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 
 export default function About() {
   const { t } = useLanguage()
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    const element = document.getElementById('apropos')
-    if (element) {
-      observer.observe(element)
-    }
-
-    return () => {
-      if (element) {
-        observer.unobserve(element)
-      }
-    }
-  }, [])
 
   return (
     <section id="apropos" className="py-20 bg-gray-50">
@@ -98,11 +75,13 @@ export default function About() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Photo carrée */}
                 <div className="lg:col-span-1">
-                  <div className="w-full h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg">
-                    <img
+                  <div className="w-full h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg relative">
+                    <Image
                       src="/images/logo/myriam.jpeg"
                       alt="Pasteur Myriam Konan"
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 33vw"
                     />
                   </div>
                 </div>

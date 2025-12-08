@@ -163,7 +163,6 @@ export async function POST(request: NextRequest) {
         access_type: 'tous',
         price: price,
         require_payment: true,
-        send_notification: true,
         status: 'a_venir'
       }
       

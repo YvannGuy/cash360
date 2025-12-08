@@ -333,10 +333,10 @@ const refreshFastSummary = useCallback(async () => {
 
   useEffect(() => {
     if (!hasPremiumAccess) return
-    if (activeTab === 'overview' && budgetSnapshot) {
+    if (activeTab === 'overview') {
       refreshBudgetSnapshot()
     }
-  }, [activeTab, budgetSnapshot, hasPremiumAccess, refreshBudgetSnapshot])
+  }, [activeTab, hasPremiumAccess, refreshBudgetSnapshot])
 
   const handleBudgetChange = useCallback((snapshot: BudgetSnapshot) => {
     setBudgetSnapshot(snapshot)
@@ -1435,7 +1435,7 @@ const refreshFastSummary = useCallback(async () => {
     }, 10000) // Toutes les 10 secondes (au lieu de 30)
     
     return () => clearInterval(interval)
-  }, [supabase, user, refreshSubscription])
+  }, [supabase, user, refreshSubscription, subscription, userOrders])
 
   // Réinitialiser les pages et la recherche lors du changement d'onglet
   useEffect(() => {

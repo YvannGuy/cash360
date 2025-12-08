@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
     // Attendre 1 seconde pour respecter les limites de rate
     await delay(1000)
 
-    // Envoyer l'email admin combiné (documents + notification paiement)
+    // Envoyer l'email admin combiné (documents + paiement)
     const adminEmailHtml = generateAdminEmailHtml(fullClientInfo, ticket, timestamp)
     await sendMail({
       to: process.env.MAIL_ADMIN || process.env.DESTINATION_EMAIL || 'cash@cash360.finance',

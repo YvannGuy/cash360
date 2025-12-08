@@ -25,8 +25,7 @@ export async function POST(request: NextRequest) {
       timezone,
       accessType,
       price,
-      requirePayment,
-      sendNotification
+      requirePayment
     } = body
 
     // Validation - seuls le nom est obligatoire, date et heure sont optionnelles
@@ -55,7 +54,6 @@ export async function POST(request: NextRequest) {
         access_type: accessType || 'tous',
         price: price || 0,
         require_payment: requirePayment || false,
-        send_notification: sendNotification || true,
         status: 'a_venir'
       })
       .select()
@@ -118,8 +116,7 @@ export async function PUT(request: NextRequest) {
       timezone,
       accessType,
       price,
-      requirePayment,
-      sendNotification
+      requirePayment
     } = body
 
     // Validation - seuls le nom est obligatoire, date et heure sont optionnelles
@@ -147,8 +144,7 @@ export async function PUT(request: NextRequest) {
         timezone: timezone || 'Europe/Paris',
         access_type: accessType || 'tous',
         price: price || 0,
-        require_payment: requirePayment || false,
-        send_notification: sendNotification || true
+        require_payment: requirePayment || false
       })
       .eq('id', formationId)
       .select()

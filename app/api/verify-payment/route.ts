@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
               cookiesToSet.forEach(({ name, value, options }) => {
                 cookieStore.set(name, value, options)
               })
-            } catch (error) {
+            } catch {
               // Ignore
             }
           },
@@ -406,7 +406,7 @@ export async function POST(request: NextRequest) {
                 console.log('[VERIFY-PAYMENT] ⚠️ Analyse déjà existante (doublon détecté), on continue')
               }
             } else {
-              console.log(`[VERIFY-PAYMENT] ✅ Nouvelle analyse créée: ${ticket} pour utilisateur ${user.id} (paiement: ${payment.transaction_id})`)
+              console.log(`[VERIFY-PAYMENT] ✅ Nouvelle analyse créée: ${ticket} (ID: ${analysis?.id || 'N/A'}) pour utilisateur ${user.id} (paiement: ${payment.transaction_id})`)
             }
           } catch (error) {
             console.error('[VERIFY-PAYMENT] ❌ Erreur lors de la création de l\'analyse:', error)

@@ -8,7 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-10-29.clover'
 })
 
-const SALOMON_PRICE_ID = process.env.STRIPE_SALOMON_PRICE_ID || 'price_1SZwvXFv4a9jSj8cgdjfzaYd'
 const SUBSCRIPTION_PLAN_CODE = 'sagesse-salomon'
 const SUBSCRIPTION_GRACE_DAYS = Number(process.env.SALOMON_GRACE_DAYS || '3')
 
@@ -482,7 +481,6 @@ export async function POST(request: NextRequest) {
       }
       
       // Insérer les commandes dans orders
-      let insertedOrders: any[] = []
       if (orderEntries.length > 0) {
         console.log(`[WEBHOOK] ===== CRÉATION DE ${orderEntries.length} COMMANDE(S) DANS ORDERS =====`)
         const { data: ordersData, error: orderInsertError } = await supabaseAdmin
@@ -494,7 +492,6 @@ export async function POST(request: NextRequest) {
           console.error('[WEBHOOK] ❌ Erreur insertion commandes:', orderInsertError)
         } else {
           console.log(`[WEBHOOK] ✅ ${ordersData?.length || 0} commande(s) créée(s) dans orders`)
-          insertedOrders = ordersData || []
         }
       }
       
@@ -557,7 +554,7 @@ export async function POST(request: NextRequest) {
             const ticket = `CASH-${generateShortTicket()}`
             
             // Créer l'entrée dans analyses - TOUJOURS créer une nouvelle analyse pour chaque nouveau paiement
-            const { data: analysis, error: analysisError } = await supabaseAdmin
+            const { error: analysisError } = await supabaseAdmin
               .from('analyses')
               .insert({
                 ticket: ticket,
