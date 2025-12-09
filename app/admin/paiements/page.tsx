@@ -300,7 +300,7 @@ export default function AdminPaiementsPage() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-[#012F4E] mb-2">Paiements et Transactions</h1>
-              <p className="text-gray-600">Suivez et gérez toutes les transactions effectuées sur Cash360 : analyses financières, capsules, packs complets, ebooks, abonnements et formations.</p>
+              <p className="text-gray-600">Suivez et gérez toutes les transactions effectuées sur Cash360 : analyses financières, capsules, packs complets, ebooks, abonnements, coaching, masterclass et formations.</p>
             </div>
             <div className="flex gap-3">
               <button 
@@ -461,6 +461,8 @@ export default function AdminPaiementsPage() {
                   <option>Pack complet</option>
                   <option>Ebook</option>
                   <option>Abonnement</option>
+                  <option>Coaching</option>
+                  <option>Masterclass</option>
                   <option>Formation</option>
                 </select>
                 <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -503,8 +505,12 @@ export default function AdminPaiementsPage() {
                       const displayEmail = payment.user_email || payment.email || 'N/A'
                       const initials = getInitials(displayEmail !== 'N/A' ? displayEmail : 'UN')
                       
-                      const statusColor = payment.status === 'success' ? 'green' : payment.status === 'failed' ? 'red' : payment.status === 'pending' ? 'orange' : 'gray'
-                      const StatusIcon = payment.status === 'success' ? (
+                      // Reconnaître tous les statuts valides comme réussis
+                      const isSuccess = ['success', 'succeeded', 'paid', 'completed', 'pending_review'].includes(payment.status)
+                      const isPending = payment.status === 'pending'
+                      const isFailed = payment.status === 'failed'
+                      const statusColor = isSuccess ? 'green' : isFailed ? 'red' : isPending ? 'orange' : 'gray'
+                      const StatusIcon = isSuccess ? (
                         <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                         </svg>
@@ -513,7 +519,7 @@ export default function AdminPaiementsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       )
-                      const statusLabel = payment.status === 'success' ? 'Réussi' : payment.status === 'failed' ? 'Échec' : payment.status === 'pending' ? 'En attente' : 'Inconnu'
+                      const statusLabel = isSuccess ? (payment.status === 'pending_review' ? 'En révision' : 'Réussi') : isFailed ? 'Échec' : isPending ? 'En attente' : payment.status || 'Inconnu'
                       
                       return (
                         <tr key={payment.id} className="hover:bg-gray-50 transition-colors">
@@ -654,7 +660,7 @@ export default function AdminPaiementsPage() {
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 block">Statut</label>
                 <div className="flex items-center gap-2">
-                  {selectedPayment.status === 'success' ? (
+                  {['success', 'succeeded', 'paid', 'completed', 'pending_review'].includes(selectedPayment.status) ? (
                     <>
                       <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>

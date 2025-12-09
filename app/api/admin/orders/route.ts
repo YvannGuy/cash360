@@ -295,6 +295,26 @@ export async function GET(request: NextRequest) {
 
     console.log('[ORDERS API]', userSubscriptions?.length || 0, 'abonnements récupérés depuis user_subscriptions')
 
+    // Récupérer aussi TOUS les paiements depuis la table payments
+    // Cela permet d'inclure tous les types de transactions même s'ils ne sont pas dans orders
+    let paymentsQuery = supabaseAdmin!
+      .from('payments')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (userId) {
+      paymentsQuery = paymentsQuery.eq('user_id', userId)
+    }
+
+    const { data: allPayments, error: paymentsError } = await paymentsQuery
+
+    if (paymentsError) {
+      console.error('[ORDERS API] Erreur récupération payments:', paymentsError)
+      // On continue quand même
+    }
+
+    console.log('[ORDERS API]', allPayments?.length || 0, 'paiements récupérés depuis payments')
+
     // Récupérer les informations des produits pour enrichir les données
     const { data: allProducts } = await supabaseAdmin!
       .from('products')
@@ -426,6 +446,75 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 3. Traiter les paiements depuis la table payments qui ne sont pas déjà dans orders
+    if (allPayments) {
+      for (const payment of allPayments) {
+        // Appliquer les filtres
+        if (userId && payment.user_id !== userId) {
+          continue
+        }
+
+        // Vérifier si une commande existe déjà pour ce paiement
+        const existingOrder = orders?.find((o: any) => 
+          o.user_id === payment.user_id && 
+          (o.product_id === payment.product_id || 
+           o.transaction_id === payment.transaction_id)
+        ) || virtualOrders.find((o: any) => 
+          o.user_id === payment.user_id && 
+          (o.product_id === payment.product_id || 
+           o.transaction_id === payment.transaction_id)
+        )
+
+        // Si pas de commande existante et que le paiement est réussi/validé
+        if (!existingOrder) {
+          const validStatuses = ['success', 'succeeded', 'paid', 'completed', 'pending_review']
+          if (validStatuses.includes(payment.status)) {
+            const product = productMap.get(payment.product_id)
+            
+            // Déterminer le nom du produit
+            let productName = product?.name || payment.product_id || 'Produit inconnu'
+            
+            // Si c'est un abonnement, utiliser un nom approprié
+            if (payment.payment_type === 'abonnement' || payment.payment_type === 'subscription') {
+              productName = product?.name || 'Abonnement Sagesse de Salomon'
+            }
+            
+            const virtualOrderFromPayment = {
+              id: `virtual-payment-${payment.id}`,
+              user_id: payment.user_id,
+              product_id: payment.product_id || 'unknown',
+              product_name: productName,
+              amount: payment.amount || 0,
+              amount_fcfa: null,
+              payment_method: payment.method || 'stripe',
+              status: payment.status === 'pending_review' ? 'paid' : payment.status,
+              operator: null,
+              msisdn: null,
+              tx_ref: null,
+              proof_path: null,
+              transaction_id: payment.transaction_id || payment.id,
+              created_at: payment.created_at || new Date().toISOString(),
+              updated_at: payment.updated_at || payment.created_at || new Date().toISOString(),
+              validated_at: payment.created_at || new Date().toISOString(),
+              validated_by: null,
+              is_virtual: true,
+              from_payments_table: true // Marqueur pour indiquer que ça vient de payments
+            }
+
+            // Appliquer les filtres de statut et méthode de paiement
+            if (status && virtualOrderFromPayment.status !== status) {
+              continue
+            }
+            if (paymentMethod && virtualOrderFromPayment.payment_method !== paymentMethod) {
+              continue
+            }
+
+            virtualOrders.push(virtualOrderFromPayment)
+          }
+        }
+      }
+    }
+
     // Combiner les commandes réelles et virtuelles
     const allOrders = [...(orders || []), ...virtualOrders]
 
@@ -505,14 +594,16 @@ export async function GET(request: NextRequest) {
     })
 
     // Calculer les statistiques
+    // Inclure tous les statuts valides (paid, completed, succeeded, success, pending_review) dans les revenus
+    const validPaidStatuses = ['paid', 'completed', 'succeeded', 'success', 'pending_review']
     const stats = {
       total: enrichedOrders.length,
-      pending: enrichedOrders.filter((o: any) => o.status === 'pending_review').length,
-      paid: enrichedOrders.filter((o: any) => o.status === 'paid').length,
+      pending: enrichedOrders.filter((o: any) => o.status === 'pending_review' || o.status === 'pending').length,
+      paid: enrichedOrders.filter((o: any) => validPaidStatuses.includes(o.status)).length,
       rejected: enrichedOrders.filter((o: any) => o.status === 'rejected').length,
       mobileMoney: enrichedOrders.filter((o: any) => o.payment_method === 'mobile_money').length,
       stripe: enrichedOrders.filter((o: any) => o.payment_method === 'stripe').length,
-      totalRevenue: enrichedOrders.filter((o: any) => o.status === 'paid' && o.amount).reduce((sum: number, o: any) => sum + (parseFloat(o.amount) || 0), 0) || 0
+      totalRevenue: enrichedOrders.filter((o: any) => validPaidStatuses.includes(o.status) && o.amount).reduce((sum: number, o: any) => sum + (parseFloat(o.amount) || 0), 0) || 0
     }
 
     return NextResponse.json({

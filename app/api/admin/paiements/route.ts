@@ -11,18 +11,122 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer les paiements depuis la base de données
-    const { data: payments, error: paymentsError } = await supabaseAdmin!
-      .from('payments')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1000) // Limiter pour performance
+    // La table payments pourrait ne pas exister, donc on essaie d'abord avec un fallback
+    let payments: any[] = []
+    let paymentsError: any = null
+    
+    try {
+      const { data: paymentsData, error: paymentsErr } = await supabaseAdmin!
+        .from('payments')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1000)
 
-    if (paymentsError) {
-      console.error('[PAIEMENTS API] Erreur lors de la récupération des paiements:', paymentsError)
-      return NextResponse.json(
-        { error: paymentsError.message },
-        { status: 500 }
-      )
+      if (paymentsErr) {
+        paymentsError = paymentsErr
+        console.warn('[PAIEMENTS API] Table payments non trouvée, tentative depuis orders et user_subscriptions')
+      } else {
+        payments = paymentsData || []
+      }
+    } catch (err) {
+      console.warn('[PAIEMENTS API] Erreur accès table payments:', err)
+    }
+
+    // Si la table payments n'existe pas ou est vide, récupérer depuis orders et user_subscriptions
+    if (!payments || payments.length === 0 || paymentsError) {
+      console.log('[PAIEMENTS API] Récupération depuis orders et user_subscriptions...')
+      
+      // Récupérer depuis orders (si la structure contient les champs nécessaires)
+      let ordersData = null
+      try {
+        const result = await supabaseAdmin!
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(1000)
+        ordersData = result.data
+      } catch (err) {
+        console.error('Erreur lors de la récupération des orders:', err)
+        ordersData = null
+      }
+
+      // Récupérer depuis user_subscriptions pour les abonnements
+      let subscriptionsData = null
+      try {
+        const result = await supabaseAdmin!
+          .from('user_subscriptions')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(1000)
+        subscriptionsData = result.data
+      } catch (err) {
+        console.error('Erreur lors de la récupération des subscriptions:', err)
+        subscriptionsData = null
+      }
+
+      // Convertir les orders en format payments si la structure le permet
+      if (ordersData && Array.isArray(ordersData)) {
+        // Vérifier si orders a les colonnes attendues (user_id, product_id, etc.)
+        const sampleOrder = ordersData[0]
+        if (sampleOrder && (sampleOrder.user_id || sampleOrder.customer_email)) {
+          // Adapter les orders au format payments
+          const convertedPayments = ordersData.map((order: any) => {
+            // Essayer de trouver product_id dans metadata ou order_items
+            let productId = order.product_id
+            if (!productId && order.metadata) {
+              try {
+                const metadata = typeof order.metadata === 'string' ? JSON.parse(order.metadata) : order.metadata
+                productId = metadata.product_id || metadata.items?.[0]?.id
+              } catch {}
+            }
+
+            return {
+              id: order.id,
+              user_id: order.user_id || null,
+              product_id: productId || 'unknown',
+              payment_type: productId === 'abonnement' ? 'abonnement' : 'other',
+              amount: order.total || order.subtotal || 0,
+              status: order.status === 'PAID' ? 'paid' : order.status === 'PENDING' ? 'pending' : 'success',
+              method: order.stripe_payment_intent_id ? 'stripe' : 'unknown',
+              transaction_id: order.stripe_payment_intent_id || order.stripe_session_id || order.id,
+              created_at: order.created_at || new Date().toISOString()
+            }
+          })
+          payments = convertedPayments
+        }
+      }
+
+      // Ajouter les abonnements depuis user_subscriptions
+      if (subscriptionsData && Array.isArray(subscriptionsData) && subscriptionsData.length > 0) {
+        // Récupérer le prix de l'abonnement depuis products
+        const { data: subscriptionProducts } = await supabaseAdmin!
+          .from('products')
+          .select('id, name, price, category')
+          .or('category.eq.abonnement,id.eq.abonnement')
+          .limit(1)
+        
+        const subscriptionPrice = subscriptionProducts && subscriptionProducts.length > 0 
+          ? parseFloat(subscriptionProducts[0].price || '0') 
+          : 0
+        
+        const subscriptionPayments = subscriptionsData.map((sub: any) => ({
+          id: `sub-${sub.id || sub.user_id}`,
+          user_id: sub.user_id,
+          product_id: 'abonnement',
+          payment_type: 'abonnement',
+          amount: subscriptionPrice,
+          status: sub.status === 'active' ? 'paid' : (sub.status === 'canceled' ? 'completed' : (sub.status === 'past_due' ? 'pending' : 'paid')),
+          method: sub.stripe_subscription_id ? 'stripe' : 'mobile_money',
+          transaction_id: sub.stripe_subscription_id || `subscription-${sub.user_id}`,
+          created_at: sub.created_at || sub.current_period_start || new Date().toISOString()
+        }))
+        payments = [...payments, ...subscriptionPayments]
+        console.log(`[PAIEMENTS API] ${subscriptionPayments.length} abonnement(s) ajouté(s) depuis user_subscriptions`)
+      }
+    }
+
+    if (paymentsError && (!payments || payments.length === 0)) {
+      console.error('[PAIEMENTS API] Aucun paiement trouvé après fallback')
     }
 
     console.log(`[PAIEMENTS API] ${payments?.length || 0} paiements récupérés de la DB`)
@@ -46,6 +150,19 @@ export async function GET(request: NextRequest) {
         return acc
       }, {})
       console.log('[PAIEMENTS API] Paiements par type:', byType)
+      
+      // Log spécifique pour les abonnements
+      const subscriptions = payments.filter((p: any) => 
+        p.payment_type === 'abonnement' || 
+        p.payment_type === 'subscription' || 
+        p.product_id === 'abonnement'
+      )
+      console.log(`[PAIEMENTS API] ${subscriptions.length} abonnement(s) trouvé(s):`, subscriptions.map((s: any) => ({
+        id: s.id,
+        user_id: s.user_id,
+        created_at: s.created_at,
+        status: s.status
+      })))
     }
 
     // Enrichir avec les infos utilisateurs (batch pour performance)
@@ -99,6 +216,18 @@ export async function GET(request: NextRequest) {
       console.log(`[PAIEMENTS API] ${userMap.size} utilisateurs trouvés sur ${userIds.length} user_ids uniques`)
     }
 
+    // Récupérer les produits pour déterminer la catégorie (important pour détecter les abonnements)
+    const { data: allProducts } = await supabaseAdmin!
+      .from('products')
+      .select('id, category, name')
+    
+    const productMap = new Map<string, any>()
+    if (allProducts) {
+      allProducts.forEach((product: any) => {
+        productMap.set(product.id, product)
+      })
+    }
+
     const enrichedPayments = (payments || []).map((payment: any) => {
       const userInfo = userMap.get(payment.user_id)
       
@@ -115,11 +244,22 @@ export async function GET(request: NextRequest) {
         userEmail = 'Non trouvé'
       }
       
+      // Déterminer le type de paiement en vérifiant aussi la catégorie du produit
+      let paymentType = payment.payment_type
+      const product = payment.product_id ? productMap.get(payment.product_id) : null
+      
+      // Si le payment_type n'est pas défini mais qu'on a une catégorie produit, l'utiliser
+      if (!paymentType && product?.category) {
+        paymentType = product.category
+      }
+      
       return {
         ...payment,
         user_name: userName,
         user_email: userEmail,
-        type_label: getPaymentTypeLabel(payment.payment_type, payment.product_id)
+        type_label: getPaymentTypeLabel(paymentType, payment.product_id, product?.category),
+        // Forcer payment_type si on peut le déterminer depuis la catégorie
+        payment_type: paymentType || payment.payment_type
       }
     })
     
@@ -145,15 +285,18 @@ export async function GET(request: NextRequest) {
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     
     // Filtrer les paiements du mois actuel (tous statuts confondus pour le revenu mensuel)
+    // Inclure tous les statuts qui indiquent un paiement réussi ou validé
     const monthlyPayments = enrichedPayments.filter(p => {
       const paymentDate = new Date(p.created_at)
-      return paymentDate >= firstDayOfMonth && (p.status === 'success' || p.status === 'succeeded' || p.status === 'paid')
+      const validStatuses = ['success', 'succeeded', 'paid', 'completed', 'pending_review']
+      return paymentDate >= firstDayOfMonth && validStatuses.includes(p.status)
     })
     
     // Filtrer tous les paiements réussis (tous statuts valides)
-    const successfulPayments = enrichedPayments.filter(p => 
-      p.status === 'success' || p.status === 'succeeded' || p.status === 'paid'
-    )
+    const successfulPayments = enrichedPayments.filter(p => {
+      const validStatuses = ['success', 'succeeded', 'paid', 'completed', 'pending_review']
+      return validStatuses.includes(p.status)
+    })
     
     const failedPayments = enrichedPayments.filter(p => p.status === 'failed')
     
@@ -189,7 +332,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function getPaymentTypeLabel(paymentType: string, productId?: string) {
+function getPaymentTypeLabel(paymentType: string, productId?: string, productCategory?: string) {
   const typeLabels: { [key: string]: string } = {
     'analysis': 'Analyse financière',
     'analyse-financiere': 'Analyse financière',
@@ -198,8 +341,15 @@ function getPaymentTypeLabel(paymentType: string, productId?: string) {
     'ebook': 'Ebook',
     'abonnement': 'Abonnement',
     'subscription': 'Abonnement',
+    'coaching': 'Coaching',
+    'masterclass': 'Masterclass',
     'formation': 'Formation',
     'other': 'Autre'
+  }
+  
+  // Si la catégorie du produit indique un abonnement, le traiter comme tel
+  if (productCategory === 'abonnement' || productId?.toLowerCase() === 'abonnement') {
+    return 'Abonnement'
   }
   
   // Si c'est une capsule prédéfinie (capsule1-5)
@@ -224,6 +374,11 @@ function getPaymentTypeLabel(paymentType: string, productId?: string) {
       'pack-complet': 'Pack complet Cash360'
     }
     return `Capsule "${productNames[productId] || productId}"`
+  }
+  
+  // Vérifier aussi par catégorie si payment_type n'est pas défini
+  if (!paymentType && productCategory) {
+    return typeLabels[productCategory] || productCategory || 'Non défini'
   }
   
   return typeLabels[paymentType] || paymentType || 'Non défini'

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
@@ -19,8 +19,10 @@ export default function AdminDashboardPage() {
   const [analyses, setAnalyses] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
   const [payments, setPayments] = useState<any[]>([])
+  const paymentsRef = useRef<any[]>([])
   const [formations, setFormations] = useState<any[]>([])
   const [paymentStats, setPaymentStats] = useState<any>({})
+  const [activeSubscriptions, setActiveSubscriptions] = useState<number>(0)
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
@@ -49,42 +51,6 @@ export default function AdminDashboardPage() {
     
     checkAdminSession()
   }, [router])
-
-  useEffect(() => {
-    if (adminSession?.isAdmin) {
-      // Charger les données de façon séquentielle pour éviter la surcharge
-      const loadData = async () => {
-        await loadAllAnalyses()
-        await loadAllUsers()
-        await loadPayments()
-        await loadFormations()
-      }
-      loadData()
-      
-      // Actualisation automatique toutes les 5 minutes
-      const interval = setInterval(() => {
-        console.log('[ADMIN DASHBOARD] Actualisation automatique des données...')
-        loadData()
-      }, 5 * 60 * 1000) // 5 minutes
-      
-      return () => clearInterval(interval)
-    }
-  }, [adminSession])
-
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showAdminMenu) {
-        const target = event.target as Element
-        if (!target.closest('.admin-menu-container')) {
-          setShowAdminMenu(false)
-        }
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showAdminMenu])
 
   const loadAllAnalyses = async () => {
     try {
@@ -132,8 +98,19 @@ export default function AdminDashboardPage() {
       
       if (data.success) {
         console.log(`[ADMIN DASHBOARD] ${data.payments?.length || 0} paiements chargés`)
-        setPayments(data.payments || [])
+        const paymentsData = data.payments || []
+        setPayments(paymentsData)
+        paymentsRef.current = paymentsData
         setPaymentStats(data.stats || {})
+        
+        // Log spécifique pour les abonnements
+        const subscriptions = paymentsData.filter((p: any) => 
+          p.payment_type === 'abonnement' || 
+          p.payment_type === 'subscription' || 
+          p.product_id === 'abonnement' ||
+          p.type_label?.toLowerCase().includes('abonnement')
+        )
+        console.log(`[ADMIN DASHBOARD] ${subscriptions.length} abonnement(s) dans les paiements chargés`)
       } else {
         console.error('Erreur lors du chargement des paiements:', data.error)
       }
@@ -141,6 +118,37 @@ export default function AdminDashboardPage() {
       console.error('Erreur lors du chargement des paiements:', error)
     }
   }
+
+  const loadActiveSubscriptions = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/subscriptions?status=active')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      
+      if (data.success) {
+        const activeCount = data.subscriptions?.filter((sub: any) => 
+          sub.status === 'active' || sub.status === 'trialing'
+        ).length || 0
+        setActiveSubscriptions(activeCount)
+        console.log(`[ADMIN DASHBOARD] ${activeCount} abonnement(s) actif(s)`)
+      } else {
+        console.error('Erreur lors du chargement des abonnements actifs:', data.error)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des abonnements actifs:', error)
+      // Fallback: compter depuis les paiements si l'API subscriptions n'est pas disponible
+      // Utilisation de paymentsRef pour éviter la dépendance qui cause la boucle infinie
+      const activeFromPayments = paymentsRef.current.filter((p: any) => 
+        (p.payment_type === 'abonnement' || p.product_id === 'abonnement') &&
+        (p.status === 'paid' || p.status === 'active' || p.status === 'success')
+      ).length
+      if (activeFromPayments > 0) {
+        setActiveSubscriptions(activeFromPayments)
+      }
+    }
+  }, [])
 
   const loadFormations = async () => {
     try {
@@ -157,6 +165,43 @@ export default function AdminDashboardPage() {
       console.error('Erreur lors du chargement des formations:', error)
     }
   }
+
+  useEffect(() => {
+    if (adminSession?.isAdmin) {
+      // Charger les données de façon séquentielle pour éviter la surcharge
+      const loadData = async () => {
+        await loadAllAnalyses()
+        await loadAllUsers()
+        await loadPayments()
+        await loadFormations()
+        await loadActiveSubscriptions()
+      }
+      loadData()
+      
+      // Actualisation automatique toutes les 5 minutes
+      const interval = setInterval(() => {
+        console.log('[ADMIN DASHBOARD] Actualisation automatique des données...')
+        loadData()
+      }, 5 * 60 * 1000) // 5 minutes
+      
+      return () => clearInterval(interval)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminSession])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showAdminMenu) {
+        const target = event.target as Element
+        if (!target.closest('.admin-menu-container')) {
+          setShowAdminMenu(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showAdminMenu])
 
   const handleRefreshOverview = async () => {
     setRefreshingOverview(true)
@@ -393,23 +438,23 @@ export default function AdminDashboardPage() {
   // Composant pour afficher un graphique en barres
   const BarChart = ({ data, maxValue, color = 'bg-[#00A1C6]' }: { data: Array<{ [key: string]: any, count: number }>, maxValue: number, color?: string }) => {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {data.map((item, index) => {
           const label = item.city || item.country || item.region || item.profession || 'Inconnu'
           const percentage = maxValue > 0 ? (item.count / maxValue) * 100 : 0
           return (
-            <div key={index} className="flex items-center gap-3">
+            <div key={index} className="flex items-center gap-2 sm:gap-3">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-700 truncate">{label}</span>
-                  <span className="text-sm font-bold text-gray-900 ml-2">{item.count}</span>
+                <div className="flex items-center justify-between mb-1 gap-2">
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">{label}</span>
+                  <span className="text-xs sm:text-sm font-bold text-gray-900 flex-shrink-0">{item.count}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                <div className="w-full bg-gray-200 rounded-full h-5 sm:h-6 overflow-hidden">
                   <div
-                    className={`${color} h-6 rounded-full transition-all duration-500 flex items-center justify-end pr-2`}
+                    className={`${color} h-5 sm:h-6 rounded-full transition-all duration-500 flex items-center justify-end pr-1 sm:pr-2`}
                     style={{ width: `${percentage}%` }}
                   >
-                    {percentage > 15 && (
+                    {percentage > 20 && (
                       <span className="text-xs font-medium text-white">{item.count}</span>
                     )}
                   </div>
@@ -438,14 +483,28 @@ export default function AdminDashboardPage() {
 
   // Calculer les KPIs
   const totalUsers = users.length
-  const analysesLast30Days = analyses.filter(a => {
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-    return new Date(a.created_at) >= thirtyDaysAgo
-  }).length
+  const usersWithEmailValidated = useMemo(() => {
+    return users.filter((user: any) => user.email_confirmed_at !== null && user.email_confirmed_at !== undefined).length
+  }, [users])
+  const usersWithoutEmailValidated = useMemo(() => {
+    return users.filter((user: any) => !user.email_confirmed_at || user.email_confirmed_at === null).length
+  }, [users])
+  
+  // Récupérer le dernier paiement
+  const lastPayment = useMemo(() => {
+    if (!payments || payments.length === 0) return null
+    // Les paiements sont déjà triés par date décroissante dans l'API
+    const last = payments[0]
+    return {
+      userName: last.user_name || last.userName || 'Utilisateur inconnu',
+      userEmail: last.user_email || last.userEmail || '',
+      createdAt: last.created_at || last.createdAt || null,
+      amount: last.amount || 0,
+      typeLabel: last.type_label || last.product_name || last.productName || 'Produit non spécifié'
+    }
+  }, [payments])
 
   const revenuesThisMonth = paymentStats.monthlyRevenue || 0
-  const capsulesThisMonth = 0 // TODO: calculer depuis les capsules
 
   // Récupérer les 5 derniers utilisateurs inscrits (triés par date de création décroissante)
   const latestUsers = useMemo(() => {
@@ -501,6 +560,46 @@ export default function AdminDashboardPage() {
     return formationDate.toDateString() === today.toDateString()
   })
 
+  // Statistiques du jour
+  const statsToday = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const paymentsToday = payments.filter((p: any) => {
+      const paymentDate = new Date(p.created_at)
+      paymentDate.setHours(0, 0, 0, 0)
+      return paymentDate.getTime() === today.getTime()
+    })
+    
+    const revenueToday = paymentsToday
+      .filter((p: any) => ['paid', 'completed', 'succeeded', 'success'].includes(p.status))
+      .reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
+    
+    const analysesToday = analyses.filter((a: any) => {
+      const analysisDate = new Date(a.created_at)
+      analysisDate.setHours(0, 0, 0, 0)
+      return analysisDate.getTime() === today.getTime()
+    }).length
+
+    return {
+      newUsers: newUsersToday,
+      payments: paymentsToday.length,
+      revenue: revenueToday,
+      analyses: analysesToday
+    }
+  }, [payments, analyses, newUsersToday])
+
+  // Paiements récents (7 derniers jours)
+  const recentPayments = useMemo(() => {
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    
+    return payments
+      .filter((p: any) => new Date(p.created_at) >= sevenDaysAgo)
+      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5)
+  }, [payments])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center">
@@ -539,7 +638,7 @@ export default function AdminDashboardPage() {
               </button>
               
               {/* Logo */}
-              <div className="flex-shrink-0 ml-2 sm:ml-16 mt-4">
+              <div className="flex-shrink-0 ml-2 sm:ml-4 md:ml-16 mt-2 sm:mt-4">
                 <button
                   onClick={() => router.push('/')}
                   className="cursor-pointer"
@@ -549,7 +648,7 @@ export default function AdminDashboardPage() {
                     alt="Cash360"
                     width={540}
                     height={540}
-                    className="h-16 sm:h-32 md:h-42 w-auto hover:opacity-80 transition-opacity duration-200"
+                    className="h-12 sm:h-16 md:h-32 w-auto hover:opacity-80 transition-opacity duration-200"
                   />
                 </button>
               </div>
@@ -603,12 +702,12 @@ export default function AdminDashboardPage() {
         </header>
 
         {/* Main Dashboard Content */}
-        <main className="p-6">
+        <main className="p-4 sm:p-6">
           {/* Page Title */}
-          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="mb-6 sm:mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-3xl font-bold text-[#012F4E] mb-2">Overview (Admin)</h2>
-              <p className="text-gray-600">Vue d'ensemble de l'activité Cash360.</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#012F4E] mb-2">Overview (Admin)</h2>
+              <p className="text-sm sm:text-base text-gray-600">Vue d'ensemble de l'activité Cash360.</p>
             </div>
             <button
               type="button"
@@ -621,66 +720,96 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* KPI Cards */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                   </svg>
                 </div>
-                <span className="text-green-500 text-sm font-medium">+12%</span>
+                <span className="text-green-500 text-xs sm:text-sm font-medium">+12%</span>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">{totalUsers.toLocaleString()}</h3>
-              <p className="text-gray-600 text-sm">Utilisateurs inscrits</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-[#012F4E] mb-2">{totalUsers.toLocaleString()}</h3>
+              <p className="text-gray-600 text-xs sm:text-sm mb-3">Utilisateurs inscrits</p>
+              <div className="flex items-center gap-3 sm:gap-4 pt-2 border-t border-gray-100">
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Email validé</p>
+                  <p className="text-base sm:text-lg font-semibold text-green-600">{usersWithEmailValidated.toLocaleString()}</p>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Email non validé</p>
+                  <p className="text-base sm:text-lg font-semibold text-orange-600">{usersWithoutEmailValidated.toLocaleString()}</p>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
                   </svg>
                 </div>
-                <span className="text-green-500 text-sm font-medium">+8%</span>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">{analysesLast30Days}</h3>
-              <p className="text-gray-600 text-sm">Analyses reçues (30j)</p>
+              {lastPayment ? (
+                <>
+                  <p className="text-gray-600 text-xs sm:text-sm mb-2">Dernier paiement</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-1 truncate">{lastPayment.userName}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 font-medium mb-1 truncate">{lastPayment.typeLabel}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    {lastPayment.createdAt ? new Date(lastPayment.createdAt).toLocaleString('fr-FR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) : 'Date inconnue'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-600 text-xs sm:text-sm mb-2">Dernier paiement</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-1">Aucun paiement</h3>
+                  <p className="text-xs sm:text-sm text-gray-500">Aucun paiement enregistré</p>
+                </>
+              )}
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267zM10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"/>
                   </svg>
                 </div>
-                <span className="text-green-500 text-sm font-medium">+15%</span>
+                <span className="text-green-500 text-xs sm:text-sm font-medium">+15%</span>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">{revenuesThisMonth.toLocaleString()} €</h3>
-              <p className="text-gray-600 text-sm">Revenus (mois)</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-[#012F4E] mb-1">{revenuesThisMonth.toLocaleString()} €</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">Revenus (mois)</p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#00A1C6]/10 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-[#00A1C6]" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
                   </svg>
                 </div>
-                <span className="text-red-500 text-sm font-medium">-3%</span>
+                <span className="text-red-500 text-xs sm:text-sm font-medium">-3%</span>
               </div>
-              <h3 className="text-2xl font-bold text-[#012F4E] mb-1">{capsulesThisMonth}</h3>
-              <p className="text-gray-600 text-sm">Capsules vendues (mois)</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-[#012F4E] mb-1">{activeSubscriptions}</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">Abonnements actifs</p>
             </div>
           </div>
 
           {/* Section: Derniers utilisateurs inscrits */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-xl font-bold text-[#012F4E] mb-1">Derniers utilisateurs inscrits</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-1">Derniers utilisateurs inscrits</h3>
+                <p className="text-xs sm:text-sm text-gray-600">
                   {newUsersToday > 0 
                     ? `${newUsersToday} nouveau${newUsersToday > 1 ? 'x' : ''} utilisateur${newUsersToday > 1 ? 's' : ''} aujourd'hui`
                     : 'Aucun nouvel utilisateur aujourd\'hui'}
@@ -688,7 +817,7 @@ export default function AdminDashboardPage() {
               </div>
               <button
                 onClick={() => router.push('/admin/users')}
-                className="text-sm text-[#00A1C6] hover:text-[#012F4E] font-medium flex items-center gap-2"
+                className="text-xs sm:text-sm text-[#00A1C6] hover:text-[#012F4E] font-medium flex items-center gap-2 self-start sm:self-auto"
               >
                 Voir tous
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -714,9 +843,9 @@ export default function AdminDashboardPage() {
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                       onClick={() => router.push('/admin/users')}
                     >
-                      <div className="flex items-center gap-4 flex-1">
+                      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
                         {/* Avatar */}
-                        <div className="w-10 h-10 bg-[#00A1C6] rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#00A1C6] rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm flex-shrink-0">
                           {user.name 
                             ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
                             : getInitials(user.email)
@@ -725,22 +854,22 @@ export default function AdminDashboardPage() {
                         
                         {/* Informations utilisateur */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                               {user.name || user.email?.split('@')[0] || 'Utilisateur'}
                             </p>
                             {isNewToday() && (
-                              <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                              <span className="px-1.5 sm:px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full flex-shrink-0">
                                 Nouveau
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">{user.email}</p>
                         </div>
                         
-                        {/* Date d'inscription */}
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">
+                        {/* Date d'inscription - masqué sur mobile */}
+                        <div className="text-right hidden sm:block">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             {formatRegistrationDate(user.created_at)}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
@@ -753,14 +882,16 @@ export default function AdminDashboardPage() {
                         </div>
                         
                         {/* Statut email */}
-                        <div className="ml-4">
+                        <div className="ml-2 sm:ml-4 flex-shrink-0">
                           {user.email_confirmed_at ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                              Confirmé
+                            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                              <span className="hidden sm:inline">Confirmé</span>
+                              <span className="sm:hidden">✓</span>
                             </span>
                           ) : (
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                              En attente
+                            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                              <span className="hidden sm:inline">En attente</span>
+                              <span className="sm:hidden">!</span>
                             </span>
                           )}
                         </div>
@@ -777,105 +908,205 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Two Column Layout */}
-          <div className="grid grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-xl font-bold text-[#012F4E] mb-6">Activité récente</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 text-sm font-medium text-gray-600">Date</th>
-                      <th className="text-left py-3 text-sm font-medium text-gray-600">Type</th>
-                      <th className="text-left py-3 text-sm font-medium text-gray-600">Utilisateur</th>
-                      <th className="text-left py-3 text-sm font-medium text-gray-600">Statut</th>
-                      <th className="text-left py-3 text-sm font-medium text-gray-600">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentAnalyses.map((analysis) => (
-                      <tr key={analysis.id} className="hover:bg-gray-50">
-                        <td className="py-3 text-sm text-gray-600">
-                          {new Date(analysis.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                        </td>
-                        <td className="py-3">
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Analyse</span>
-                        </td>
-                        <td className="py-3 text-sm">{analysis.client_name}</td>
-                        <td className="py-3">
-                          <span className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeColor(analysis.status)}`}>
-                            {getStatusLabel(analysis.status)}
-                          </span>
-                        </td>
-                        <td className="py-3">
-                          <button 
-                            onClick={() => router.push(`/admin/analyses`)}
-                            className="text-[#00A1C6] cursor-pointer hover:text-[#012F4E]"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-4 sm:mb-6">Activité récente</h3>
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <div className="overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-600">Date</th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-600">Type</th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-600 hidden sm:table-cell">Utilisateur</th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-600">Statut</th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-600">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {recentAnalyses.map((analysis) => (
+                          <tr key={analysis.id} className="hover:bg-gray-50">
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-600">
+                              {new Date(analysis.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                              <span className="bg-blue-100 text-blue-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs">Analyse</span>
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden sm:table-cell truncate max-w-xs">{analysis.client_name}</td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                              <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs ${getStatusBadgeColor(analysis.status)}`}>
+                                <span className="hidden sm:inline">{getStatusLabel(analysis.status)}</span>
+                                <span className="sm:hidden">{getStatusLabel(analysis.status).substring(0, 3)}</span>
+                              </span>
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                              <button 
+                                onClick={() => router.push(`/admin/analyses`)}
+                                className="text-[#00A1C6] cursor-pointer hover:text-[#012F4E]"
+                              >
+                                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Alerts & Tasks */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-xl font-bold text-[#012F4E] mb-6">Alertes & tâches</h3>
-              <div className="space-y-4">
-                {pendingAnalysesCount > 0 && (
-                  <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-orange-800">{pendingAnalysesCount} {pendingAnalysesCount === 1 ? 'analyse' : 'analyses'} en attente de validation</h4>
-                        <p className="text-sm text-orange-600 mt-1">Nécessite votre attention</p>
-                      </div>
-                      <button onClick={() => router.push('/admin/analyses')} className="text-orange-600 hover:text-orange-800 text-sm font-medium">Voir</button>
+            {/* Aperçu de l'activité */}
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-4 sm:mb-6">Aperçu de l'activité</h3>
+              
+              {/* Statistiques du jour */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Nouveaux utilisateurs</p>
+                      <p className="text-xl sm:text-2xl font-bold text-[#012F4E]">{statsToday.newUsers}</p>
+                      <p className="text-xs text-gray-500 mt-1">Aujourd'hui</p>
+                    </div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {failedPayments.length > 0 && (
-                  <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-red-800">{failedPayments.length} {failedPayments.length === 1 ? 'paiement' : 'paiements'} à vérifier</h4>
-                        <p className="text-sm text-red-600 mt-1">Échec de transaction détecté</p>
-                      </div>
-                      <button onClick={() => router.push('/admin/paiements')} className="text-red-600 hover:text-red-800 text-sm font-medium">Gérer</button>
+                <div className="bg-green-50 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Paiements</p>
+                      <p className="text-xl sm:text-2xl font-bold text-[#012F4E]">{statsToday.payments}</p>
+                      <p className="text-xs text-gray-500 mt-1">Aujourd'hui</p>
+                    </div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {todayFormations.map(formation => (
-                  <div key={formation.id} className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-blue-800">Session de formation aujourd'hui {formation.time}</h4>
-                        <p className="text-sm text-blue-600 mt-1">Formation &quot;{formation.session_name || formation.title}&quot;</p>
-                      </div>
-                      <button onClick={() => router.push('/admin/formations')} className="text-blue-600 hover:text-blue-800 text-sm font-medium">Voir</button>
+                <div className="bg-purple-50 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Revenus</p>
+                      <p className="text-xl sm:text-2xl font-bold text-[#012F4E] truncate">{statsToday.revenue.toLocaleString()} €</p>
+                      <p className="text-xs text-gray-500 mt-1">Aujourd'hui</p>
+                    </div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 ml-2">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="bg-orange-50 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Nouvelles analyses</p>
+                      <p className="text-xl sm:text-2xl font-bold text-[#012F4E]">{statsToday.analyses}</p>
+                      <p className="text-xs text-gray-500 mt-1">Aujourd'hui</p>
+                    </div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Alertes importantes */}
+              {(pendingAnalysesCount > 0 || failedPayments.length > 0 || todayFormations.length > 0) && (
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Alertes importantes</h4>
+                  <div className="space-y-3">
+                    {pendingAnalysesCount > 0 && (
+                      <div className="bg-orange-50 border-l-4 border-orange-400 p-3 rounded-r-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-orange-800 text-sm">{pendingAnalysesCount} {pendingAnalysesCount === 1 ? 'analyse' : 'analyses'} en attente</p>
+                          </div>
+                          <button onClick={() => router.push('/admin/analyses')} className="text-orange-600 hover:text-orange-800 text-xs font-medium">Voir →</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {failedPayments.length > 0 && (
+                      <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-red-800 text-sm">{failedPayments.length} {failedPayments.length === 1 ? 'paiement' : 'paiements'} échoué{failedPayments.length > 1 ? 's' : ''}</p>
+                          </div>
+                          <button onClick={() => router.push('/admin/paiements')} className="text-red-600 hover:text-red-800 text-xs font-medium">Gérer →</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {todayFormations.map(formation => (
+                      <div key={formation.id} className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-blue-800 text-sm">Formation aujourd'hui {formation.time}</p>
+                            <p className="text-xs text-blue-600 mt-1">{formation.session_name || formation.title}</p>
+                          </div>
+                          <button onClick={() => router.push('/admin/formations')} className="text-blue-600 hover:text-blue-800 text-xs font-medium">Voir →</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Paiements récents */}
+              {recentPayments.length > 0 && (
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-xs sm:text-sm font-semibold text-gray-700">Paiements récents (7 derniers jours)</h4>
+                    <button onClick={() => router.push('/admin/paiements')} className="text-xs text-[#00A1C6] hover:text-[#012F4E] font-medium">Tous →</button>
+                  </div>
+                  <div className="space-y-2">
+                    {recentPayments.slice(0, 3).map((payment: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-2 sm:p-2.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                            {payment.user_name || payment.userName || 'Utilisateur inconnu'}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {payment.type_label || payment.product_name || 'Produit'} • {new Date(payment.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                          </p>
+                        </div>
+                        <div className="ml-2 flex-shrink-0">
+                          <p className="text-xs sm:text-sm font-bold text-[#012F4E] whitespace-nowrap">{payment.amount?.toLocaleString() || 0} €</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Analytics Section - Répartition géographique et professionnelle */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Répartition par régions */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-[#012F4E] mb-1">Répartition géographique</h3>
-                  <p className="text-sm text-gray-600">Par région du monde</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-1">Répartition géographique</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">Par région du monde</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -897,11 +1128,11 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Répartition par pays */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-[#012F4E] mb-1">Top 10 pays</h3>
-                  <p className="text-sm text-gray-600">Déduits à partir des villes</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-1">Top 10 pays</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">Déduits à partir des villes</p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                   <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -925,13 +1156,13 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Deuxième ligne - Top villes et professions */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Top villes */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-[#012F4E] mb-1">Top 10 villes</h3>
-                  <p className="text-sm text-gray-600">Villes les plus représentées</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-1">Top 10 villes</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">Villes les plus représentées</p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                   <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -953,11 +1184,11 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Répartition des professions */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-[#012F4E] mb-1">Top 10 professions</h3>
-                  <p className="text-sm text-gray-600">Métiers les plus représentés</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#012F4E] mb-1">Top 10 professions</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">Métiers les plus représentés</p>
                 </div>
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                   <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
