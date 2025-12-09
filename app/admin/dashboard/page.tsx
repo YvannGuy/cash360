@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
 import AdminPdfUploadModal from '@/components/AdminPdfUploadModal'
-import CarouselPopup from '@/components/CarouselPopup'
 
 interface AdminSession {
   isAdmin: boolean
@@ -28,8 +27,6 @@ export default function AdminDashboardPage() {
   const [searchTerm] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [refreshingOverview, setRefreshingOverview] = useState(false)
-  const [carouselItems, setCarouselItems] = useState<any[]>([])
-  const [showCarousel, setShowCarousel] = useState(false)
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -61,7 +58,6 @@ export default function AdminDashboardPage() {
         await loadAllUsers()
         await loadPayments()
         await loadFormations()
-        await loadCarouselItems()
       }
       loadData()
       
@@ -75,37 +71,6 @@ export default function AdminDashboardPage() {
     }
   }, [adminSession])
 
-  const loadCarouselItems = async () => {
-    try {
-      const response = await fetch('/api/admin/carousel')
-      const data = await response.json()
-      
-      if (data.success && data.items && data.items.length > 0) {
-        // Filtrer uniquement les items actifs
-        const activeItems = data.items.filter((item: any) => item.is_active !== false)
-        setCarouselItems(activeItems)
-        // Vérifier si l'utilisateur a déjà fermé le carrousel dans cette session
-        // On utilise sessionStorage au lieu de localStorage pour qu'il réapparaisse à chaque nouvelle connexion
-        const carouselClosed = sessionStorage.getItem('carousel_closed')
-        if (!carouselClosed && activeItems.length > 0) {
-          setShowCarousel(true)
-        }
-      } else {
-        setCarouselItems([])
-        setShowCarousel(false)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement du carrousel:', error)
-      setCarouselItems([])
-      setShowCarousel(false)
-    }
-  }
-
-  const handleCarouselClose = () => {
-    setShowCarousel(false)
-    // Mémoriser la fermeture pour cette session uniquement
-    sessionStorage.setItem('carousel_closed', 'true')
-  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1028,14 +993,6 @@ export default function AdminDashboardPage() {
           />
         )}
 
-        {/* Pop-up Carrousel */}
-        {showCarousel && carouselItems.length > 0 && (
-          <CarouselPopup
-            items={carouselItems}
-            onClose={handleCarouselClose}
-            title="Nouveautés dans votre boutique"
-          />
-        )}
       </div>
     </div>
   )

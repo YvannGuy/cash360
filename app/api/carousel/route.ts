@@ -256,6 +256,14 @@ export async function GET(request: NextRequest) {
           title: 'Masterclass',
           display_order: 2,
           is_active: true
+        },
+        {
+          id: 'user-coaching',
+          image_url: '/images/coach.png',
+          redirect_url: '/dashboard?tab=boutique&category=coaching',
+          title: 'Coaching',
+          display_order: 3,
+          is_active: true
         }
       ]
 
@@ -267,12 +275,16 @@ export async function GET(request: NextRequest) {
         
         const isEbook = item.image_url?.includes('ebo') || item.title?.toLowerCase().includes('ebook')
         const isMasterclass = item.image_url?.includes('masterclass') || item.title?.toLowerCase().includes('masterclass')
+        const isCoaching = item.image_url?.includes('coach') || item.title?.toLowerCase().includes('coaching')
         
         // Exclure si l'utilisateur a déjà acheté un produit de cette catégorie
         if (isEbook && purchasedProductCategories.includes('ebook')) {
           return false
         }
         if (isMasterclass && purchasedProductCategories.includes('masterclass')) {
+          return false
+        }
+        if (isCoaching && purchasedProductCategories.includes('coaching')) {
           return false
         }
         
