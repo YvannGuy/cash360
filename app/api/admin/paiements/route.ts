@@ -53,27 +53,72 @@ export async function GET(request: NextRequest) {
     const userMap = new Map()
     
     if (userIds.length > 0) {
-      // Récupérer tous les utilisateurs en batch (plus efficace)
-      const { data: allUsers } = await supabaseAdmin!.auth.admin.listUsers()
-      
-      if (allUsers?.users) {
-        allUsers.users.forEach((authUser) => {
-          if (userIds.includes(authUser.id)) {
-            userMap.set(authUser.id, {
-              email: authUser.email || 'Unknown',
-              name: authUser.email?.split('@')[0] || 'Unknown'
-            })
-          }
+      // Récupérer tous les utilisateurs en batch avec pagination (plus efficace)
+      const MAX_PER_PAGE = 200
+      let page = 1
+      let hasMore = true
+      const allUsersList: any[] = []
+
+      while (hasMore) {
+        const { data: usersData, error: usersError } = await supabaseAdmin!.auth.admin.listUsers({
+          page,
+          perPage: MAX_PER_PAGE
         })
+
+        if (usersError) {
+          console.error('[PAIEMENTS API] Erreur lors de la récupération des utilisateurs:', usersError)
+          break
+        }
+
+        if (usersData?.users) {
+          allUsersList.push(...usersData.users)
+        }
+
+        if (!usersData?.users || usersData.users.length < MAX_PER_PAGE) {
+          hasMore = false
+        } else {
+          page += 1
+        }
       }
+      
+      // Créer la map des utilisateurs
+      allUsersList.forEach((authUser) => {
+        if (userIds.includes(authUser.id)) {
+          const firstName = authUser.user_metadata?.first_name || ''
+          const lastName = authUser.user_metadata?.last_name || ''
+          const fullName = [firstName, lastName].filter(Boolean).join(' ').trim()
+          const email = authUser.email || ''
+          
+          userMap.set(authUser.id, {
+            email: email,
+            name: fullName || email?.split('@')[0] || 'Utilisateur inconnu'
+          })
+        }
+      })
+      
+      console.log(`[PAIEMENTS API] ${userMap.size} utilisateurs trouvés sur ${userIds.length} user_ids uniques`)
     }
 
     const enrichedPayments = (payments || []).map((payment: any) => {
-      const userInfo = userMap.get(payment.user_id) || { email: 'Unknown', name: 'Unknown' }
+      const userInfo = userMap.get(payment.user_id)
+      
+      // Si l'utilisateur n'est pas trouvé, essayer d'utiliser l'email du paiement s'il existe
+      let userName = 'Utilisateur inconnu'
+      let userEmail = payment.user_email || payment.email || 'N/A'
+      
+      if (userInfo) {
+        userName = userInfo.name
+        userEmail = userInfo.email
+      } else if (payment.user_id) {
+        // Si on a un user_id mais pas d'utilisateur trouvé, afficher un ID tronqué
+        userName = `ID: ${payment.user_id.substring(0, 8)}...`
+        userEmail = 'Non trouvé'
+      }
+      
       return {
         ...payment,
-        user_name: userInfo.name,
-        user_email: userInfo.email,
+        user_name: userName,
+        user_email: userEmail,
         type_label: getPaymentTypeLabel(payment.payment_type, payment.product_id)
       }
     })

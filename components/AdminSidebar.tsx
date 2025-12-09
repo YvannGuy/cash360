@@ -123,6 +123,7 @@ export default function AdminSidebar({ activeTab = 'overview', isOpen: controlle
     { id: 'abonnements', label: 'Abonnements', icon: 'subscription', route: '/admin/abonnements', adminOnly: true },
     { id: 'mes-achats-utilisateurs', label: 'Mes achats utilisateurs', icon: 'store', route: '/admin/mes-achats-utilisateurs', adminOnly: true },
     { id: 'fichiers', label: 'Fichiers & relevés', icon: 'folder', route: '/admin/fichiers', adminOnly: true },
+    { id: 'carousel', label: 'Carrousel', icon: 'store', route: '/admin/carousel', adminOnly: true },
     { id: 'mail', label: 'Email d\'annonce', icon: 'mail', route: '/admin/announcement-email', adminOnly: true },
     { id: 'newsletter', label: 'Newsletter', icon: 'mail', route: '/admin/newsletter', adminOnly: true },
     { id: 'testimonials', label: 'Témoignages', icon: 'testimonials', route: '/admin/testimonials', adminOnly: true },

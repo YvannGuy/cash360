@@ -52,7 +52,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -60,6 +60,27 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           }
         })
         if (error) throw error
+        
+        // Envoyer l'email de bienvenue immédiatement après l'inscription
+        if (data?.user) {
+          try {
+            // Appeler l'API welcome-email avec l'email
+            await fetch('/api/welcome-email', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: email
+              })
+            })
+            console.log('[AUTH-MODAL] ✅ Email de bienvenue envoyé à:', email)
+          } catch (emailError) {
+            console.error('[AUTH-MODAL] ❌ Erreur envoi email de bienvenue:', emailError)
+            // Ne pas bloquer l'inscription si l'email échoue
+          }
+        }
+        
         setMessage('Vérifiez votre email pour confirmer votre compte. Si vous ne recevez pas l\'email, vérifiez vos spams.')
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -216,7 +237,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   try {
                     console.log('Envoi du lien de réinitialisation pour:', email)
                     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-                      redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+                      redirectTo: `${window.location.origin}/auth/callback?type=recovery`
                     })
                     console.log('Réponse resetPasswordForEmail:', { data, error })
                     if (error) {

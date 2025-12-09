@@ -493,7 +493,16 @@ export default function AdminPaiementsPage() {
                     </tr>
                   ) : (
                     currentPayments.map((payment: any) => {
-                      const initials = getInitials(payment.user_email || payment.email || 'UN')
+                      // Déterminer le nom d'affichage et l'email
+                      const displayName = payment.user_name || 
+                                        (payment.user_email ? payment.user_email.split('@')[0] : null) ||
+                                        (payment.email ? payment.email.split('@')[0] : null) ||
+                                        (payment.user_id ? `ID: ${payment.user_id.substring(0, 8)}...` : null) ||
+                                        'Utilisateur inconnu'
+                      
+                      const displayEmail = payment.user_email || payment.email || 'N/A'
+                      const initials = getInitials(displayEmail !== 'N/A' ? displayEmail : 'UN')
+                      
                       const statusColor = payment.status === 'success' ? 'green' : payment.status === 'failed' ? 'red' : payment.status === 'pending' ? 'orange' : 'gray'
                       const StatusIcon = payment.status === 'success' ? (
                         <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -513,7 +522,12 @@ export default function AdminPaiementsPage() {
                               <div className={`w-10 h-10 rounded-full bg-[#00A1C6] flex items-center justify-center text-white font-medium text-sm`}>
                                 {initials}
                               </div>
-                              <span className="font-medium text-gray-900">{payment.user_name || payment.user_email?.split('@')[0] || 'Unknown'}</span>
+                              <div>
+                                <span className="font-medium text-gray-900 block">{displayName}</span>
+                                {displayEmail !== 'N/A' && displayEmail !== 'Non trouvé' && (
+                                  <span className="text-xs text-gray-500">{displayEmail}</span>
+                                )}
+                              </div>
                             </div>
                           </td>
                           <td className="py-4 px-6 text-sm text-gray-600">{payment.type_label || payment.payment_type || payment.type || 'N/A'}</td>

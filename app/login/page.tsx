@@ -356,7 +356,7 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -372,6 +372,29 @@ export default function LoginPage() {
           }
         })
         if (error) throw error
+        
+        // Envoyer l'email de bienvenue immédiatement après l'inscription
+        if (data?.user) {
+          try {
+            // Appeler l'API welcome-email avec l'email et les infos utilisateur
+            await fetch('/api/welcome-email', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: email,
+                firstName: firstName,
+                lastName: lastName
+              })
+            })
+            console.log('[LOGIN] ✅ Email de bienvenue envoyé à:', email)
+          } catch (emailError) {
+            console.error('[LOGIN] ❌ Erreur envoi email de bienvenue:', emailError)
+            // Ne pas bloquer l'inscription si l'email échoue
+          }
+        }
+        
         setMessage(t.login.messageVerifyEmail)
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -398,7 +421,7 @@ export default function LoginPage() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
       })
       if (error) throw error
       setMessage(t.login.messageResetSent)

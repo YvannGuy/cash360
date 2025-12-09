@@ -11,12 +11,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const body = await request.json().catch(() => ({}))
     const authHeader = request.headers.get('authorization')
     let userId: string | null = null
     let userEmail: string | null = null
     let userFirstName: string | null = null
     let userLastName: string | null = null
     
+    // Option 1: Authentification via token Bearer (utilisateur connecté)
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7)
       try {
@@ -29,29 +31,74 @@ export async function POST(request: NextRequest) {
         }
       } catch (tokenError) {
         console.log('Token invalide ou expiré:', tokenError)
-        return NextResponse.json(
-          { error: 'Utilisateur non authentifié' },
-          { status: 401 }
-        )
+      }
+    }
+    
+    // Option 2: Envoi direct après inscription (via email dans le body)
+    // Permet d'envoyer l'email même si l'utilisateur n'a pas encore confirmé son email
+    if (!userId && body.email) {
+      userEmail = body.email
+      userFirstName = body.firstName || null
+      userLastName = body.lastName || null
+      
+      // Chercher l'utilisateur par email dans Supabase Auth (pagination pour trouver l'utilisateur)
+      try {
+        const MAX_PER_PAGE = 200
+        let page = 1
+        let hasMore = true
+        let foundUser = null
+
+        while (hasMore && !foundUser) {
+          const { data, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+            page,
+            perPage: MAX_PER_PAGE
+          })
+          
+          if (listError) {
+            console.log('Erreur recherche utilisateur:', listError)
+            break
+          }
+          
+          if (data?.users) {
+            foundUser = data.users.find(u => u.email === body.email)
+            if (foundUser) {
+              userId = foundUser.id
+              userFirstName = foundUser.user_metadata?.first_name || body.firstName || null
+              userLastName = foundUser.user_metadata?.last_name || body.lastName || null
+              break
+            }
+          }
+          
+          if (!data?.users || data.users.length < MAX_PER_PAGE) {
+            hasMore = false
+          } else {
+            page += 1
+          }
+        }
+      } catch (searchError) {
+        console.log('Erreur recherche utilisateur par email:', searchError)
+        // On continue quand même avec l'email fourni
       }
     }
 
-    if (!userId || !userEmail) {
+    if (!userEmail) {
       return NextResponse.json(
-        { error: 'Utilisateur non authentifié' },
-        { status: 401 }
+        { error: 'Email requis' },
+        { status: 400 }
       )
     }
 
     // Vérifier si l'email de bienvenue a déjà été envoyé
     // On vérifie dans la base de données si on a un champ pour suivre ça
     // Pour l'instant, on utilise les métadonnées utilisateur
-    const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(userId)
-    if (user?.user_metadata?.welcome_email_sent) {
-      return NextResponse.json(
-        { success: true, message: 'Email de bienvenue déjà envoyé' },
-        { status: 200 }
-      )
+    if (userId) {
+      const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(userId)
+      if (user?.user_metadata?.welcome_email_sent) {
+        return NextResponse.json(
+          { success: true, message: 'Email de bienvenue déjà envoyé' },
+          { status: 200 }
+        )
+      }
     }
 
     // Générer et envoyer l'email de bienvenue
@@ -69,14 +116,22 @@ export async function POST(request: NextRequest) {
       html: welcomeEmailHtml
     })
 
-    // Marquer l'email comme envoyé dans les métadonnées utilisateur
-    await supabaseAdmin.auth.admin.updateUserById(userId, {
-      user_metadata: {
-        ...user?.user_metadata,
-        welcome_email_sent: true,
-        welcome_email_sent_at: new Date().toISOString()
+    // Marquer l'email comme envoyé dans les métadonnées utilisateur (si userId disponible)
+    if (userId) {
+      try {
+        const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(userId)
+        await supabaseAdmin.auth.admin.updateUserById(userId, {
+          user_metadata: {
+            ...user?.user_metadata,
+            welcome_email_sent: true,
+            welcome_email_sent_at: new Date().toISOString()
+          }
+        })
+      } catch (updateError) {
+        console.error('[WELCOME-EMAIL] Erreur mise à jour métadonnées:', updateError)
+        // On continue quand même, l'email a été envoyé
       }
-    })
+    }
 
     console.log('[WELCOME-EMAIL] ✅ Email de bienvenue envoyé avec succès')
     return NextResponse.json({ 

@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
 
@@ -37,8 +37,9 @@ interface Product {
   updated_at: string
 }
 
-export default function AdminBoutiquePage() {
+function AdminBoutiquePageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [products, setProducts] = useState<Product[]>([])
@@ -48,6 +49,7 @@ export default function AdminBoutiquePage() {
   const [refreshing, setRefreshing] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string>('all') // Catégorie filtrée pour l'affichage
   const productsPerPage = 9 // 3 colonnes × 3 lignes
   const [formData, setFormData] = useState({
     name: '',
@@ -95,6 +97,17 @@ export default function AdminBoutiquePage() {
       loadProducts()
     }
   }, [adminSession])
+
+  // Gérer le paramètre category pour filtrer automatiquement les produits
+  useEffect(() => {
+    const categoryParam = searchParams?.get('category')
+    if (categoryParam) {
+      const validCategories = ['capsules', 'ebook', 'abonnement', 'masterclass', 'coaching', 'all']
+      if (validCategories.includes(categoryParam)) {
+        setSelectedCategory(categoryParam)
+      }
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -599,13 +612,38 @@ export default function AdminBoutiquePage() {
             </div>
           </div>
 
+          {/* Filtres de catégorie */}
+          <div className="mb-6 flex flex-wrap gap-2">
+            {['all', 'capsules', 'ebook', 'abonnement', 'masterclass', 'coaching'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setSelectedCategory(cat)
+                  setCurrentPage(1) // Réinitialiser à la première page lors du changement de catégorie
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedCategory === cat
+                    ? 'bg-[#FEBE02] text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {cat === 'all' ? 'Tous' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </button>
+            ))}
+          </div>
+
           {/* Products Grid */}
           {/* Calculs de pagination */}
           {(() => {
-            const totalPages = Math.ceil(products.length / productsPerPage)
+            // Filtrer les produits par catégorie
+            const filteredProducts = selectedCategory === 'all' 
+              ? products 
+              : products.filter(p => (p.category || 'capsules') === selectedCategory)
+            
+            const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
             const startIndex = (currentPage - 1) * productsPerPage
             const endIndex = startIndex + productsPerPage
-            const currentProducts = products.slice(startIndex, endIndex)
+            const currentProducts = filteredProducts.slice(startIndex, endIndex)
             
             return (
               <>
@@ -1143,6 +1181,21 @@ export default function AdminBoutiquePage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function AdminBoutiquePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <AdminBoutiquePageContent />
+    </Suspense>
   )
 }
 

@@ -36,6 +36,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [editingRole, setEditingRole] = useState<string | null>(null)
+  const [resendingEmail, setResendingEmail] = useState<string | null>(null)
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -248,6 +249,33 @@ export default function AdminUsersPage() {
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error)
+    }
+  }
+
+  const handleResendVerification = async (user: User) => {
+    if (!confirm(`Renvoyer l'email de validation à ${user.email} ?`)) {
+      return
+    }
+
+    setResendingEmail(user.id)
+    try {
+      const response = await fetch('/api/admin/users/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        alert(`Email de validation renvoyé avec succès à ${user.email}`)
+      } else {
+        alert(`Erreur: ${data.error || 'Erreur lors de l\'envoi de l\'email'}`)
+      }
+    } catch (error) {
+      console.error('Erreur lors du renvoi de l\'email:', error)
+      alert('Erreur lors du renvoi de l\'email de validation')
+    } finally {
+      setResendingEmail(null)
     }
   }
 
@@ -535,6 +563,24 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center space-x-3">
+                            {user.status === 'pending' && (
+                              <button 
+                                onClick={() => handleResendVerification(user)} 
+                                disabled={resendingEmail === user.id}
+                                className="text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                                title="Renvoyer l'email de validation"
+                              >
+                                {resendingEmail === user.id ? (
+                                  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                  </svg>
+                                ) : (
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
+                                )}
+                              </button>
+                            )}
                             <button onClick={() => handleViewFiles(user)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Voir fichiers">
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>

@@ -21,6 +21,7 @@ import FinancialFast from '@/components/dashboard/FinancialFast'
 import DebtFree from '@/components/dashboard/DebtFree'
 import HelpBanner from '@/components/dashboard/HelpBanner'
 import ModalOMWave from '@/components/ModalOMWave'
+import CarouselPopup from '@/components/CarouselPopup'
 import { hasActiveSubscription } from '@/lib/subscriptionAccess'
 import { EUR_TO_FCFA_RATE } from '@/config/omWave'
 
@@ -186,6 +187,8 @@ function DashboardPageContent() {
   const [budgetSnapshot, setBudgetSnapshot] = useState<BudgetSnapshot | null>(null)
   const [previousMonthSnapshot, setPreviousMonthSnapshot] = useState<BudgetSnapshot | null>(null)
   const [debtSummary, setDebtSummary] = useState<{ totalDebtMonthlyPayments: number; availableMarginMonthly: number } | null>(null)
+  const [carouselItems, setCarouselItems] = useState<any[]>([])
+  const [showCarousel, setShowCarousel] = useState(false)
   const hasPremiumAccess = useMemo(() => {
     const access = hasActiveSubscription(subscription)
     console.log('[DASHBOARD] 🎯 hasPremiumAccess calculé:', {
@@ -1287,6 +1290,58 @@ const refreshFastSummary = useCallback(async () => {
     previousHasPremiumRef.current = hasPremiumAccess
   }, [hasPremiumAccess, subscriptionLoading])
 
+  // Charger le carrousel pour les utilisateurs avec abonnement
+  const loadCarouselItems = useCallback(async () => {
+    if (!hasPremiumAccess) return
+
+    try {
+      const response = await fetch('/api/carousel')
+      const data = await response.json()
+      
+      if (data.success && data.items && data.items.length > 0) {
+        setCarouselItems(data.items)
+        // Afficher le carrousel si :
+        // 1. Il y a des items à afficher (l'API filtre déjà les items achetés)
+        // 2. L'utilisateur ne l'a pas fermé dans cette session
+        // 3. Le carrousel réapparaît à chaque nouvelle connexion (sessionStorage se vide à chaque nouvelle session)
+        // 4. Si tous les items sont achetés, data.items.length sera 0 et le carrousel ne s'affichera pas
+        const carouselClosed = sessionStorage.getItem('user_carousel_closed')
+        if (!carouselClosed && data.items.length > 0) {
+          // Afficher le carrousel (le délai est géré dans le useEffect parent)
+          setShowCarousel(true)
+        } else if (data.items.length === 0) {
+          // Si aucun item à afficher (tous achetés), ne pas afficher le carrousel
+          setShowCarousel(false)
+        }
+      } else {
+        // Si aucun item ou erreur, ne pas afficher
+        setCarouselItems([])
+        setShowCarousel(false)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du carrousel:', error)
+    }
+  }, [hasPremiumAccess])
+
+  useEffect(() => {
+    // Charger le carrousel après que l'abonnement soit vérifié
+    // et après un court délai pour laisser les onboarding s'afficher
+    if (hasPremiumAccess && !subscriptionLoading) {
+      // Délai pour laisser les onboarding s'afficher d'abord (surtout pour les nouveaux utilisateurs)
+      const timer = setTimeout(() => {
+        loadCarouselItems()
+      }, 1500) // 1.5 secondes pour laisser les onboarding s'afficher
+      
+      return () => clearTimeout(timer)
+    }
+  }, [hasPremiumAccess, subscriptionLoading, loadCarouselItems])
+
+  const handleCarouselClose = useCallback(() => {
+    setShowCarousel(false)
+    // Mémoriser la fermeture pour cette session uniquement
+    sessionStorage.setItem('user_carousel_closed', 'true')
+  }, [])
+
   useEffect(() => {
     if (subscriptionLoading) return
     if (!allowedTabs.includes(activeTab)) {
@@ -1303,6 +1358,17 @@ const refreshFastSummary = useCallback(async () => {
       setActiveTab('boutique')
     }
   }, [allowedTabs, hasPremiumAccess, searchParams])
+
+  // Gérer le paramètre category pour sélectionner automatiquement la catégorie dans la boutique
+  useEffect(() => {
+    const categoryParam = searchParams?.get('category')
+    if (categoryParam && activeTab === 'boutique') {
+      const validCategories = ['capsules', 'ebook', 'abonnement', 'masterclass', 'coaching']
+      if (validCategories.includes(categoryParam)) {
+        setSelectedCategory(categoryParam)
+      }
+    }
+  }, [searchParams, activeTab])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -3888,6 +3954,22 @@ const refreshFastSummary = useCallback(async () => {
       {/* Onboarding */}
       <DashboardOnboarding userId={user?.id || null} />
       {hasPremiumAccess && <PostSubscriptionOnboarding userId={user?.id || null} />}
+
+      {/* Pop-up Carrousel pour utilisateurs avec abonnement */}
+      {/* 
+        Le carrousel s'affiche :
+        - Après les onboarding pour les nouveaux utilisateurs
+        - À chaque nouvelle connexion (session) tant qu'il reste des items non achetés
+        - L'API filtre automatiquement les items déjà achetés
+        - Si carouselItems.length > 0, c'est qu'il reste des produits à découvrir
+      */}
+      {showCarousel && hasPremiumAccess && carouselItems.length > 0 && (
+        <CarouselPopup
+          items={carouselItems}
+          onClose={handleCarouselClose}
+          title="Nouveautés dans votre boutique"
+        />
+      )}
     </div>
   )
 }

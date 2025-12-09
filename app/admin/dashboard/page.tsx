@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
 import AdminPdfUploadModal from '@/components/AdminPdfUploadModal'
+import CarouselPopup from '@/components/CarouselPopup'
 
 interface AdminSession {
   isAdmin: boolean
@@ -24,10 +25,11 @@ export default function AdminDashboardPage() {
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [refreshingOverview, setRefreshingOverview] = useState(false)
+  const [carouselItems, setCarouselItems] = useState<any[]>([])
+  const [showCarousel, setShowCarousel] = useState(false)
 
   useEffect(() => {
     const checkAdminSession = () => {
@@ -59,10 +61,51 @@ export default function AdminDashboardPage() {
         await loadAllUsers()
         await loadPayments()
         await loadFormations()
+        await loadCarouselItems()
       }
       loadData()
+      
+      // Actualisation automatique toutes les 5 minutes
+      const interval = setInterval(() => {
+        console.log('[ADMIN DASHBOARD] Actualisation automatique des données...')
+        loadData()
+      }, 5 * 60 * 1000) // 5 minutes
+      
+      return () => clearInterval(interval)
     }
   }, [adminSession])
+
+  const loadCarouselItems = async () => {
+    try {
+      const response = await fetch('/api/admin/carousel')
+      const data = await response.json()
+      
+      if (data.success && data.items && data.items.length > 0) {
+        // Filtrer uniquement les items actifs
+        const activeItems = data.items.filter((item: any) => item.is_active !== false)
+        setCarouselItems(activeItems)
+        // Vérifier si l'utilisateur a déjà fermé le carrousel dans cette session
+        // On utilise sessionStorage au lieu de localStorage pour qu'il réapparaisse à chaque nouvelle connexion
+        const carouselClosed = sessionStorage.getItem('carousel_closed')
+        if (!carouselClosed && activeItems.length > 0) {
+          setShowCarousel(true)
+        }
+      } else {
+        setCarouselItems([])
+        setShowCarousel(false)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du carrousel:', error)
+      setCarouselItems([])
+      setShowCarousel(false)
+    }
+  }
+
+  const handleCarouselClose = () => {
+    setShowCarousel(false)
+    // Mémoriser la fermeture pour cette session uniquement
+    sessionStorage.setItem('carousel_closed', 'true')
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -197,71 +240,6 @@ export default function AdminDashboardPage() {
     if (!email) return 'A'
     const parts = email.split('@')[0]
     return parts.substring(0, 2).toUpperCase()
-  }
-
-  const handleUpdateStatus = async (analysisId: string, newStatus: string, newProgress: number) => {
-    try {
-      const response = await fetch('/api/admin/analyses', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          analysisId,
-          progress: newProgress,
-          status: newStatus
-        })
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        setAnalyses(prev => prev.map(a => 
-          a.id === analysisId 
-            ? { ...a, status: newStatus as any, progress: newProgress }
-            : a
-        ))
-      } else {
-        console.error('Erreur lors de la mise à jour:', data.error)
-      }
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error)
-    }
-  }
-
-  const handleMarkAsCompleted = async (analysis: any) => {
-    try {
-      const response = await fetch('/api/admin/analyses', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          analysisId: analysis.id,
-          progress: 100,
-          status: 'terminee'
-        })
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        setAnalyses(prev => prev.map(a => 
-          a.id === analysis.id 
-            ? { ...a, status: 'terminee', progress: 100 }
-            : a
-        ))
-      } else {
-        console.error('Erreur lors de la mise à jour:', data.error)
-      }
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error)
-    }
-  }
-
-  const handleUploadPdf = (analysisId: string) => {
-    setSelectedAnalysisId(analysisId)
-    setShowPdfModal(true)
   }
 
   const handlePdfUploadSuccess = () => {
@@ -480,9 +458,6 @@ export default function AdminDashboardPage() {
   }
 
   const filteredAnalyses = analyses.filter(analysis => {
-    if (statusFilter !== 'all' && analysis.status !== statusFilter) {
-      return false
-    }
     if (searchTerm && 
         !analysis.client_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !analysis.client_email.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -498,16 +473,59 @@ export default function AdminDashboardPage() {
 
   // Calculer les KPIs
   const totalUsers = users.length
-  const totalAnalyses = analyses.length
   const analysesLast30Days = analyses.filter(a => {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     return new Date(a.created_at) >= thirtyDaysAgo
   }).length
 
-  const pendingAnalyses = analyses.filter(a => a.status === 'en_cours' || a.status === 'en_analyse').length
   const revenuesThisMonth = paymentStats.monthlyRevenue || 0
   const capsulesThisMonth = 0 // TODO: calculer depuis les capsules
+
+  // Récupérer les 5 derniers utilisateurs inscrits (triés par date de création décroissante)
+  const latestUsers = useMemo(() => {
+    return [...users]
+      .sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime()
+        const dateB = new Date(b.created_at || 0).getTime()
+        return dateB - dateA
+      })
+      .slice(0, 5)
+  }, [users])
+
+  // Compter les nouveaux utilisateurs aujourd'hui
+  const newUsersToday = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return users.filter((user: any) => {
+      const userDate = new Date(user.created_at || 0)
+      userDate.setHours(0, 0, 0, 0)
+      return userDate.getTime() === today.getTime()
+    }).length
+  }, [users])
+
+  // Fonction pour formater la date d'inscription
+  const formatRegistrationDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = now.getTime() - date.getTime()
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 0) {
+      const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
+      if (diffHours === 0) {
+        const diffMinutes = Math.floor(diffTime / (1000 * 60))
+        return diffMinutes <= 1 ? 'À l\'instant' : `Il y a ${diffMinutes} min`
+      }
+      return `Il y a ${diffHours}h`
+    } else if (diffDays === 1) {
+      return 'Hier'
+    } else if (diffDays < 7) {
+      return `Il y a ${diffDays} jours`
+    } else {
+      return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+    }
+  }
 
   // Calculer les alertes dynamiquement
   const pendingAnalysesCount = analyses.filter(a => a.status === 'en_cours' || a.status === 'en_analyse').length
@@ -690,6 +708,107 @@ export default function AdminDashboardPage() {
               <h3 className="text-2xl font-bold text-[#012F4E] mb-1">{capsulesThisMonth}</h3>
               <p className="text-gray-600 text-sm">Capsules vendues (mois)</p>
             </div>
+          </div>
+
+          {/* Section: Derniers utilisateurs inscrits */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-[#012F4E] mb-1">Derniers utilisateurs inscrits</h3>
+                <p className="text-sm text-gray-600">
+                  {newUsersToday > 0 
+                    ? `${newUsersToday} nouveau${newUsersToday > 1 ? 'x' : ''} utilisateur${newUsersToday > 1 ? 's' : ''} aujourd'hui`
+                    : 'Aucun nouvel utilisateur aujourd\'hui'}
+                </p>
+              </div>
+              <button
+                onClick={() => router.push('/admin/users')}
+                className="text-sm text-[#00A1C6] hover:text-[#012F4E] font-medium flex items-center gap-2"
+              >
+                Voir tous
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+            
+            {latestUsers.length > 0 ? (
+              <div className="space-y-3">
+                {latestUsers.map((user: any, index: number) => {
+                  const isNewToday = () => {
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+                    const userDate = new Date(user.created_at || 0)
+                    userDate.setHours(0, 0, 0, 0)
+                    return userDate.getTime() === today.getTime()
+                  }
+                  
+                  return (
+                    <div
+                      key={user.id || index}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                      onClick={() => router.push('/admin/users')}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        {/* Avatar */}
+                        <div className="w-10 h-10 bg-[#00A1C6] rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                          {user.name 
+                            ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+                            : getInitials(user.email)
+                          }
+                        </div>
+                        
+                        {/* Informations utilisateur */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {user.name || user.email?.split('@')[0] || 'Utilisateur'}
+                            </p>
+                            {isNewToday() && (
+                              <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                Nouveau
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                        </div>
+                        
+                        {/* Date d'inscription */}
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">
+                            {formatRegistrationDate(user.created_at)}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(user.created_at).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        
+                        {/* Statut email */}
+                        <div className="ml-4">
+                          {user.email_confirmed_at ? (
+                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                              Confirmé
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                              En attente
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>Aucun utilisateur inscrit</p>
+              </div>
+            )}
           </div>
 
           {/* Two Column Layout */}
@@ -906,6 +1025,15 @@ export default function AdminDashboardPage() {
             }}
             analysisId={selectedAnalysisId}
             onUploadSuccess={handlePdfUploadSuccess}
+          />
+        )}
+
+        {/* Pop-up Carrousel */}
+        {showCarousel && carouselItems.length > 0 && (
+          <CarouselPopup
+            items={carouselItems}
+            onClose={handleCarouselClose}
+            title="Nouveautés dans votre boutique"
           />
         )}
       </div>
