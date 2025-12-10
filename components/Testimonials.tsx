@@ -19,51 +19,84 @@ export default function Testimonials() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Ne créer l'observer que si des témoignages sont disponibles
-    if (testimonials.length === 0 && !loading) {
-      return
+    // Charger les témoignages uniquement lorsque la section est visible (lazy loading)
+    let mounted = true
+    let dataLoaded = false
+    
+    const loadTestimonials = async () => {
+      if (dataLoaded || !mounted) return
+      dataLoaded = true
+      
+      try {
+        const response = await fetch('/api/testimonials')
+        const data = await response.json()
+        
+        if (data.success && mounted) {
+          setTestimonials(data.testimonials || [])
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des témoignages:', error)
+        if (mounted) {
+          setTestimonials([])
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
+      }
     }
 
-    const observer = new IntersectionObserver(
+    // Observer pour le chargement des données (se déclenche quand la section approche)
+    const loadObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && mounted && !dataLoaded) {
+            loadTestimonials()
+            loadObserver.disconnect()
+          }
+        })
+      },
+      { rootMargin: '100px' }
+    )
+
+    // Observer pour l'animation de visibilité
+    const visibilityObserver = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && mounted) {
           setIsVisible(true)
         }
       },
       { threshold: 0.1 }
     )
 
+    // Utiliser setTimeout pour s'assurer que l'élément est dans le DOM
     const element = document.getElementById('testimonials')
     if (element) {
-      observer.observe(element)
+      loadObserver.observe(element)
+      visibilityObserver.observe(element)
+    } else {
+      // Si l'élément n'existe pas encore, réessayer après un court délai
+      const timeoutId = setTimeout(() => {
+        const retryElement = document.getElementById('testimonials')
+        if (retryElement && mounted) {
+          loadObserver.observe(retryElement)
+          visibilityObserver.observe(retryElement)
+        }
+      }, 100)
+      
+      return () => {
+        clearTimeout(timeoutId)
+        mounted = false
+        loadObserver.disconnect()
+        visibilityObserver.disconnect()
+      }
     }
 
     return () => {
-      if (element) {
-        observer.unobserve(element)
-      }
+      mounted = false
+      loadObserver.disconnect()
+      visibilityObserver.disconnect()
     }
-  }, [testimonials.length, loading])
-
-  useEffect(() => {
-    const loadTestimonials = async () => {
-      try {
-        const response = await fetch('/api/testimonials')
-        const data = await response.json()
-        
-        if (data.success) {
-          setTestimonials(data.testimonials || [])
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement des témoignages:', error)
-        // En cas d'erreur, utiliser les témoignages par défaut depuis les traductions
-        setTestimonials([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadTestimonials()
   }, [])
 
   // Utiliser uniquement les témoignages de la DB (approuvés)

@@ -1,21 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import Features from '@/components/Features'
-import LiveTikTok from '@/components/LiveTikTok'
-import Steps from '@/components/Steps'
-import PremiumSubscription from '@/components/PremiumSubscription'
-import DashboardTools from '@/components/DashboardTools'
 import About from '@/components/About'
-import CTASection from '@/components/CTASection'
+import Steps from '@/components/Steps'
 import Footer from '@/components/Footer'
-import FAQ from '@/components/FAQ'
-import SectionAnalyse from '@/components/SectionAnalyse'
 import CookieConsentBanner from '@/components/CookieConsentBanner'
-import Testimonials from '@/components/Testimonials'
+
+// Lazy load des composants non critiques pour améliorer le temps de chargement initial
+const LiveTikTok = lazy(() => import('@/components/LiveTikTok'))
+const PremiumSubscription = lazy(() => import('@/components/PremiumSubscription'))
+const DashboardTools = lazy(() => import('@/components/DashboardTools'))
+const CTASection = lazy(() => import('@/components/CTASection'))
+const FAQ = lazy(() => import('@/components/FAQ'))
+const Testimonials = lazy(() => import('@/components/Testimonials'))
+
+// Composant de chargement pour le Suspense
+const LoadingPlaceholder = ({ height = 'h-64' }: { height?: string }) => (
+  <div className={`${height} w-full flex items-center justify-center`}>
+    <div className="animate-pulse text-gray-400">Chargement...</div>
+  </div>
+)
 
 export default function Home() {
   const { t } = useLanguage()
@@ -67,26 +75,38 @@ export default function Home() {
         {/* Steps Section */}
         <Steps />
         
-        {/* Premium Subscription Section */}
-        <PremiumSubscription />
+        {/* Premium Subscription Section - Lazy loaded */}
+        <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
+          <PremiumSubscription />
+        </Suspense>
         
-        {/* Dashboard Tools Section */}
-        <DashboardTools />
+        {/* Dashboard Tools Section - Lazy loaded */}
+        <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
+          <DashboardTools />
+        </Suspense>
         
         {/* Section Analyse - Masquée */}
         {/* <SectionAnalyse /> */}
         
-        {/* Live TikTok Section */}
-        <LiveTikTok />
+        {/* Live TikTok Section - Lazy loaded */}
+        <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
+          <LiveTikTok />
+        </Suspense>
         
-        {/* Testimonials Section */}
-        <Testimonials />
+        {/* Testimonials Section - Lazy loaded */}
+        <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
+          <Testimonials />
+        </Suspense>
         
-        {/* CTA Section */}
-        <CTASection />
+        {/* CTA Section - Lazy loaded */}
+        <Suspense fallback={<LoadingPlaceholder height="h-64" />}>
+          <CTASection />
+        </Suspense>
         
-        {/* FAQ Section */}
-        <FAQ />
+        {/* FAQ Section - Lazy loaded */}
+        <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
+          <FAQ />
+        </Suspense>
       </main>
       
       {/* Footer */}

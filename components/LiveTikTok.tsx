@@ -81,10 +81,12 @@ export default function LiveTikTok() {
                 {/* Event Image */}
                 <div className="relative">
                   <div className="aspect-video bg-gradient-to-br from-blue-100 to-slate-100 rounded-2xl overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/images/logo/mymy.jpg"
                       alt={t.liveTikTok.imageAlt}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                   {/* Live Badge */}

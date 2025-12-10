@@ -99,10 +99,13 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <div className="flex items-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/logo/logofinal.png"
                 alt="Cash360"
                 className="h-12 sm:h-16 lg:h-48 w-auto"
+                loading="eager"
+                fetchPriority="high"
               />
             </div>
           </div>
