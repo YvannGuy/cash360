@@ -70,6 +70,11 @@ export async function GET(request: NextRequest) {
         const analysisCount = analysisCountMap.get(authUser.email || '') || 0
         const name = nameMap.get(authUser.email || '') || authUser.user_metadata?.first_name + ' ' + authUser.user_metadata?.last_name || ''
         
+        // Pour les utilisateurs non validés, si le compteur n'existe pas, 
+        // on suppose qu'au moins un email a été envoyé à la création du compte
+        const verificationEmailsSent = authUser.user_metadata?.verification_emails_sent ?? 
+          (authUser.email_confirmed_at ? 0 : 1)
+
         return {
           id: authUser.id,
           email: authUser.email,
@@ -81,6 +86,7 @@ export async function GET(request: NextRequest) {
           analysis_count: analysisCount,
           is_authenticated: true,
           role: role,
+          verification_emails_sent: verificationEmailsSent,
           user_metadata: authUser.user_metadata || {} // Inclure les métadonnées (ville, profession, etc.)
         }
       })

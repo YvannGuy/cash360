@@ -22,6 +22,7 @@ interface User {
   role?: 'user' | 'admin' | 'commercial'
   city?: string
   profession?: string
+  verification_emails_sent?: number
 }
 
 export default function AdminUsersPage() {
@@ -37,6 +38,7 @@ export default function AdminUsersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [editingRole, setEditingRole] = useState<string | null>(null)
   const [resendingEmail, setResendingEmail] = useState<string | null>(null)
+  const [sendingToAll, setSendingToAll] = useState(false)
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -100,7 +102,8 @@ export default function AdminUsersPage() {
           capsules_count: 0, // TODO: récupérer depuis la table user_capsules
           role: user.role || 'user',
           city: user.user_metadata?.city || '',
-          profession: user.user_metadata?.profession || ''
+          profession: user.user_metadata?.profession || '',
+          verification_emails_sent: user.verification_emails_sent ?? (user.email_confirmed_at ? 0 : 1)
         }))
         setUsers(adaptedUsers)
       } else {
@@ -268,6 +271,8 @@ export default function AdminUsersPage() {
       const data = await response.json()
       if (data.success) {
         alert(`Email de validation renvoyé avec succès à ${user.email}`)
+        // Recharger les utilisateurs pour mettre à jour le compteur
+        loadAllUsers()
       } else {
         alert(`Erreur: ${data.error || 'Erreur lors de l\'envoi de l\'email'}`)
       }
@@ -276,6 +281,40 @@ export default function AdminUsersPage() {
       alert('Erreur lors du renvoi de l\'email de validation')
     } finally {
       setResendingEmail(null)
+    }
+  }
+
+  const handleSendToAll = async () => {
+    const pendingUsers = users.filter(user => user.status === 'pending')
+    
+    if (pendingUsers.length === 0) {
+      alert('Aucun utilisateur en attente de validation')
+      return
+    }
+
+    if (!confirm(`Envoyer l'email de validation à ${pendingUsers.length} utilisateur${pendingUsers.length > 1 ? 's' : ''} ?`)) {
+      return
+    }
+
+    setSendingToAll(true)
+    try {
+      const response = await fetch('/api/admin/users/resend-verification-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        alert(`Emails de validation envoyés avec succès à ${data.sent_count} utilisateur${data.sent_count > 1 ? 's' : ''}`)
+        loadAllUsers()
+      } else {
+        alert(`Erreur: ${data.error || 'Erreur lors de l\'envoi des emails'}`)
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi des emails:', error)
+      alert('Erreur lors de l\'envoi des emails de validation')
+    } finally {
+      setSendingToAll(false)
     }
   }
 
@@ -419,7 +458,7 @@ export default function AdminUsersPage() {
 
           {/* Search and Filters */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               {/* Search Bar */}
               <div className="flex-1 relative">
                 <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -465,6 +504,32 @@ export default function AdminUsersPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
+
+              {/* Bouton Envoyer à tous */}
+              {users.filter(u => u.status === 'pending').length > 0 && (
+                <button
+                  onClick={handleSendToAll}
+                  disabled={sendingToAll}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  title={`Envoyer l'email de validation à tous les utilisateurs non validés (${users.filter(u => u.status === 'pending').length})`}
+                >
+                  {sendingToAll ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span>Envoi en cours...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <span>Envoyer à tous ({users.filter(u => u.status === 'pending').length})</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
@@ -567,7 +632,7 @@ export default function AdminUsersPage() {
                               <button 
                                 onClick={() => handleResendVerification(user)} 
                                 disabled={resendingEmail === user.id}
-                                className="text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                                className="flex items-center space-x-1 text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
                                 title="Renvoyer l'email de validation"
                               >
                                 {resendingEmail === user.id ? (
@@ -579,6 +644,9 @@ export default function AdminUsersPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                   </svg>
                                 )}
+                                <span className="text-xs font-medium text-gray-600">
+                                  ({user.verification_emails_sent ?? (user.status === 'pending' ? 1 : 0)})
+                                </span>
                               </button>
                             )}
                             <button onClick={() => handleViewFiles(user)} className="text-gray-400 hover:text-[#00A1C6] transition-colors" title="Voir fichiers">

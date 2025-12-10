@@ -55,6 +55,35 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Incrémenter le compteur d'emails de validation envoyés
+    // Si le compteur n'existe pas et que l'utilisateur est pending, on suppose qu'au moins 1 email a été envoyé à la création
+    const currentMetadata = user.user_metadata || {}
+    let currentCount = currentMetadata.verification_emails_sent
+    
+    // Si le compteur n'existe pas, on initialise à 1 car un email est toujours envoyé à la création du compte
+    if (currentCount === undefined || currentCount === null) {
+      currentCount = 1 // Premier email envoyé à la création
+    }
+    
+    const updatedMetadata = {
+      ...currentMetadata,
+      verification_emails_sent: currentCount + 1, // Incrémenter pour cet envoi
+      last_verification_email_sent_at: new Date().toISOString()
+    }
+
+    // Mettre à jour les métadonnées de l'utilisateur
+    const { error: updateMetadataError } = await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      {
+        user_metadata: updatedMetadata
+      }
+    )
+
+    if (updateMetadataError) {
+      console.error('Erreur lors de la mise à jour des métadonnées:', updateMetadataError)
+      // Continuer quand même l'envoi de l'email même si la mise à jour des métadonnées échoue
+    }
+
     // Générer le lien de confirmation
     // Utiliser l'URL de production pour le lien de confirmation
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cash360.finance'
@@ -154,7 +183,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Email de validation renvoyé avec succès',
-        email: user.email
+        email: user.email,
+        verification_emails_sent: updatedMetadata.verification_emails_sent
       })
     } catch (emailError: any) {
       console.error('[RESEND-VERIFICATION] ❌ Erreur lors de l\'envoi de l\'email:', emailError)
