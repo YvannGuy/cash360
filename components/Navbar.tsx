@@ -128,6 +128,12 @@ export default function Navbar() {
               >
                 {t.nav.analysis}
               </button>
+              <button
+                onClick={() => scrollToSection('testimonials')}
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
+              >
+                {t.nav.testimonials || 'Témoignages'}
+              </button>
             </div>
           </div>
 
@@ -243,6 +249,15 @@ export default function Navbar() {
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
               >
                 {t.nav.analysis}
+              </button>
+              <button
+                onClick={() => {
+                  scrollToSection('testimonials')
+                  setIsMenuOpen(false)
+                }}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
+              >
+                {t.nav.testimonials || 'Témoignages'}
               </button>
               
               {/* Mobile Auth */}
