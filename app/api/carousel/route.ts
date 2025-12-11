@@ -7,7 +7,7 @@ import { cookies } from 'next/headers'
  * Route API pour récupérer les items du carrousel pour les utilisateurs
  * GET /api/carousel
  * 
- * Retourne uniquement les items ebook et masterclass pour les utilisateurs avec abonnement
+ * Retourne uniquement les items ebook et coaching pour les utilisateurs
  * Exclut les items correspondant aux produits déjà achetés par l'utilisateur
  */
 export async function GET(request: NextRequest) {
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
                   ? purchasedProducts
                       .map((p: any) => p.category)
                       .filter(Boolean)
-                      .filter((cat: string) => ['ebook', 'masterclass', 'abonnement'].includes(cat))
+                      .filter((cat: string) => ['ebook', 'coaching', 'abonnement'].includes(cat))
                   : []
               }
             } catch (error) {
@@ -128,10 +128,10 @@ export async function GET(request: NextRequest) {
             is_active: true
           },
           {
-            id: 'user-masterclass',
-            image_url: '/images/masterclass.jpg',
-            redirect_url: '/dashboard?tab=boutique&category=masterclass',
-            title: 'Masterclass',
+            id: 'user-coaching',
+            image_url: '/images/coach.png',
+            redirect_url: '/dashboard?tab=boutique&category=coaching',
+            title: 'Coaching',
             display_order: 2,
             is_active: true
           }
@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
       items = []
     }
 
-    // Filtrer pour ne garder que ebook et masterclass
+    // Filtrer pour ne garder que ebook et coaching (masterclass supprimé)
     // On identifie ces items par leur image_url ou leur title
     // ET exclure ceux correspondant aux produits déjà achetés
     const filteredItems = (items || []).filter((item: any) => {
@@ -172,15 +172,11 @@ export async function GET(request: NextRequest) {
       const title = item.title?.toLowerCase() || ''
       const redirectUrl = item.redirect_url?.toLowerCase() || ''
       
-      // Vérifier si c'est un ebook, masterclass ou coaching
+      // Vérifier si c'est un ebook ou coaching
       const isEbook = imageUrl.includes('ebo') ||
                       imageUrl.includes('ebook') ||
                       title.includes('ebook') ||
                       redirectUrl.includes('ebook')
-      
-      const isMasterclass = imageUrl.includes('masterclass') ||
-                           title.includes('masterclass') ||
-                           redirectUrl.includes('masterclass')
       
       const isCoaching = imageUrl.includes('coach') ||
                         title.includes('coaching') ||
@@ -190,8 +186,16 @@ export async function GET(request: NextRequest) {
                           title.includes('abonnement') ||
                           redirectUrl.includes('abonnement')
       
-      // Exclure l'abonnement du carrousel utilisateur (déjà fait)
+      // Exclure l'abonnement et masterclass du carrousel utilisateur
       if (isAbonnement) {
+        return false
+      }
+      
+      // Exclure masterclass
+      const isMasterclass = imageUrl.includes('masterclass') ||
+                           title.includes('masterclass') ||
+                           redirectUrl.includes('masterclass')
+      if (isMasterclass) {
         return false
       }
       
@@ -200,9 +204,6 @@ export async function GET(request: NextRequest) {
         // Vérifier par catégorie (si l'utilisateur a acheté un produit de cette catégorie)
         if (isEbook && purchasedProductCategories.includes('ebook')) {
           return false // L'utilisateur a déjà acheté un ebook
-        }
-        if (isMasterclass && purchasedProductCategories.includes('masterclass')) {
-          return false // L'utilisateur a déjà acheté une masterclass
         }
         if (isCoaching && purchasedProductCategories.includes('coaching')) {
           return false // L'utilisateur a déjà acheté un coaching
@@ -221,12 +222,7 @@ export async function GET(request: NextRequest) {
         }
         
         // Vérification supplémentaire : si l'image correspond à un produit acheté
-        // Par exemple, si l'image est '/images/ebo.png' et que l'utilisateur a acheté un produit avec category='ebook'
-        // On peut aussi vérifier par correspondance d'image
         if (isEbook && purchasedProductCategories.includes('ebook')) {
-          return false
-        }
-        if (isMasterclass && purchasedProductCategories.includes('masterclass')) {
           return false
         }
         if (isCoaching && purchasedProductCategories.includes('coaching')) {
@@ -234,8 +230,8 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      // Retourner true seulement si c'est ebook, masterclass ou coaching et non acheté
-      return isEbook || isMasterclass || isCoaching
+      // Retourner true seulement si c'est ebook ou coaching et non acheté
+      return isEbook || isCoaching
     })
 
     // Si aucun item trouvé, retourner les items par défaut (filtrés par produits achetés)
@@ -250,19 +246,11 @@ export async function GET(request: NextRequest) {
           is_active: true
         },
         {
-          id: 'user-masterclass',
-          image_url: '/images/masterclass.jpg',
-          redirect_url: '/dashboard?tab=boutique&category=masterclass',
-          title: 'Masterclass',
-          display_order: 2,
-          is_active: true
-        },
-        {
           id: 'user-coaching',
           image_url: '/images/coach.png',
           redirect_url: '/dashboard?tab=boutique&category=coaching',
           title: 'Coaching',
-          display_order: 3,
+          display_order: 2,
           is_active: true
         }
       ]
@@ -274,14 +262,10 @@ export async function GET(request: NextRequest) {
         }
         
         const isEbook = item.image_url?.includes('ebo') || item.title?.toLowerCase().includes('ebook')
-        const isMasterclass = item.image_url?.includes('masterclass') || item.title?.toLowerCase().includes('masterclass')
         const isCoaching = item.image_url?.includes('coach') || item.title?.toLowerCase().includes('coaching')
         
         // Exclure si l'utilisateur a déjà acheté un produit de cette catégorie
         if (isEbook && purchasedProductCategories.includes('ebook')) {
-          return false
-        }
-        if (isMasterclass && purchasedProductCategories.includes('masterclass')) {
           return false
         }
         if (isCoaching && purchasedProductCategories.includes('coaching')) {
@@ -313,8 +297,6 @@ export async function GET(request: NextRequest) {
         // Déterminer la catégorie basée sur l'image ou le titre
         if (item.image_url?.includes('ebo') || item.title?.toLowerCase().includes('ebook')) {
           redirectUrl = '/dashboard?tab=boutique&category=ebook'
-        } else if (item.image_url?.includes('masterclass') || item.title?.toLowerCase().includes('masterclass')) {
-          redirectUrl = '/dashboard?tab=boutique&category=masterclass'
         } else if (item.image_url?.includes('coach') || item.title?.toLowerCase().includes('coaching')) {
           redirectUrl = '/dashboard?tab=boutique&category=coaching'
         } else if (item.image_url?.includes('abon') || item.title?.toLowerCase().includes('abonnement')) {

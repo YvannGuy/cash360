@@ -68,8 +68,21 @@ export default function AdminCarouselPage() {
       const data = await response.json()
       
       if (data.success) {
+        // Filtrer les items pour exclure Masterclass
+        const filteredItems = (data.items || []).filter((item: CarouselItem) => {
+          const imageUrl = item.image_url?.toLowerCase() || ''
+          const title = item.title?.toLowerCase() || ''
+          const redirectUrl = item.redirect_url?.toLowerCase() || ''
+          
+          // Exclure Masterclass
+          const isMasterclass = imageUrl.includes('masterclass') ||
+                               title.includes('masterclass') ||
+                               redirectUrl.includes('masterclass')
+          return !isMasterclass
+        })
+        
         // Trier les items par display_order
-        const sortedItems = (data.items || []).sort((a: CarouselItem, b: CarouselItem) => 
+        const sortedItems = filteredItems.sort((a: CarouselItem, b: CarouselItem) => 
           (a.display_order || 0) - (b.display_order || 0)
         )
         setItems(sortedItems)
@@ -345,7 +358,7 @@ export default function AdminCarouselPage() {
                   value={formData.image_url}
                   onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent"
-                  placeholder="/images/masterclass.jpg"
+                  placeholder="/images/ebo.png"
                   required
                 />
               </div>
@@ -359,7 +372,7 @@ export default function AdminCarouselPage() {
                   value={formData.redirect_url}
                   onChange={(e) => setFormData({ ...formData, redirect_url: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent"
-                  placeholder="/admin/boutique?tab=masterclass"
+                  placeholder="/admin/boutique?category=ebook"
                   required
                 />
               </div>
@@ -373,7 +386,7 @@ export default function AdminCarouselPage() {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent"
-                  placeholder="Masterclass"
+                  placeholder="Ebook"
                 />
               </div>
 

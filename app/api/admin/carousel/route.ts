@@ -82,81 +82,65 @@ export async function GET() {
             })
           }
 
-          // Dernier recours : retourner les items par défaut (incluant le coaching)
+          // Dernier recours : retourner les items par défaut
           console.log('[CAROUSEL] Impossible de récupérer via SQL, utilisation des items par défaut')
           return NextResponse.json({
             success: true,
             items: [
               {
                 id: 'default-1',
-                image_url: '/images/masterclass.jpg',
-                redirect_url: '/admin/boutique?category=masterclass',
-                title: 'Masterclass',
+                image_url: '/images/ebo.png',
+                redirect_url: '/admin/boutique?category=ebook',
+                title: 'Ebook',
                 display_order: 1,
                 is_active: true
               },
               {
                 id: 'default-2',
-                image_url: '/images/ebo.png',
-                redirect_url: '/admin/boutique?category=ebook',
-                title: 'Ebook',
+                image_url: '/images/abon.png',
+                redirect_url: '/admin/boutique?category=abonnement',
+                title: 'Abonnement',
                 display_order: 2,
                 is_active: true
               },
               {
                 id: 'default-3',
-                image_url: '/images/abon.png',
-                redirect_url: '/admin/boutique?category=abonnement',
-                title: 'Abonnement',
-                display_order: 3,
-                is_active: true
-              },
-              {
-                id: 'default-4',
                 image_url: '/images/coach.png',
                 redirect_url: '/admin/boutique?category=coaching',
                 title: 'Coaching Professionnel',
-                display_order: 4,
+                display_order: 3,
                 is_active: true
               }
             ]
           })
         } catch (fallbackError) {
           console.error('[CAROUSEL] Erreur fallback SQL:', fallbackError)
-          // Retourner les items par défaut incluant le coaching
+          // Retourner les items par défaut
           return NextResponse.json({
             success: true,
             items: [
               {
                 id: 'default-1',
-                image_url: '/images/masterclass.jpg',
-                redirect_url: '/admin/boutique?category=masterclass',
-                title: 'Masterclass',
+                image_url: '/images/ebo.png',
+                redirect_url: '/admin/boutique?category=ebook',
+                title: 'Ebook',
                 display_order: 1,
                 is_active: true
               },
               {
                 id: 'default-2',
-                image_url: '/images/ebo.png',
-                redirect_url: '/admin/boutique?category=ebook',
-                title: 'Ebook',
+                image_url: '/images/abon.png',
+                redirect_url: '/admin/boutique?category=abonnement',
+                title: 'Abonnement',
                 display_order: 2,
                 is_active: true
               },
               {
                 id: 'default-3',
-                image_url: '/images/abon.png',
-                redirect_url: '/admin/boutique?category=abonnement',
-                title: 'Abonnement',
-                display_order: 3,
-                is_active: true
-              },
-              {
-                id: 'default-4',
                 image_url: '/images/coach.png',
                 redirect_url: '/admin/boutique?category=coaching',
                 title: 'Coaching Professionnel',
-                display_order: 4,
+                display_order: 3,
                 is_active: true
               }
             ]
@@ -178,25 +162,25 @@ export async function GET() {
         items: [
           {
             id: 'default-1',
-            image_url: '/images/masterclass.jpg',
-            redirect_url: '/admin/boutique?tab=masterclass',
-            title: 'Masterclass',
+            image_url: '/images/ebo.png',
+            redirect_url: '/admin/boutique?category=ebook',
+            title: 'Ebook',
             display_order: 1,
             is_active: true
           },
           {
             id: 'default-2',
-            image_url: '/images/ebo.png',
-            redirect_url: '/admin/boutique?tab=ebook',
-            title: 'Ebook',
+            image_url: '/images/abon.png',
+            redirect_url: '/admin/boutique?category=abonnement',
+            title: 'Abonnement',
             display_order: 2,
             is_active: true
           },
           {
             id: 'default-3',
-            image_url: '/images/abon.png',
-            redirect_url: '/admin/boutique?tab=abonnement',
-            title: 'Abonnement',
+            image_url: '/images/coach.png',
+            redirect_url: '/admin/boutique?category=coaching',
+            title: 'Coaching Professionnel',
             display_order: 3,
             is_active: true
           }
