@@ -830,6 +830,30 @@ const refreshFastSummary = useCallback(async () => {
       )
     }
     
+    // Tri spécifique pour la catégorie coaching
+    if (selectedCategory === 'coaching') {
+      const coachingOrder = ['genèse', 'genese', 'matthieu', 'apocalypse', 'apocalyse']
+      filtered = filtered.sort((a, b) => {
+        const titleA = a.title.toLowerCase()
+        const titleB = b.title.toLowerCase()
+        
+        // Trouver l'index dans l'ordre défini
+        const indexA = coachingOrder.findIndex(keyword => titleA.includes(keyword))
+        const indexB = coachingOrder.findIndex(keyword => titleB.includes(keyword))
+        
+        // Si les deux ont un index (trouvés dans l'ordre)
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB
+        }
+        // Si seul A a un index, il vient en premier
+        if (indexA !== -1) return -1
+        // Si seul B a un index, il vient en premier
+        if (indexB !== -1) return 1
+        // Sinon, garder l'ordre original
+        return 0
+      })
+    }
+    
     return filtered
   }, [boutiqueCapsules, searchBoutique, selectedCategory])
 
