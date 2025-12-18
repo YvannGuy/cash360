@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
       sponsors: formData.get('sponsors') as string,
       
       // 9. Documents requis
-      structureDocument: formData.get('structureDocument') as File | null,
-      identityDocument: formData.get('identityDocument') as File | null,
-      eventPresentation: formData.get('eventPresentation') as File | null,
+      structureDocument: (formData.get('structureDocument') as File) || null,
+      identityDocument: (formData.get('identityDocument') as File) || null,
+      eventPresentation: (formData.get('eventPresentation') as File) || null,
       
       // 10. Engagement & validation
       frameworkAcknowledged: formData.get('frameworkAcknowledged') === 'true',
@@ -67,9 +67,47 @@ export async function POST(request: NextRequest) {
     }
 
     // Validation des champs obligatoires
-    if (!data.structureName || !data.responsibleEmail || !data.city || !data.country) {
+    const missingFields: string[] = []
+    
+    if (!data.structureName || data.structureName.trim() === '') missingFields.push('Nom de la structure')
+    if (!data.legalForm || data.legalForm.trim() === '') missingFields.push('Forme juridique')
+    if (!data.registrationNumber || data.registrationNumber.trim() === '') missingFields.push('Numéro d\'immatriculation')
+    if (!data.structureAddress || data.structureAddress.trim() === '') missingFields.push('Adresse de la structure')
+    if (!data.responsibleName || data.responsibleName.trim() === '') missingFields.push('Nom du responsable')
+    if (!data.responsibleFunction || data.responsibleFunction.trim() === '') missingFields.push('Fonction du responsable')
+    if (!data.responsibleEmail || data.responsibleEmail.trim() === '') missingFields.push('Email du responsable')
+    if (!data.responsiblePhone || data.responsiblePhone.trim() === '') missingFields.push('Téléphone du responsable')
+    if (!data.city || data.city.trim() === '') missingFields.push('Ville')
+    if (!data.country || data.country.trim() === '') missingFields.push('Pays')
+    if (!data.proposedDate || data.proposedDate.trim() === '') missingFields.push('Date(s) souhaitée(s)')
+    if (!data.eventType || data.eventType.trim() === '') missingFields.push('Type d\'événement')
+    if (!data.targetAudience || data.targetAudience.trim() === '') missingFields.push('Public visé')
+    if (!data.estimatedParticipants || data.estimatedParticipants.trim() === '') missingFields.push('Nombre de participants estimé')
+    if (!data.standardFormat || data.standardFormat.trim() === '') missingFields.push('Format standard')
+    if (!data.venueIdentified || data.venueIdentified.trim() === '') missingFields.push('Salle identifiée')
+    if (!data.proposedFee || data.proposedFee.trim() === '') missingFields.push('Cachet proposé')
+    
+    // Vérification des fichiers
+    const structureDoc = formData.get('structureDocument')
+    const identityDoc = formData.get('identityDocument')
+    
+    if (!structureDoc || !(structureDoc instanceof File) || structureDoc.size === 0) {
+      missingFields.push('Document de la structure')
+    }
+    if (!identityDoc || !(identityDoc instanceof File) || identityDoc.size === 0) {
+      missingFields.push('Pièce d\'identité du responsable')
+    }
+    
+    if (!data.frameworkAcknowledged) missingFields.push('Cadre officiel (case à cocher)')
+    if (!data.contractAccepted) missingFields.push('Acceptation du contrat (case à cocher)')
+    if (!data.writtenAgreementAccepted) missingFields.push('Acceptation de l\'accord écrit (case à cocher)')
+    
+    if (missingFields.length > 0) {
       return NextResponse.json(
-        { error: 'Champs obligatoires manquants' },
+        { 
+          error: 'Champs obligatoires manquants',
+          missingFields: missingFields
+        },
         { status: 400 }
       )
     }
