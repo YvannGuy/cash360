@@ -120,12 +120,6 @@ export default function Navbar() {
                 {t.nav.home}
               </button>
               <button
-                onClick={() => scrollToSection('apropos')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
-              >
-                {t.nav.about}
-              </button>
-              <button
                 onClick={() => scrollToSection('premium-subscription')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
@@ -137,6 +131,12 @@ export default function Navbar() {
               >
                 {t.nav.testimonials || 'Témoignages'}
               </button>
+              <a
+                href="/masterclass"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
+              >
+                Masterclass
+              </a>
             </div>
           </div>
 
@@ -239,12 +239,6 @@ export default function Navbar() {
                 {t.nav.home}
               </button>
               <button
-                onClick={() => scrollToSection('apropos')}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
-              >
-                {t.nav.about}
-              </button>
-              <button
                 onClick={() => {
                   scrollToSection('premium-subscription')
                   setIsMenuOpen(false)
@@ -262,6 +256,13 @@ export default function Navbar() {
               >
                 {t.nav.testimonials || 'Témoignages'}
               </button>
+              <a
+                href="/masterclass"
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
+              >
+                Masterclass
+              </a>
               
               {/* Mobile Auth */}
               {user ? (
