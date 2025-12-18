@@ -265,7 +265,7 @@ export const translations = {
         "Pour les croyants qui veulent concilier foi et finances sans culpabilité ni excès.",
         "Pour les églises et ministères souhaitant former leurs membres à la bonne gestion financière."
       ],
-      pastorTitle: "À propos du Pasteur Myriam Konan",
+      pastorTitle: "À propos de Myriam Konan",
       pastorIntro: "Forte de 10 ans d'expérience dans le secteur bancaire et d'une vocation spirituelle profonde, j'ai développé une méthode unique qui combine expertise financière et accompagnement spirituel pour vous aider à retrouver l'équilibre et la prospérité.",
       achievements: [
         {
@@ -480,7 +480,7 @@ export const translations = {
       mainTitle: "Le début de votre liberté financière",
       ctaButton: "Je m'inscris",
       quote: "\"La prospérité financière commence par une relation saine avec l'argent. Laissez-moi vous accompagner sur ce chemin de transformation.\"",
-      quoteAuthor: "— Pasteur Myriam Konan, Fondatrice de Cash360",
+      quoteAuthor: "— Myriam Konan, Fondatrice de Cash360",
       capsules: [
         {
           id: 1,
@@ -1324,6 +1324,261 @@ export const translations = {
       loadingText: "Chargement..."
     },
 
+    // Masterclass Page
+    masterclass: {
+      hero: {
+        title: "Organiser une",
+        titleHighlight: "Masterclass Cash360",
+        tagline: "Éduquer. Structurer. Impacter durablement.",
+        subtitle: "Rejoignez notre réseau international d'organisateurs et offrez à votre public un événement à fort impact éducatif",
+        requestButton: "Demander une masterclass",
+        sponsorButton: "Je souhaite sponsoriser",
+        downloadBrochure: "Télécharger brochure",
+        downloadSponsorPack: "Télécharger dossier sponsor"
+      },
+      tabs: {
+        masterclass: "Masterclass",
+        sponsors: "Sponsors & Partenariats"
+      },
+      gallery: {
+        title: "Nos Masterclass à travers le monde",
+        subtitle: "Découvrez nos événements organisés dans différents pays, rassemblant des milliers de participants passionnés par l'éducation financière"
+      },
+      why: {
+        title: "Pourquoi organiser une masterclass Cash360 ?",
+        description1: "Organiser une masterclass Cash360, c'est proposer à votre public un événement à fort impact éducatif, centré sur la stabilité financière, la responsabilité et la structuration des projets personnels et entrepreneuriaux.",
+        description2: "Cash360 intervient en amont du financement, là où beaucoup d'initiatives échouent faute de préparation financière et de discipline.",
+        highlight: "Former avant de financer. Structurer avant de croître."
+      },
+      audience: {
+        title: "À qui s'adressent les masterclass ?",
+        items: [
+          "Étudiants",
+          "Particuliers souhaitant mieux gérer leurs finances",
+          "Entrepreneurs et porteurs de projets",
+          "Leaders et responsables communautaires"
+        ],
+        note: "👉 Une attention particulière est portée aux entrepreneurs et leaders"
+      },
+      format: {
+        title: "Format d'une masterclass",
+        items: [
+          "2 heures de masterclass éducative",
+          "Applications concrètes",
+          "Session Q&A",
+          "Networking entrepreneurial",
+          "Pitch avec dotation (optionnel)"
+        ]
+      },
+      theme: {
+        title: "Thème officiel",
+        subtitle: "L'Anatomie financière",
+        description: "Une approche pédagogique qui décompose les mécanismes financiers pour les rendre accessibles et actionnables.",
+        officialTheme2026: "THÈME OFFICIEL 2026",
+        teaching: "Un enseignement structuré pour transformer votre relation avec l'argent",
+        points: [
+          "Comprendre les mécanismes fondamentaux de l'argent",
+          "Identifier les erreurs financières courantes",
+          "Poser des bases solides pour une croissance durable",
+          "Développer une vision financière responsable"
+        ]
+      },
+      benefits: {
+        title: "Ce que Cash360 apporte",
+        items: [
+          { icon: "📚", title: "Contenu pédagogique structurant" },
+          { icon: "🎯", title: "Approche sérieuse et responsable" },
+          { icon: "🏆", title: "Image crédible et institutionnelle" },
+          { icon: "🔮", title: "Vision long terme" },
+          { icon: "✨", title: "Intervention professionnelle" }
+        ]
+      },
+      process: {
+        title: "Processus d'organisation",
+        steps: [
+          {
+            num: "1️⃣",
+            title: "Invitation officielle",
+            desc: "Envoyer une lettre d'invitation à myriamkonan@cash360.finance",
+            downloadLabel: "Télécharger la lettre d'invitation officielle"
+          },
+          {
+            num: "2️⃣",
+            title: "Réunion de cadrage",
+            desc: "Validation du format, billetterie, conditions financières"
+          },
+          {
+            num: "3️⃣",
+            title: "Validation contractuelle",
+            desc: "Signature d'un contrat de collaboration"
+          }
+        ]
+      },
+      formSteps: {
+        structure: "Informations sur votre structure",
+        responsible: "Responsable de l'événement",
+        event: "Informations sur l'événement",
+        audience: "Public visé",
+        format: "Format souhaité",
+        logistics: "Logistique & organisation",
+        financial: "Conditions financières",
+        communication: "Communication & visibilité",
+        documents: "Documents requis",
+        commitment: "Engagement & validation"
+      },
+      sponsorFormSteps: {
+        organization: "Informations sur votre organisation",
+        contact: "Contact principal",
+        partnership: "Type de partenariat",
+        commitment: "Engagement"
+      },
+      formLabels: {
+        structureName: "Nom de la structure",
+        legalForm: "Forme juridique",
+        registrationNumber: "Numéro d'immatriculation",
+        structureAddress: "Adresse de la structure",
+        structureWebsite: "Site web de la structure",
+        responsibleName: "Nom et prénom",
+        responsibleFunction: "Fonction",
+        responsibleEmail: "Email",
+        responsiblePhone: "Téléphone",
+        city: "Ville",
+        country: "Pays",
+        proposedDate: "Date proposée",
+        eventType: "Type d'événement",
+        targetAudience: "Public visé",
+        estimatedParticipants: "Nombre estimé de participants",
+        standardFormat: "Format standard",
+        customFormat: "Format personnalisé",
+        pitchEntrepreneurial: "Pitch entrepreneurial",
+        pitchDetails: "Détails du pitch",
+        venueIdentified: "Lieu identifié",
+        venueCapacity: "Capacité du lieu",
+        transport: "Transport",
+        accommodation: "Hébergement",
+        logistics: "Autres besoins logistiques",
+        proposedFee: "Honoraires proposés",
+        percentageOnTickets: "Pourcentage sur les billets",
+        percentageDetails: "Détails du pourcentage",
+        communicationChannels: "Canaux de communication",
+        sponsors: "Sponsors",
+        structureDocument: "Document de la structure",
+        identityDocument: "Pièce d'identité du responsable",
+        eventPresentation: "Présentation de l'événement",
+        frameworkAcknowledged: "Je confirme avoir pris connaissance du cadre officiel des masterclass Cash360",
+        contractAccepted: "J'accepte que toute collaboration soit soumise à validation et signature d'un contrat",
+        writtenAgreementAccepted: "Je comprends qu'aucun événement ne sera confirmé sans accord écrit préalable",
+        afterSubmission: "Après soumission, merci d'adresser la lettre d'invitation officielle à :",
+        thankYou: "Merci pour votre demande",
+        thankYouMessage: "Votre demande de masterclass a été envoyée avec succès. Nous vous contacterons dans les plus brefs délais.",
+        errorMessage: "Une erreur est survenue lors de l'envoi de votre demande. Veuillez réessayer.",
+        organizationName: "Nom de l'organisation",
+        organizationAddress: "Adresse de l'organisation",
+        organizationWebsite: "Site web de l'organisation",
+        contactName: "Nom et prénom",
+        contactFunction: "Fonction",
+        contactEmail: "Email",
+        contactPhone: "Téléphone",
+        partnershipType: "Type de partenariat souhaité",
+        budgetRange: "Budget envisagé",
+        targetAudienceSponsor: "Public cible visé",
+        termsAccepted: "J'accepte les conditions et le cadre éthique de Cash360",
+        selectOption: "Sélectionner...",
+        fillAllFields: "Veuillez remplir tous les champs obligatoires"
+      },
+      formOptions: {
+        eventTypes: {
+          masterclass: "Masterclass",
+          workshop: "Atelier",
+          conference: "Conférence",
+          other: "Autre"
+        },
+        partnershipTypes: {
+          eventSponsoring: "Sponsoring événement",
+          institutional: "Partenariat institutionnel",
+          coOrganization: "Co-organisation",
+          programSupport: "Soutien programme",
+          other: "Autre"
+        },
+        budgetRanges: {
+          less1000: "Moins de 1000€",
+          "1000-5000": "1000€ - 5000€",
+          "5000-10000": "5000€ - 10000€",
+          more10000: "Plus de 10000€",
+          toDiscuss: "À discuter"
+        }
+      },
+      sponsors: {
+        title: "Sponsors & Partenariats",
+        subtitle: "Soutenir l'éducation financière. Investir dans l'impact.",
+        intro: "Cash360 ouvre ses masterclass et événements à des partenaires et sponsors souhaitant s'associer à une initiative d'éducation financière à fort impact, orientée vers les entrepreneurs, leaders et porteurs de projets.",
+        whyTitle: "Pourquoi sponsoriser une Masterclass Cash360 ?",
+        whyDescription: "Les masterclass Cash360 sont conçues comme des événements à fort impact éducatif, combinant :",
+        whyItems: [
+          "transmission de compétences financières",
+          "structuration entrepreneuriale",
+          "networking qualifié",
+          "mise en lumière de talents locaux"
+        ],
+        benefitsTitle: "Les sponsors bénéficient :",
+        benefits: [
+          "d'une visibilité ciblée",
+          "d'un positionnement responsable",
+          "d'un cadre professionnel et contractuel clair"
+        ],
+        dossierTitle: "Dossier Sponsor Cash360",
+        dossierSubtitle: "Pour toute demande de partenariat ou de sponsoring, nous mettons à disposition un dossier sponsor complet, téléchargeable ci-dessous.",
+        downloadZip: "Télécharger le dossier sponsor complet (ZIP)",
+        howToBecomeSponsor: "Comment devenir sponsor ?",
+        howToSteps: [
+          "Télécharger le dossier sponsor Cash360",
+          "Prendre connaissance du cadre proposé",
+          "Contacter notre équipe pour un échange",
+          "Définir ensemble le format de partenariat",
+          "Signature du contrat et mise en œuvre"
+        ],
+        documents: {
+          plaquette: {
+            title: "Plaquette Sponsor Officielle",
+            desc: "Présentation générale de Cash360"
+          },
+          contrat: {
+            title: "Contrat de Sponsoring Cash360",
+            desc: "Cadre juridique & engagements"
+          },
+          institutionnelle: {
+            title: "Version Institutionnelle",
+            desc: "Banques – Fondations – ONG – Institutions"
+          },
+          internationale: {
+            title: "Version Internationale – Afrique & Diaspora",
+            desc: "Partenariats internationaux"
+          }
+        },
+        downloadPdf: "Télécharger le PDF",
+        contactTitle: "Contact Sponsoring",
+        contactText: "Pour toute demande de sponsoring ou partenariat :",
+        contactAddress: "229 rue Saint-Honoré, 75001 Paris, France",
+        contactEmail: "myriamkonan@cash360.finance",
+        commitmentTitle: "Cadre & engagement",
+        commitments: [
+          "Approche strictement éducative",
+          "Aucune promesse de rendement financier",
+          "Respect de l'image des partenaires",
+          "Cadre contractuel clair et sécurisé"
+        ]
+      },
+      form: {
+        previous: "← Précédent",
+        next: "Suivant →",
+        submit: "Envoyer la demande",
+        submitting: "Envoi en cours...",
+        downloadBrochure: "Télécharger brochure",
+        sponsorButton: "Je souhaite sponsoriser",
+        downloadSponsorPack: "Télécharger dossier sponsor"
+      }
+    },
+
     // Upload Dropzone
     uploadDropzone: {
       clickToSelect: "Cliquez pour sélectionner",
@@ -1653,7 +1908,7 @@ export const translations = {
         "For believers who want to reconcile faith and finances without guilt or excess.",
         "For churches and ministries wishing to train their members in good financial management."
       ],
-      pastorTitle: "About Pastor Myriam Konan",
+      pastorTitle: "About Myriam Konan",
       pastorIntro: "With 10 years of experience in the banking sector and a deep spiritual calling, I have developed a unique method that combines financial expertise and spiritual support to help you regain balance and prosperity.",
       achievements: [
         {
@@ -1872,7 +2127,7 @@ export const translations = {
       mainTitle: "The beginning of your financial freedom",
       ctaButton: "Sign up",
       quote: "\"Financial prosperity begins with a healthy relationship with money. Let me accompany you on this path of transformation.\"",
-      quoteAuthor: "— Pastor Myriam Konan, Founder of Cash360",
+      quoteAuthor: "— Myriam Konan, Founder of Cash360",
       capsules: [
         {
           id: 1,
@@ -2714,6 +2969,261 @@ export const translations = {
       viewProgress: "View my analysis progress",
       trackText: "You can track the progress of your analysis on your personal dashboard",
       loadingText: "Loading..."
+      },
+
+    // Masterclass Page
+    masterclass: {
+      hero: {
+        title: "Organize a",
+        titleHighlight: "Cash360 Masterclass",
+        tagline: "Educate. Structure. Impact sustainably.",
+        subtitle: "Join our international network of organizers and offer your audience a high-impact educational event",
+        requestButton: "Request a masterclass",
+        sponsorButton: "I want to sponsor",
+        downloadBrochure: "Download brochure",
+        downloadSponsorPack: "Download sponsor pack"
+      },
+      tabs: {
+        masterclass: "Masterclass",
+        sponsors: "Sponsors & Partnerships"
+      },
+      gallery: {
+        title: "Our Masterclasses Around the World",
+        subtitle: "Discover our events organized in different countries, bringing together thousands of participants passionate about financial education"
+      },
+      why: {
+        title: "Why organize a Cash360 masterclass?",
+        description1: "Organizing a Cash360 masterclass means offering your audience a high-impact educational event, centered on financial stability, responsibility, and structuring personal and entrepreneurial projects.",
+        description2: "Cash360 intervenes before financing, where many initiatives fail due to lack of financial preparation and discipline.",
+        highlight: "Train before financing. Structure before growing."
+      },
+      audience: {
+        title: "Who are the masterclasses for?",
+        items: [
+          "Students",
+          "Individuals wanting to better manage their finances",
+          "Entrepreneurs and project leaders",
+          "Leaders and community leaders"
+        ],
+        note: "👉 Special attention is given to entrepreneurs and leaders"
+      },
+      format: {
+        title: "Masterclass format",
+        items: [
+          "2 hours of educational masterclass",
+          "Practical applications",
+          "Q&A session",
+          "Entrepreneurial networking",
+          "Pitch with prize (optional)"
+        ]
+      },
+      theme: {
+        title: "Official theme",
+        subtitle: "Financial Anatomy",
+        description: "A pedagogical approach that breaks down financial mechanisms to make them accessible and actionable.",
+        officialTheme2026: "OFFICIAL THEME 2026",
+        teaching: "Structured teaching to transform your relationship with money",
+        points: [
+          "Understand the fundamental mechanisms of money",
+          "Identify common financial mistakes",
+          "Build solid foundations for sustainable growth",
+          "Develop a responsible financial vision"
+        ]
+      },
+      benefits: {
+        title: "What Cash360 brings",
+        items: [
+          { icon: "📚", title: "Structured educational content" },
+          { icon: "🎯", title: "Serious and responsible approach" },
+          { icon: "🏆", title: "Credible and institutional image" },
+          { icon: "🔮", title: "Long-term vision" },
+          { icon: "✨", title: "Professional intervention" }
+        ]
+      },
+      process: {
+        title: "Organization process",
+        steps: [
+          {
+            num: "1️⃣",
+            title: "Official invitation",
+            desc: "Send an invitation letter to myriamkonan@cash360.finance",
+            downloadLabel: "Download the official invitation letter"
+          },
+          {
+            num: "2️⃣",
+            title: "Scoping meeting",
+            desc: "Format validation, ticketing, financial conditions"
+          },
+          {
+            num: "3️⃣",
+            title: "Contractual validation",
+            desc: "Signing a collaboration contract"
+          }
+        ]
+      },
+      formSteps: {
+        structure: "Information about your organization",
+        responsible: "Event manager",
+        event: "Event information",
+        audience: "Target audience",
+        format: "Desired format",
+        logistics: "Logistics & organization",
+        financial: "Financial conditions",
+        communication: "Communication & visibility",
+        documents: "Required documents",
+        commitment: "Commitment & validation"
+      },
+      sponsorFormSteps: {
+        organization: "Information about your organization",
+        contact: "Main contact",
+        partnership: "Partnership type",
+        commitment: "Commitment"
+      },
+      formLabels: {
+        structureName: "Organization name",
+        legalForm: "Legal form",
+        registrationNumber: "Registration number",
+        structureAddress: "Organization address",
+        structureWebsite: "Organization website",
+        responsibleName: "Full name",
+        responsibleFunction: "Function",
+        responsibleEmail: "Email",
+        responsiblePhone: "Phone",
+        city: "City",
+        country: "Country",
+        proposedDate: "Proposed date",
+        eventType: "Event type",
+        targetAudience: "Target audience",
+        estimatedParticipants: "Estimated number of participants",
+        standardFormat: "Standard format",
+        customFormat: "Custom format",
+        pitchEntrepreneurial: "Entrepreneurial pitch",
+        pitchDetails: "Pitch details",
+        venueIdentified: "Venue identified",
+        venueCapacity: "Venue capacity",
+        transport: "Transport",
+        accommodation: "Accommodation",
+        logistics: "Other logistical needs",
+        proposedFee: "Proposed fees",
+        percentageOnTickets: "Percentage on tickets",
+        percentageDetails: "Percentage details",
+        communicationChannels: "Communication channels",
+        sponsors: "Sponsors",
+        structureDocument: "Organization document",
+        identityDocument: "Manager's ID",
+        eventPresentation: "Event presentation",
+        frameworkAcknowledged: "I confirm that I have read the official framework of Cash360 masterclasses",
+        contractAccepted: "I accept that any collaboration is subject to validation and signing of a contract",
+        writtenAgreementAccepted: "I understand that no event will be confirmed without prior written agreement",
+        afterSubmission: "After submission, please send the official invitation letter to:",
+        thankYou: "Thank you for your request",
+        thankYouMessage: "Your masterclass request has been sent successfully. We will contact you as soon as possible.",
+        errorMessage: "An error occurred while sending your request. Please try again.",
+        organizationName: "Organization name",
+        organizationAddress: "Organization address",
+        organizationWebsite: "Organization website",
+        contactName: "Full name",
+        contactFunction: "Function",
+        contactEmail: "Email",
+        contactPhone: "Phone",
+        partnershipType: "Desired partnership type",
+        budgetRange: "Envisaged budget",
+        targetAudienceSponsor: "Target audience",
+        termsAccepted: "I accept the terms and ethical framework of Cash360",
+        selectOption: "Select...",
+        fillAllFields: "Please fill in all required fields"
+      },
+      formOptions: {
+        eventTypes: {
+          masterclass: "Masterclass",
+          workshop: "Workshop",
+          conference: "Conference",
+          other: "Other"
+        },
+        partnershipTypes: {
+          eventSponsoring: "Event sponsoring",
+          institutional: "Institutional partnership",
+          coOrganization: "Co-organization",
+          programSupport: "Program support",
+          other: "Other"
+        },
+        budgetRanges: {
+          less1000: "Less than €1000",
+          "1000-5000": "€1000 - €5000",
+          "5000-10000": "€5000 - €10000",
+          more10000: "More than €10000",
+          toDiscuss: "To discuss"
+        }
+      },
+      sponsors: {
+        title: "Sponsors & Partnerships",
+        subtitle: "Support financial education. Invest in impact.",
+        intro: "Cash360 opens its masterclasses and events to partners and sponsors wishing to associate with a high-impact financial education initiative, oriented towards entrepreneurs, leaders, and project leaders.",
+        whyTitle: "Why sponsor a Cash360 Masterclass?",
+        whyDescription: "Cash360 masterclasses are designed as high-impact educational events, combining:",
+        whyItems: [
+          "transmission of financial skills",
+          "entrepreneurial structuring",
+          "qualified networking",
+          "spotlight on local talent"
+        ],
+        benefitsTitle: "Sponsors benefit from:",
+        benefits: [
+          "targeted visibility",
+          "responsible positioning",
+          "clear professional and contractual framework"
+        ],
+        dossierTitle: "Cash360 Sponsor Pack",
+        dossierSubtitle: "For any partnership or sponsorship request, we provide a complete sponsor pack, downloadable below.",
+        downloadZip: "Download complete sponsor pack (ZIP)",
+        howToBecomeSponsor: "How to become a sponsor?",
+        howToSteps: [
+          "Download the Cash360 sponsor pack",
+          "Read the proposed framework",
+          "Contact our team for an exchange",
+          "Define together the partnership format",
+          "Sign the contract and implementation"
+        ],
+        documents: {
+          plaquette: {
+            title: "Official Sponsor Brochure",
+            desc: "General presentation of Cash360"
+          },
+          contrat: {
+            title: "Cash360 Sponsorship Contract",
+            desc: "Legal framework & commitments"
+          },
+          institutionnelle: {
+            title: "Institutional Version",
+            desc: "Banks – Foundations – NGOs – Institutions"
+          },
+          internationale: {
+            title: "International Version – Africa & Diaspora",
+            desc: "International partnerships"
+          }
+        },
+        downloadPdf: "Download PDF",
+        contactTitle: "Sponsorship Contact",
+        contactText: "For any sponsorship or partnership request:",
+        contactAddress: "229 rue Saint-Honoré, 75001 Paris, France",
+        contactEmail: "myriamkonan@cash360.finance",
+        commitmentTitle: "Framework & commitment",
+        commitments: [
+          "Strictly educational approach",
+          "No promise of financial return",
+          "Respect for partners' image",
+          "Clear and secure contractual framework"
+        ]
+      },
+      form: {
+        previous: "← Previous",
+        next: "Next →",
+        submit: "Send request",
+        submitting: "Sending...",
+        downloadBrochure: "Download brochure",
+        sponsorButton: "I want to sponsor",
+        downloadSponsorPack: "Download sponsor pack"
+      }
     },
 
     // Upload Dropzone
@@ -3043,7 +3553,7 @@ export const translations = {
         "Para creyentes que quieren conciliar fe y finanzas sin culpa ni exceso.",
         "Para iglesias y ministerios que desean formar a sus miembros en la buena gestión financiera."
       ],
-      pastorTitle: "Acerca de la Pastora Myriam Konan",
+      pastorTitle: "Acerca de Myriam Konan",
       pastorIntro: "Con 10 años de experiencia en el sector bancario y una vocación espiritual profunda, he desarrollado un método único que combina experiencia financiera y apoyo espiritual para ayudarte a recuperar el equilibrio y la prosperidad.",
       achievements: [
         {
@@ -3262,7 +3772,7 @@ export const translations = {
       mainTitle: "El comienzo de tu libertad financiera",
       ctaButton: "Inscribirse",
       quote: "\"La prosperidad financiera comienza con una relación sana con el dinero. Déjame acompañarte en este camino de transformación.\"",
-      quoteAuthor: "— Pastora Myriam Konan, Fundadora de Cash360",
+      quoteAuthor: "— Myriam Konan, Fundadora de Cash360",
       capsules: [
         {
           id: 1,
@@ -4104,6 +4614,261 @@ export const translations = {
       viewProgress: "Ver el progreso de mi análisis",
       trackText: "Puedes seguir el progreso de tu análisis en tu panel de control personal",
       loadingText: "Cargando..."
+      },
+
+    // Masterclass Page
+    masterclass: {
+      hero: {
+        title: "Organizar una",
+        titleHighlight: "Masterclass Cash360",
+        tagline: "Educar. Estructurar. Impactar de forma sostenible.",
+        subtitle: "Únete a nuestra red internacional de organizadores y ofrece a tu audiencia un evento educativo de alto impacto",
+        requestButton: "Solicitar una masterclass",
+        sponsorButton: "Quiero patrocinar",
+        downloadBrochure: "Descargar folleto",
+        downloadSponsorPack: "Descargar dossier patrocinador"
+      },
+      tabs: {
+        masterclass: "Masterclass",
+        sponsors: "Patrocinadores y Alianzas"
+      },
+      gallery: {
+        title: "Nuestras Masterclasses en el Mundo",
+        subtitle: "Descubre nuestros eventos organizados en diferentes países, reuniendo a miles de participantes apasionados por la educación financiera"
+      },
+      why: {
+        title: "¿Por qué organizar una masterclass Cash360?",
+        description1: "Organizar una masterclass Cash360 es ofrecer a tu audiencia un evento educativo de alto impacto, centrado en la estabilidad financiera, la responsabilidad y la estructuración de proyectos personales y empresariales.",
+        description2: "Cash360 interviene antes del financiamiento, donde muchas iniciativas fracasan por falta de preparación financiera y disciplina.",
+        highlight: "Formar antes de financiar. Estructurar antes de crecer."
+      },
+      audience: {
+        title: "¿A quién se dirigen las masterclasses?",
+        items: [
+          "Estudiantes",
+          "Particulares que desean gestionar mejor sus finanzas",
+          "Emprendedores y líderes de proyectos",
+          "Líderes y responsables comunitarios"
+        ],
+        note: "👉 Se presta especial atención a emprendedores y líderes"
+      },
+      format: {
+        title: "Formato de una masterclass",
+        items: [
+          "2 horas de masterclass educativa",
+          "Aplicaciones prácticas",
+          "Sesión de preguntas y respuestas",
+          "Networking empresarial",
+          "Pitch con dotación (opcional)"
+        ]
+      },
+      theme: {
+        title: "Tema oficial",
+        subtitle: "La Anatomía Financiera",
+        description: "Un enfoque pedagógico que descompone los mecanismos financieros para hacerlos accesibles y accionables.",
+        officialTheme2026: "TEMA OFICIAL 2026",
+        teaching: "Una enseñanza estructurada para transformar tu relación con el dinero",
+        points: [
+          "Comprender los mecanismos fundamentales del dinero",
+          "Identificar los errores financieros comunes",
+          "Establecer bases sólidas para un crecimiento sostenible",
+          "Desarrollar una visión financiera responsable"
+        ]
+      },
+      benefits: {
+        title: "Lo que Cash360 aporta",
+        items: [
+          { icon: "📚", title: "Contenido educativo estructurado" },
+          { icon: "🎯", title: "Enfoque serio y responsable" },
+          { icon: "🏆", title: "Imagen creíble e institucional" },
+          { icon: "🔮", title: "Visión a largo plazo" },
+          { icon: "✨", title: "Intervención profesional" }
+        ]
+      },
+      process: {
+        title: "Proceso de organización",
+        steps: [
+          {
+            num: "1️⃣",
+            title: "Invitación oficial",
+            desc: "Enviar una carta de invitación a myriamkonan@cash360.finance",
+            downloadLabel: "Descargar la carta de invitación oficial"
+          },
+          {
+            num: "2️⃣",
+            title: "Reunión de encuadre",
+            desc: "Validación del formato, venta de entradas, condiciones financieras"
+          },
+          {
+            num: "3️⃣",
+            title: "Validación contractual",
+            desc: "Firma de un contrato de colaboración"
+          }
+        ]
+      },
+      formSteps: {
+        structure: "Información sobre su organización",
+        responsible: "Responsable del evento",
+        event: "Información sobre el evento",
+        audience: "Público objetivo",
+        format: "Formato deseado",
+        logistics: "Logística y organización",
+        financial: "Condiciones financieras",
+        communication: "Comunicación y visibilidad",
+        documents: "Documentos requeridos",
+        commitment: "Compromiso y validación"
+      },
+      sponsorFormSteps: {
+        organization: "Información sobre su organización",
+        contact: "Contacto principal",
+        partnership: "Tipo de asociación",
+        commitment: "Compromiso"
+      },
+      formLabels: {
+        structureName: "Nombre de la organización",
+        legalForm: "Forma jurídica",
+        registrationNumber: "Número de registro",
+        structureAddress: "Dirección de la organización",
+        structureWebsite: "Sitio web de la organización",
+        responsibleName: "Nombre completo",
+        responsibleFunction: "Función",
+        responsibleEmail: "Correo electrónico",
+        responsiblePhone: "Teléfono",
+        city: "Ciudad",
+        country: "País",
+        proposedDate: "Fecha propuesta",
+        eventType: "Tipo de evento",
+        targetAudience: "Público objetivo",
+        estimatedParticipants: "Número estimado de participantes",
+        standardFormat: "Formato estándar",
+        customFormat: "Formato personalizado",
+        pitchEntrepreneurial: "Pitch empresarial",
+        pitchDetails: "Detalles del pitch",
+        venueIdentified: "Lugar identificado",
+        venueCapacity: "Capacidad del lugar",
+        transport: "Transporte",
+        accommodation: "Alojamiento",
+        logistics: "Otras necesidades logísticas",
+        proposedFee: "Honorarios propuestos",
+        percentageOnTickets: "Porcentaje sobre las entradas",
+        percentageDetails: "Detalles del porcentaje",
+        communicationChannels: "Canales de comunicación",
+        sponsors: "Patrocinadores",
+        structureDocument: "Documento de la organización",
+        identityDocument: "Documento de identidad del responsable",
+        eventPresentation: "Presentación del evento",
+        frameworkAcknowledged: "Confirmo haber tomado conocimiento del marco oficial de las masterclasses Cash360",
+        contractAccepted: "Acepto que toda colaboración esté sujeta a validación y firma de un contrato",
+        writtenAgreementAccepted: "Entiendo que ningún evento será confirmado sin acuerdo escrito previo",
+        afterSubmission: "Después del envío, por favor dirija la carta de invitación oficial a:",
+        thankYou: "Gracias por su solicitud",
+        thankYouMessage: "Su solicitud de masterclass ha sido enviada con éxito. Nos pondremos en contacto con usted lo antes posible.",
+        errorMessage: "Ocurrió un error al enviar su solicitud. Por favor, intente nuevamente.",
+        organizationName: "Nombre de la organización",
+        organizationAddress: "Dirección de la organización",
+        organizationWebsite: "Sitio web de la organización",
+        contactName: "Nombre completo",
+        contactFunction: "Función",
+        contactEmail: "Correo electrónico",
+        contactPhone: "Teléfono",
+        partnershipType: "Tipo de asociación deseado",
+        budgetRange: "Presupuesto previsto",
+        targetAudienceSponsor: "Público objetivo",
+        termsAccepted: "Acepto los términos y el marco ético de Cash360",
+        selectOption: "Seleccionar...",
+        fillAllFields: "Por favor complete todos los campos obligatorios"
+      },
+      formOptions: {
+        eventTypes: {
+          masterclass: "Masterclass",
+          workshop: "Taller",
+          conference: "Conferencia",
+          other: "Otro"
+        },
+        partnershipTypes: {
+          eventSponsoring: "Patrocinio de evento",
+          institutional: "Asociación institucional",
+          coOrganization: "Co-organización",
+          programSupport: "Apoyo al programa",
+          other: "Otro"
+        },
+        budgetRanges: {
+          less1000: "Menos de 1000€",
+          "1000-5000": "1000€ - 5000€",
+          "5000-10000": "5000€ - 10000€",
+          more10000: "Más de 10000€",
+          toDiscuss: "A discutir"
+        }
+      },
+      sponsors: {
+        title: "Patrocinadores y Alianzas",
+        subtitle: "Apoyar la educación financiera. Invertir en impacto.",
+        intro: "Cash360 abre sus masterclasses y eventos a socios y patrocinadores que deseen asociarse con una iniciativa de educación financiera de alto impacto, orientada a emprendedores, líderes y portadores de proyectos.",
+        whyTitle: "¿Por qué patrocinar una Masterclass Cash360?",
+        whyDescription: "Las masterclasses Cash360 están diseñadas como eventos educativos de alto impacto, combinando:",
+        whyItems: [
+          "transmisión de competencias financieras",
+          "estructuración empresarial",
+          "networking cualificado",
+          "puesta en valor de talentos locales"
+        ],
+        benefitsTitle: "Los patrocinadores se benefician de:",
+        benefits: [
+          "visibilidad dirigida",
+          "posicionamiento responsable",
+          "marco profesional y contractual claro"
+        ],
+        dossierTitle: "Dossier Patrocinador Cash360",
+        dossierSubtitle: "Para cualquier solicitud de alianza o patrocinio, ponemos a disposición un dossier patrocinador completo, descargable a continuación.",
+        downloadZip: "Descargar el dossier patrocinador completo (ZIP)",
+        howToBecomeSponsor: "¿Cómo convertirse en patrocinador?",
+        howToSteps: [
+          "Descargar el dossier patrocinador Cash360",
+          "Conocer el marco propuesto",
+          "Contactar a nuestro equipo para un intercambio",
+          "Definir juntos el formato de asociación",
+          "Firma del contrato y puesta en marcha"
+        ],
+        documents: {
+          plaquette: {
+            title: "Folleto Patrocinador Oficial",
+            desc: "Presentación general de Cash360"
+          },
+          contrat: {
+            title: "Contrato de Patrocinio Cash360",
+            desc: "Marco jurídico y compromisos"
+          },
+          institutionnelle: {
+            title: "Versión Institucional",
+            desc: "Bancos – Fundaciones – ONG – Instituciones"
+          },
+          internationale: {
+            title: "Versión Internacional – África y Diáspora",
+            desc: "Alianzas internacionales"
+          }
+        },
+        downloadPdf: "Descargar PDF",
+        contactTitle: "Contacto Patrocinio",
+        contactText: "Para cualquier solicitud de patrocinio o alianza:",
+        contactAddress: "229 rue Saint-Honoré, 75001 Paris, Francia",
+        contactEmail: "myriamkonan@cash360.finance",
+        commitmentTitle: "Marco y compromiso",
+        commitments: [
+          "Enfoque estrictamente educativo",
+          "Ninguna promesa de rendimiento financiero",
+          "Respeto a la imagen de los socios",
+          "Marco contractual claro y seguro"
+        ]
+      },
+      form: {
+        previous: "← Anterior",
+        next: "Siguiente →",
+        submit: "Enviar solicitud",
+        submitting: "Enviando...",
+        downloadBrochure: "Descargar folleto",
+        sponsorButton: "Quiero patrocinar",
+        downloadSponsorPack: "Descargar dossier patrocinador"
+      }
     },
 
     // Upload Dropzone
@@ -4433,7 +5198,7 @@ export const translations = {
         "Para crentes que querem conciliar fé e finanças sem culpa nem excesso.",
         "Para igrejas e ministérios que desejam formar seus membros na boa gestão financeira."
       ],
-      pastorTitle: "Sobre a Pastora Myriam Konan",
+      pastorTitle: "Sobre Myriam Konan",
       pastorIntro: "Com 10 anos de experiência no setor bancário e uma vocação espiritual profunda, desenvolvi um método único que combina experiência financeira e apoio espiritual para ajudá-lo a recuperar o equilíbrio e a prosperidade.",
       achievements: [
         {
@@ -4652,7 +5417,7 @@ export const translations = {
       mainTitle: "O início de sua liberdade financeira",
       ctaButton: "Inscrever-se",
       quote: "\"A prosperidade financeira começa com uma relação saudável com o dinheiro. Deixe-me acompanhá-lo neste caminho de transformação.\"",
-      quoteAuthor: "— Pastora Myriam Konan, Fundadora da Cash360",
+      quoteAuthor: "— Myriam Konan, Fundadora da Cash360",
       capsules: [
         {
           id: 1,
@@ -5494,6 +6259,261 @@ export const translations = {
       viewProgress: "Ver o progresso da minha análise",
       trackText: "Você pode acompanhar o progresso de sua análise em seu painel de controle pessoal",
       loadingText: "Carregando..."
+      },
+
+    // Masterclass Page
+    masterclass: {
+      hero: {
+        title: "Organizar uma",
+        titleHighlight: "Masterclass Cash360",
+        tagline: "Educar. Estruturar. Impactar de forma sustentável.",
+        subtitle: "Junte-se à nossa rede internacional de organizadores e ofereça ao seu público um evento educativo de alto impacto",
+        requestButton: "Solicitar uma masterclass",
+        sponsorButton: "Quero patrocinar",
+        downloadBrochure: "Baixar folheto",
+        downloadSponsorPack: "Baixar dossier patrocinador"
+      },
+      tabs: {
+        masterclass: "Masterclass",
+        sponsors: "Patrocinadores e Parcerias"
+      },
+      gallery: {
+        title: "Nossas Masterclasses ao Redor do Mundo",
+        subtitle: "Descubra nossos eventos organizados em diferentes países, reunindo milhares de participantes apaixonados por educação financeira"
+      },
+      why: {
+        title: "Por que organizar uma masterclass Cash360?",
+        description1: "Organizar uma masterclass Cash360 é oferecer ao seu público um evento educativo de alto impacto, centrado na estabilidade financeira, responsabilidade e estruturação de projetos pessoais e empresariais.",
+        description2: "Cash360 intervém antes do financiamento, onde muitas iniciativas falham por falta de preparação financeira e disciplina.",
+        highlight: "Formar antes de financiar. Estruturar antes de crescer."
+      },
+      audience: {
+        title: "Para quem são as masterclasses?",
+        items: [
+          "Estudantes",
+          "Particulares que desejam gerir melhor suas finanças",
+          "Empreendedores e líderes de projetos",
+          "Líderes e responsáveis comunitários"
+        ],
+        note: "👉 Atenção especial é dada a empreendedores e líderes"
+      },
+      format: {
+        title: "Formato de uma masterclass",
+        items: [
+          "2 horas de masterclass educativa",
+          "Aplicações práticas",
+          "Sessão de perguntas e respostas",
+          "Networking empresarial",
+          "Pitch com prémio (opcional)"
+        ]
+      },
+      theme: {
+        title: "Tema oficial",
+        subtitle: "A Anatomia Financeira",
+        description: "Uma abordagem pedagógica que decompõe os mecanismos financeiros para torná-los acessíveis e acionáveis.",
+        officialTheme2026: "TEMA OFICIAL 2026",
+        teaching: "Um ensino estruturado para transformar sua relação com o dinheiro",
+        points: [
+          "Compreender os mecanismos fundamentais do dinheiro",
+          "Identificar os erros financeiros comuns",
+          "Estabelecer bases sólidas para um crescimento sustentável",
+          "Desenvolver uma visão financeira responsável"
+        ]
+      },
+      benefits: {
+        title: "O que a Cash360 traz",
+        items: [
+          { icon: "📚", title: "Conteúdo educativo estruturado" },
+          { icon: "🎯", title: "Abordagem séria e responsável" },
+          { icon: "🏆", title: "Imagem credível e institucional" },
+          { icon: "🔮", title: "Visão de longo prazo" },
+          { icon: "✨", title: "Intervenção profissional" }
+        ]
+      },
+      process: {
+        title: "Processo de organização",
+        steps: [
+          {
+            num: "1️⃣",
+            title: "Convite oficial",
+            desc: "Enviar uma carta de convite para myriamkonan@cash360.finance",
+            downloadLabel: "Baixar a carta de convite oficial"
+          },
+          {
+            num: "2️⃣",
+            title: "Reunião de enquadramento",
+            desc: "Validação do formato, venda de bilhetes, condições financeiras"
+          },
+          {
+            num: "3️⃣",
+            title: "Validação contratual",
+            desc: "Assinatura de um contrato de colaboração"
+          }
+        ]
+      },
+      formSteps: {
+        structure: "Informações sobre sua organização",
+        responsible: "Responsável pelo evento",
+        event: "Informações sobre o evento",
+        audience: "Público-alvo",
+        format: "Formato desejado",
+        logistics: "Logística e organização",
+        financial: "Condições financeiras",
+        communication: "Comunicação e visibilidade",
+        documents: "Documentos necessários",
+        commitment: "Compromisso e validação"
+      },
+      sponsorFormSteps: {
+        organization: "Informações sobre sua organização",
+        contact: "Contato principal",
+        partnership: "Tipo de parceria",
+        commitment: "Compromisso"
+      },
+      formLabels: {
+        structureName: "Nome da organização",
+        legalForm: "Forma jurídica",
+        registrationNumber: "Número de registro",
+        structureAddress: "Endereço da organização",
+        structureWebsite: "Site da organização",
+        responsibleName: "Nome completo",
+        responsibleFunction: "Função",
+        responsibleEmail: "E-mail",
+        responsiblePhone: "Telefone",
+        city: "Cidade",
+        country: "País",
+        proposedDate: "Data proposta",
+        eventType: "Tipo de evento",
+        targetAudience: "Público-alvo",
+        estimatedParticipants: "Número estimado de participantes",
+        standardFormat: "Formato padrão",
+        customFormat: "Formato personalizado",
+        pitchEntrepreneurial: "Pitch empresarial",
+        pitchDetails: "Detalhes do pitch",
+        venueIdentified: "Local identificado",
+        venueCapacity: "Capacidade do local",
+        transport: "Transporte",
+        accommodation: "Hospedagem",
+        logistics: "Outras necessidades logísticas",
+        proposedFee: "Honorários propostos",
+        percentageOnTickets: "Porcentagem sobre os bilhetes",
+        percentageDetails: "Detalhes da porcentagem",
+        communicationChannels: "Canais de comunicação",
+        sponsors: "Patrocinadores",
+        structureDocument: "Documento da organização",
+        identityDocument: "Documento de identidade do responsável",
+        eventPresentation: "Apresentação do evento",
+        frameworkAcknowledged: "Confirmo ter tomado conhecimento do quadro oficial das masterclasses Cash360",
+        contractAccepted: "Aceito que qualquer colaboração esteja sujeita a validação e assinatura de um contrato",
+        writtenAgreementAccepted: "Entendo que nenhum evento será confirmado sem acordo escrito prévio",
+        afterSubmission: "Após o envio, por favor envie a carta de convite oficial para:",
+        thankYou: "Obrigado pelo seu pedido",
+        thankYouMessage: "Seu pedido de masterclass foi enviado com sucesso. Entraremos em contato o mais breve possível.",
+        errorMessage: "Ocorreu um erro ao enviar seu pedido. Por favor, tente novamente.",
+        organizationName: "Nome da organização",
+        organizationAddress: "Endereço da organização",
+        organizationWebsite: "Site da organização",
+        contactName: "Nome completo",
+        contactFunction: "Função",
+        contactEmail: "E-mail",
+        contactPhone: "Telefone",
+        partnershipType: "Tipo de parceria desejado",
+        budgetRange: "Orçamento previsto",
+        targetAudienceSponsor: "Público-alvo",
+        termsAccepted: "Aceito os termos e o quadro ético da Cash360",
+        selectOption: "Selecionar...",
+        fillAllFields: "Por favor preencha todos os campos obrigatórios"
+      },
+      formOptions: {
+        eventTypes: {
+          masterclass: "Masterclass",
+          workshop: "Workshop",
+          conference: "Conferência",
+          other: "Outro"
+        },
+        partnershipTypes: {
+          eventSponsoring: "Patrocínio de evento",
+          institutional: "Parceria institucional",
+          coOrganization: "Co-organização",
+          programSupport: "Apoio ao programa",
+          other: "Outro"
+        },
+        budgetRanges: {
+          less1000: "Menos de €1000",
+          "1000-5000": "€1000 - €5000",
+          "5000-10000": "€5000 - €10000",
+          more10000: "Mais de €10000",
+          toDiscuss: "A discutir"
+        }
+      },
+      sponsors: {
+        title: "Patrocinadores e Parcerias",
+        subtitle: "Apoiar a educação financeira. Investir em impacto.",
+        intro: "Cash360 abre suas masterclasses e eventos a parceiros e patrocinadores que desejam associar-se a uma iniciativa de educação financeira de alto impacto, orientada para empreendedores, líderes e portadores de projetos.",
+        whyTitle: "Por que patrocinar uma Masterclass Cash360?",
+        whyDescription: "As masterclasses Cash360 são concebidas como eventos educativos de alto impacto, combinando:",
+        whyItems: [
+          "transmissão de competências financeiras",
+          "estruturação empresarial",
+          "networking qualificado",
+          "valorização de talentos locais"
+        ],
+        benefitsTitle: "Os patrocinadores beneficiam de:",
+        benefits: [
+          "visibilidade direcionada",
+          "posicionamento responsável",
+          "quadro profissional e contratual claro"
+        ],
+        dossierTitle: "Dossier Patrocinador Cash360",
+        dossierSubtitle: "Para qualquer pedido de parceria ou patrocínio, disponibilizamos um dossier patrocinador completo, descarregável abaixo.",
+        downloadZip: "Descarregar o dossier patrocinador completo (ZIP)",
+        howToBecomeSponsor: "Como se tornar um patrocinador?",
+        howToSteps: [
+          "Baixar o dossier patrocinador Cash360",
+          "Conhecer o quadro proposto",
+          "Contatar nossa equipe para uma troca",
+          "Definir juntos o formato de parceria",
+          "Assinatura do contrato e implementação"
+        ],
+        documents: {
+          plaquette: {
+            title: "Folleto Patrocinador Oficial",
+            desc: "Apresentação geral da Cash360"
+          },
+          contrat: {
+            title: "Contrato de Patrocínio Cash360",
+            desc: "Quadro jurídico e compromissos"
+          },
+          institutionnelle: {
+            title: "Versão Institucional",
+            desc: "Bancos – Fundações – ONG – Instituições"
+          },
+          internationale: {
+            title: "Versão Internacional – África e Diáspora",
+            desc: "Parcerias internacionais"
+          }
+        },
+        downloadPdf: "Baixar PDF",
+        contactTitle: "Contacto Patrocínio",
+        contactText: "Para qualquer pedido de patrocínio ou parceria:",
+        contactAddress: "229 rue Saint-Honoré, 75001 Paris, França",
+        contactEmail: "myriamkonan@cash360.finance",
+        commitmentTitle: "Quadro e compromisso",
+        commitments: [
+          "Abordagem estritamente educativa",
+          "Nenhuma promessa de retorno financeiro",
+          "Respeito pela imagem dos parceiros",
+          "Quadro contratual claro e seguro"
+        ]
+      },
+      form: {
+        previous: "← Anterior",
+        next: "Seguinte →",
+        submit: "Enviar pedido",
+        submitting: "Enviando...",
+        downloadBrochure: "Baixar folheto",
+        sponsorButton: "Quero patrocinar",
+        downloadSponsorPack: "Baixar dossier patrocinador"
+      }
     },
 
     // Upload Dropzone

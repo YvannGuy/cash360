@@ -84,10 +84,17 @@ export default function Navbar() {
   }
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
+    // Si on est sur la page d'accueil, scroll vers la section
+    if (window.location.pathname === '/') {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+        setIsMenuOpen(false)
+        return
+      }
     }
+    // Sinon, rediriger vers la page d'accueil avec l'ancre
+    window.location.href = `/#${sectionId}`
     setIsMenuOpen(false)
   }
 
@@ -135,7 +142,7 @@ export default function Navbar() {
                 href="/masterclass"
                 className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
-                Masterclass
+                Invitation
               </a>
             </div>
           </div>
@@ -261,7 +268,7 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
               >
-                Masterclass
+                Invitation
               </a>
               
               {/* Mobile Auth */}

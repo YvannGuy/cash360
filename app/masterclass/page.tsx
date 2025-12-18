@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
+import { useLanguage } from '@/lib/LanguageContext'
 
 interface FormStep {
   id: string
@@ -13,6 +14,8 @@ interface FormStep {
 }
 
 export default function MasterclassPage() {
+  const { t } = useLanguage()
+  const [activeTab, setActiveTab] = useState<'masterclass' | 'sponsors'>('masterclass')
   const [currentStep, setCurrentStep] = useState(0)
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -22,6 +25,46 @@ export default function MasterclassPage() {
     Array<{ id: string; address: string; label: string }>
   >([])
   const [structureAddressLoading, setStructureAddressLoading] = useState(false)
+
+  // États pour le formulaire de sponsoring
+  const [sponsorCurrentStep, setSponsorCurrentStep] = useState(0)
+  const [sponsorFormSubmitted, setSponsorFormSubmitted] = useState(false)
+  const [sponsorIsSubmitting, setSponsorIsSubmitting] = useState(false)
+  const [sponsorAddressQuery, setSponsorAddressQuery] = useState('')
+  const [sponsorAddressSuggestions, setSponsorAddressSuggestions] = useState<
+    Array<{ id: string; address: string; label: string }>
+  >([])
+  const [sponsorAddressLoading, setSponsorAddressLoading] = useState(false)
+
+  const [sponsorFormData, setSponsorFormData] = useState({
+    // 1. Informations sur l'organisation sponsor
+    organizationName: '',
+    legalForm: '',
+    registrationNumber: '',
+    organizationAddress: '',
+    organizationWebsite: '',
+    
+    // 2. Contact principal
+    contactName: '',
+    contactFunction: '',
+    contactEmail: '',
+    contactPhone: '' as string | undefined,
+    
+    // 3. Type de partenariat
+    partnershipType: '',
+    budgetRange: '',
+    targetAudience: '',
+    
+    // 4. Engagement
+    termsAccepted: false
+  })
+
+  const sponsorFormSteps: FormStep[] = [
+    { id: 'organization', title: t.masterclass.sponsorFormSteps.organization, fields: ['organizationName', 'legalForm', 'registrationNumber', 'organizationAddress', 'organizationWebsite'] },
+    { id: 'contact', title: t.masterclass.sponsorFormSteps.contact, fields: ['contactName', 'contactFunction', 'contactEmail', 'contactPhone'] },
+    { id: 'partnership', title: t.masterclass.sponsorFormSteps.partnership, fields: ['partnershipType', 'budgetRange', 'targetAudience'] },
+    { id: 'commitment', title: t.masterclass.sponsorFormSteps.commitment, fields: ['termsAccepted'] }
+  ]
 
   const [formData, setFormData] = useState({
     // 1. Informations sur la structure organisatrice
@@ -81,16 +124,16 @@ export default function MasterclassPage() {
   })
 
   const formSteps: FormStep[] = [
-    { id: 'structure', title: 'Informations sur votre structure', fields: ['structureName', 'legalForm', 'registrationNumber', 'structureAddress', 'structureWebsite'] },
-    { id: 'responsible', title: 'Responsable de l\'événement', fields: ['responsibleName', 'responsibleFunction', 'responsibleEmail', 'responsiblePhone'] },
-    { id: 'event', title: 'Informations sur l\'événement', fields: ['city', 'country', 'proposedDate', 'eventType'] },
-    { id: 'audience', title: 'Public visé', fields: ['targetAudience', 'estimatedParticipants'] },
-    { id: 'format', title: 'Format souhaité', fields: ['standardFormat', 'customFormat', 'pitchEntrepreneurial', 'pitchDetails'] },
-    { id: 'logistics', title: 'Logistique & organisation', fields: ['venueIdentified', 'venueCapacity', 'transport', 'accommodation', 'logistics'] },
-    { id: 'financial', title: 'Conditions financières', fields: ['proposedFee', 'percentageOnTickets', 'percentageDetails'] },
-    { id: 'communication', title: 'Communication & visibilité', fields: ['communicationChannels', 'sponsors'] },
-    { id: 'documents', title: 'Documents requis', fields: ['structureDocument', 'identityDocument', 'eventPresentation'] },
-    { id: 'commitment', title: 'Engagement & validation', fields: ['frameworkAcknowledged', 'contractAccepted', 'writtenAgreementAccepted'] }
+    { id: 'structure', title: t.masterclass.formSteps.structure, fields: ['structureName', 'legalForm', 'registrationNumber', 'structureAddress', 'structureWebsite'] },
+    { id: 'responsible', title: t.masterclass.formSteps.responsible, fields: ['responsibleName', 'responsibleFunction', 'responsibleEmail', 'responsiblePhone'] },
+    { id: 'event', title: t.masterclass.formSteps.event, fields: ['city', 'country', 'proposedDate', 'eventType'] },
+    { id: 'audience', title: t.masterclass.formSteps.audience, fields: ['targetAudience', 'estimatedParticipants'] },
+    { id: 'format', title: t.masterclass.formSteps.format, fields: ['standardFormat', 'customFormat', 'pitchEntrepreneurial', 'pitchDetails'] },
+    { id: 'logistics', title: t.masterclass.formSteps.logistics, fields: ['venueIdentified', 'venueCapacity', 'transport', 'accommodation', 'logistics'] },
+    { id: 'financial', title: t.masterclass.formSteps.financial, fields: ['proposedFee', 'percentageOnTickets', 'percentageDetails'] },
+    { id: 'communication', title: t.masterclass.formSteps.communication, fields: ['communicationChannels', 'sponsors'] },
+    { id: 'documents', title: t.masterclass.formSteps.documents, fields: ['structureDocument', 'identityDocument', 'eventPresentation'] },
+    { id: 'commitment', title: t.masterclass.formSteps.commitment, fields: ['frameworkAcknowledged', 'contractAccepted', 'writtenAgreementAccepted'] }
   ]
 
   const conferenceImages = [
@@ -206,27 +249,27 @@ export default function MasterclassPage() {
             (typeof value === 'boolean' && !value) ||
             (Array.isArray(value) && value.length === 0)) {
           const fieldLabels: Record<string, string> = {
-            structureName: 'Nom de la structure',
-            legalForm: 'Forme juridique',
-            registrationNumber: 'Numéro d\'immatriculation',
-            responsibleName: 'Nom et prénom',
-            responsibleFunction: 'Fonction',
-            city: 'Ville',
-            country: 'Pays',
-            proposedDate: 'Date(s) souhaitée(s)',
-            eventType: 'Type d\'événement',
-            targetAudience: 'Public principal',
-            estimatedParticipants: 'Nombre de participants estimé',
-            standardFormat: 'Format standard',
-            venueIdentified: 'Salle identifiée',
-            proposedFee: 'Cachet proposé',
-            structureDocument: 'Document de la structure',
-            identityDocument: 'Pièce d\'identité',
-            frameworkAcknowledged: 'Cadre officiel',
-            contractAccepted: 'Acceptation du contrat',
-            writtenAgreementAccepted: 'Acceptation de l\'accord écrit'
+            structureName: t.masterclass.formLabels.structureName,
+            legalForm: t.masterclass.formLabels.legalForm,
+            registrationNumber: t.masterclass.formLabels.registrationNumber,
+            responsibleName: t.masterclass.formLabels.responsibleName,
+            responsibleFunction: t.masterclass.formLabels.responsibleFunction,
+            city: t.masterclass.formLabels.city,
+            country: t.masterclass.formLabels.country,
+            proposedDate: t.masterclass.formLabels.proposedDate,
+            eventType: t.masterclass.formLabels.eventType,
+            targetAudience: t.masterclass.formLabels.targetAudience,
+            estimatedParticipants: t.masterclass.formLabels.estimatedParticipants,
+            standardFormat: t.masterclass.formLabels.standardFormat,
+            venueIdentified: t.masterclass.formLabels.venueIdentified,
+            proposedFee: t.masterclass.formLabels.proposedFee,
+            structureDocument: t.masterclass.formLabels.structureDocument,
+            identityDocument: t.masterclass.formLabels.identityDocument,
+            frameworkAcknowledged: t.masterclass.formLabels.frameworkAcknowledged,
+            contractAccepted: t.masterclass.formLabels.contractAccepted,
+            writtenAgreementAccepted: t.masterclass.formLabels.writtenAgreementAccepted
           }
-          errors.push(fieldLabels[field] || field + ' est requis')
+          errors.push(fieldLabels[field] || field + ' ' + t.masterclass.formLabels.fillAllFields)
         }
       }
     })
@@ -239,7 +282,7 @@ export default function MasterclassPage() {
     const validation = validateStep(currentStep)
     
     if (!validation.isValid) {
-      alert('Veuillez remplir tous les champs obligatoires:\n\n' + validation.errors.join('\n'))
+      alert(t.masterclass.formLabels.fillAllFields + ':\n\n' + validation.errors.join('\n'))
       return
     }
     
@@ -332,6 +375,54 @@ export default function MasterclassPage() {
       controller.abort()
     }
   }, [structureAddressQuery])
+
+  // Auto-complétion pour le formulaire sponsor
+  useEffect(() => {
+    if (!sponsorAddressQuery || sponsorAddressQuery.trim().length < 2) {
+      setSponsorAddressSuggestions([])
+      setSponsorAddressLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    const debounce = setTimeout(async () => {
+      try {
+        setSponsorAddressLoading(true)
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(
+            sponsorAddressQuery.trim()
+          )}`,
+          {
+            headers: { Accept: 'application/json' },
+            signal: controller.signal
+          }
+        )
+        if (!response.ok) throw new Error('Erreur lors de la recherche d\'adresse')
+        const data = await response.json()
+        const suggestions =
+          (data || []).map((item: any) => {
+            const fullAddress = item.display_name || ''
+            return {
+              id: item.place_id?.toString() || `${item.lat}-${item.lon}`,
+              address: fullAddress,
+              label: fullAddress
+            }
+          }) ?? []
+        setSponsorAddressSuggestions(suggestions)
+      } catch (fetchError) {
+        if ((fetchError as any)?.name !== 'AbortError') {
+          setSponsorAddressSuggestions([])
+        }
+      } finally {
+        setSponsorAddressLoading(false)
+      }
+    }, 350)
+
+    return () => {
+      clearTimeout(debounce)
+      controller.abort()
+    }
+  }, [sponsorAddressQuery])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -443,7 +534,7 @@ export default function MasterclassPage() {
       
       <main>
         {/* Hero Section - Design moderne */}
-        <section className="relative min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 overflow-hidden">
+        <section className="relative min-h-[70vh] flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 overflow-hidden">
           {/* Animated background */}
           <div className="absolute inset-0">
             <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/20 rounded-full blur-3xl animate-pulse"></div>
@@ -454,31 +545,70 @@ export default function MasterclassPage() {
           <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="max-w-5xl mx-auto">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                Organiser une{' '}
+                {t.masterclass.hero.title}{' '}
                 <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                  Masterclass Cash360
+                  {t.masterclass.hero.titleHighlight}
                 </span>
               </h1>
               <p className="text-2xl sm:text-3xl text-gray-200 mb-4 font-light">
-                Éduquer. Structurer. Impacter durablement.
+                {t.masterclass.hero.tagline}
               </p>
               <p className="text-lg text-gray-300 mb-12 max-w-2xl mx-auto">
-                Rejoignez notre réseau international d'organisateurs et offrez à votre public un événement à fort impact éducatif
+                {t.masterclass.hero.subtitle}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <button
-                  onClick={scrollToForm}
-                  className="px-10 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold text-lg rounded-full hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-yellow-500/50"
-                >
-                  Demander une masterclass
-                </button>
-                <a
-                  href="/pdf/CASH360_Masterclass.pdf"
-                  download="CASH360_Masterclass.pdf"
-                  className="px-10 py-4 bg-white/10 backdrop-blur-md text-white font-semibold text-lg rounded-full hover:bg-white/20 transition-all duration-300 border border-white/20"
-                >
-                  📄 Télécharger la brochure
-                </a>
+              <div className="flex flex-col gap-6 justify-center items-center">
+                {/* Boutons principaux */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <button
+                    onClick={scrollToForm}
+                    className="px-10 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold text-lg rounded-full hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-yellow-500/50"
+                  >
+                    {t.masterclass.hero.requestButton}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('sponsors')}
+                    className="px-10 py-4 bg-white/10 backdrop-blur-md text-white font-semibold text-lg rounded-full hover:bg-white/20 transition-all duration-300 border border-white/20"
+                  >
+                    {t.masterclass.hero.sponsorButton}
+                  </button>
+                </div>
+                
+                {/* Boutons secondaires légers */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <a
+                      href="/pdf/CASH360_Masterclass.pdf"
+                      download="CASH360_Masterclass.pdf"
+                      className="px-6 py-2 text-white/80 font-medium text-sm rounded-full hover:text-white hover:bg-white/10 transition-all duration-300"
+                    >
+                      📄 {t.masterclass.hero.downloadBrochure}
+                    </a>
+                    <a
+                      href="/api/sponsors/download-dossier"
+                      download="dossier-sponsor-cash360.zip"
+                      className="px-6 py-2 text-white/80 font-medium text-sm rounded-full hover:text-white hover:bg-white/10 transition-all duration-300"
+                    onClick={async (e) => {
+                      e.preventDefault()
+                      try {
+                        const response = await fetch('/api/sponsors/download-dossier')
+                        if (!response.ok) throw new Error('Erreur lors du téléchargement')
+                        const blob = await response.blob()
+                        const url = window.URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = 'dossier-sponsor-cash360.zip'
+                        document.body.appendChild(a)
+                        a.click()
+                        window.URL.revokeObjectURL(url)
+                        document.body.removeChild(a)
+                      } catch (error) {
+                        console.error('Erreur téléchargement ZIP:', error)
+                        alert('Erreur lors du téléchargement du dossier sponsor')
+                      }
+                    }}
+                  >
+                    📦 {t.masterclass.hero.downloadSponsorPack}
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -491,15 +621,46 @@ export default function MasterclassPage() {
           </div>
         </section>
 
-        {/* Conference Gallery Section */}
+        {/* Onglets Masterclass / Sponsors */}
+        <section className="bg-white border-b-2 border-gray-200 sticky top-16 lg:top-20 z-40">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex space-x-1">
+              <button
+                onClick={() => setActiveTab('masterclass')}
+                className={`px-6 py-4 text-lg font-semibold transition-all duration-300 ${
+                  activeTab === 'masterclass'
+                    ? 'text-yellow-600 border-b-4 border-yellow-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {t.masterclass.tabs.masterclass}
+              </button>
+              <button
+                onClick={() => setActiveTab('sponsors')}
+                className={`px-6 py-4 text-lg font-semibold transition-all duration-300 ${
+                  activeTab === 'sponsors'
+                    ? 'text-yellow-600 border-b-4 border-yellow-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {t.masterclass.tabs.sponsors}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Contenu selon l'onglet actif */}
+        {activeTab === 'masterclass' ? (
+          <>
+            {/* Conference Gallery Section */}
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
           <div className="container mx-auto max-w-7xl">
             <div className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-                Nos Masterclass à travers le monde
+                {t.masterclass.gallery.title}
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                  Découvrez nos événements organisés dans différents pays, rassemblant des milliers de participants passionnés par l'éducation financière
+                  {t.masterclass.gallery.subtitle}
               </p>
             </div>
             
@@ -563,18 +724,18 @@ export default function MasterclassPage() {
                     <span className="text-2xl">💡</span>
                   </div>
                   <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                    Pourquoi organiser une masterclass Cash360 ?
+                    {t.masterclass.why.title}
                   </h2>
                 </div>
                 <div className="space-y-4 text-lg text-gray-700 leading-relaxed">
                   <p>
-                    Organiser une masterclass Cash360, c'est proposer à votre public un événement à fort impact éducatif, centré sur la stabilité financière, la responsabilité et la structuration des projets personnels et entrepreneuriaux.
+                    {t.masterclass.why.description1}
                   </p>
                   <p>
-                    Cash360 intervient en amont du financement, là où beaucoup d'initiatives échouent faute de préparation financière et de discipline.
+                    {t.masterclass.why.description2}
                   </p>
                   <p className="text-xl font-bold text-gray-900 pt-4 border-t border-gray-200">
-                    Former avant de financer. Structurer avant de croître.
+                    {t.masterclass.why.highlight}
                   </p>
                 </div>
               </div>
@@ -586,10 +747,10 @@ export default function MasterclassPage() {
               <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                   <span className="text-3xl mr-3">🎯</span>
-                  À qui s'adressent les masterclass ?
+                  {t.masterclass.audience.title}
                 </h3>
                 <ul className="space-y-3">
-                  {['Étudiants', 'Particuliers souhaitant mieux gérer leurs finances', 'Entrepreneurs et porteurs de projets', 'Leaders et responsables communautaires'].map((item, idx) => (
+                  {t.masterclass.audience.items.map((item, idx) => (
                     <li key={idx} className="flex items-start">
                       <span className="text-yellow-600 text-xl mr-3 mt-1">✓</span>
                       <span className="text-gray-700">{item}</span>
@@ -597,7 +758,7 @@ export default function MasterclassPage() {
                   ))}
                 </ul>
                 <p className="text-sm text-gray-600 mt-4 pt-4 border-t border-gray-100">
-                  👉 Une attention particulière est portée aux entrepreneurs et leaders
+                  {t.masterclass.audience.note}
                 </p>
               </div>
 
@@ -605,10 +766,10 @@ export default function MasterclassPage() {
               <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-3xl p-8 shadow-xl text-gray-900">
                 <h3 className="text-2xl font-bold mb-6 flex items-center">
                   <span className="text-3xl mr-3">📋</span>
-                  Format d'une masterclass
+                  {t.masterclass.format.title}
                 </h3>
                 <ul className="space-y-2">
-                  {['2 heures de masterclass éducative', 'Applications concrètes', 'Session Q&A', 'Networking entrepreneurial', 'Pitch avec dotation (optionnel)'].map((item, idx) => (
+                  {t.masterclass.format.items.map((item, idx) => (
                     <li key={idx} className="flex items-start">
                       <span className="text-gray-900 text-xl mr-3">•</span>
                       <span className="text-gray-900 font-medium">{item}</span>
@@ -629,23 +790,24 @@ export default function MasterclassPage() {
               <div className="relative z-10 max-w-4xl mx-auto">
                 <div className="text-center mb-8">
                   <span className="inline-block px-4 py-2 bg-yellow-500/20 text-yellow-400 text-sm font-semibold rounded-full mb-4 border border-yellow-500/30">
-                    THÈME OFFICIEL 2026
+                    {t.masterclass.theme.officialTheme2026}
                   </span>
                   <h2 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                    L'Anatomie financière
+                    {t.masterclass.theme.subtitle}
                   </h2>
                   <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                    Un enseignement structuré pour transformer votre relation avec l'argent
+                    {t.masterclass.theme.teaching}
                   </p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-                  {[
-                    { text: 'Comprendre les mécanismes fondamentaux de l\'argent', icon: '💡' },
-                    { text: 'Identifier les erreurs financières courantes', icon: '🔍' },
-                    { text: 'Poser des bases solides pour une croissance durable', icon: '🏗️' },
-                    { text: 'Développer une vision financière responsable', icon: '🎯' }
-                  ].map((item, idx) => (
+                  {t.masterclass.theme.points.map((text: string, idx: number) => {
+                    const icons = ['💡', '🔍', '🏗️', '🎯']
+                    return {
+                      text,
+                      icon: icons[idx] || '✓'
+                    }
+                  }).map((item, idx) => (
                     <div 
                       key={idx} 
                       className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105"
@@ -669,15 +831,9 @@ export default function MasterclassPage() {
 
             {/* Ce que Cash360 apporte */}
             <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-100 mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Ce que Cash360 apporte</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{t.masterclass.benefits.title}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[
-                  { icon: '📚', title: 'Contenu pédagogique structurant' },
-                  { icon: '🎯', title: 'Approche sérieuse et responsable' },
-                  { icon: '🏆', title: 'Image crédible et institutionnelle' },
-                  { icon: '🔮', title: 'Vision long terme' },
-                  { icon: '✨', title: 'Intervention professionnelle' }
-                ].map((item, idx) => (
+                {t.masterclass.benefits.items.map((item, idx) => (
                   <div key={idx} className="p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors">
                     <div className="text-4xl mb-3">{item.icon}</div>
                     <p className="text-gray-800 font-medium">{item.title}</p>
@@ -688,24 +844,15 @@ export default function MasterclassPage() {
 
             {/* Processus */}
             <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-100">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Processus d'organisation</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{t.masterclass.process.title}</h2>
               <div className="space-y-8">
-                {[
-                  { 
-                    num: '1️⃣', 
-                    title: 'Invitation officielle', 
-                    desc: 'Envoyer une lettre d\'invitation à myriamkonan@cash360.finance',
-                    hasDownload: true
-                  },
-                  { num: '2️⃣', title: 'Réunion de cadrage', desc: 'Validation du format, billetterie, conditions financières' },
-                  { num: '3️⃣', title: 'Validation contractuelle', desc: 'Signature d\'un contrat de collaboration' }
-                ].map((step, idx) => (
+                {t.masterclass.process.steps.map((step, idx) => (
                   <div key={idx} className="flex items-start p-6 bg-gray-50 rounded-2xl">
                     <div className="text-4xl mr-6">{step.num}</div>
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
                       <p className="text-gray-700 mb-2">{step.desc}</p>
-                      {step.hasDownload && (
+                      {step.downloadLabel && (
                         <a
                           href="/pdf/Lettre_Invitation_Officielle_Cash360.pdf"
                           download="Lettre_Invitation_Officielle_Cash360.pdf"
@@ -714,7 +861,7 @@ export default function MasterclassPage() {
                           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
-                          Télécharger la lettre d'invitation officielle
+                          {step.downloadLabel}
                         </a>
                       )}
                     </div>
@@ -735,13 +882,13 @@ export default function MasterclassPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Merci pour votre demande</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.masterclass.formLabels.thankYou}</h2>
                 <p className="text-lg text-gray-700 mb-6">
-                  L'équipe Cash360 étudiera votre dossier et vous contactera si les conditions sont réunies pour envisager une collaboration.
+                  {t.masterclass.formLabels.thankYouMessage}
                 </p>
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600">
-                    📩 N'oubliez pas d'adresser la lettre d'invitation officielle par e-mail à :<br />
+                    📩 {t.masterclass.formLabels.afterSubmission}<br />
                     <a href="mailto:myriamkonan@cash360.finance" className="text-yellow-600 hover:underline font-semibold">
                       myriamkonan@cash360.finance
                     </a>
@@ -754,7 +901,7 @@ export default function MasterclassPage() {
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Télécharger la lettre d'invitation officielle
+                    {t.masterclass.process.steps[0].downloadLabel}
                   </a>
                 </div>
               </div>
@@ -772,7 +919,7 @@ export default function MasterclassPage() {
                 <div className="p-8 border-b border-gray-200">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold text-yellow-600">
-                      Étape {currentStep + 1} sur {formSteps.length}
+                      {t.masterclass.form.previous ? 'Étape' : 'Step'} {currentStep + 1} {t.masterclass.form.previous ? 'sur' : 'of'} {formSteps.length}
                     </span>
                     <span className="text-sm text-gray-500">
                       {Math.round(progress)}%
@@ -790,13 +937,13 @@ export default function MasterclassPage() {
                     {currentStep === 0 && (
                       <div className="space-y-6 animate-fadeIn">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Nom de la structure organisatrice *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.structureName} *</label>
                           <input type="text" name="structureName" value={formData.structureName} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Forme juridique *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.legalForm} *</label>
                           <select name="legalForm" value={formData.legalForm} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all">
-                            <option value="">Sélectionner...</option>
+                            <option value="">{t.masterclass.formLabels.selectOption}</option>
                             <option value="Association">Association</option>
                             <option value="Entreprise">Entreprise</option>
                             <option value="Église">Église</option>
@@ -805,11 +952,11 @@ export default function MasterclassPage() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro d'immatriculation *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.registrationNumber} *</label>
                           <input type="text" name="registrationNumber" value={formData.registrationNumber} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Adresse complète *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.structureAddress} *</label>
                           <div className="relative">
                             <input
                               type="text"
@@ -852,7 +999,7 @@ export default function MasterclassPage() {
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Site web / Réseaux sociaux</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.structureWebsite}</label>
                           <input type="text" name="structureWebsite" value={formData.structureWebsite} onChange={handleInputChange} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                         </div>
                       </div>
@@ -862,15 +1009,15 @@ export default function MasterclassPage() {
                     {currentStep === 1 && (
                       <div className="space-y-6 animate-fadeIn">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Nom et prénom *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.responsibleName} *</label>
                           <input type="text" name="responsibleName" value={formData.responsibleName} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Fonction *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.responsibleFunction} *</label>
                           <input type="text" name="responsibleFunction" value={formData.responsibleFunction} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Email professionnel *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.responsibleEmail} *</label>
                           <input 
                             type="email" 
                             name="responsibleEmail" 
@@ -882,11 +1029,11 @@ export default function MasterclassPage() {
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all invalid:border-red-300" 
                           />
                           {formData.responsibleEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.responsibleEmail) && (
-                            <p className="mt-1 text-sm text-red-600">Format email invalide</p>
+                            <p className="mt-1 text-sm text-red-600">{t.masterclass.formLabels.errorMessage || "Format email invalide"}</p>
                           )}
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Téléphone *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.responsiblePhone} *</label>
                           <PhoneInput
                             international
                             defaultCountry="FR"
@@ -901,7 +1048,7 @@ export default function MasterclassPage() {
                             }}
                           />
                           {formData.responsiblePhone && formData.responsiblePhone.length < 8 && (
-                            <p className="mt-1 text-sm text-red-600">Numéro de téléphone invalide</p>
+                            <p className="mt-1 text-sm text-red-600">{t.masterclass.formLabels.errorMessage || "Numéro de téléphone invalide"}</p>
                           )}
                         </div>
                       </div>
@@ -912,25 +1059,25 @@ export default function MasterclassPage() {
                       <div className="space-y-6 animate-fadeIn">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Ville *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.city} *</label>
                             <input type="text" name="city" value={formData.city} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Pays *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.country} *</label>
                             <input type="text" name="country" value={formData.country} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Date(s) souhaitée(s) *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.proposedDate} *</label>
                           <input type="text" name="proposedDate" value={formData.proposedDate} onChange={handleInputChange} required placeholder="Ex: 15 mars 2026" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Type d'événement *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.eventType} *</label>
                           <select name="eventType" value={formData.eventType} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all">
-                            <option value="Masterclass">Masterclass</option>
-                            <option value="Conférence">Conférence</option>
-                            <option value="Séminaire">Séminaire</option>
-                            <option value="Autre">Autre</option>
+                            <option value={t.masterclass.formOptions.eventTypes.masterclass}>{t.masterclass.formOptions.eventTypes.masterclass}</option>
+                            <option value={t.masterclass.formOptions.eventTypes.workshop}>{t.masterclass.formOptions.eventTypes.workshop}</option>
+                            <option value={t.masterclass.formOptions.eventTypes.conference}>{t.masterclass.formOptions.eventTypes.conference}</option>
+                            <option value={t.masterclass.formOptions.eventTypes.other}>{t.masterclass.formOptions.eventTypes.other}</option>
                           </select>
                         </div>
                       </div>
@@ -940,9 +1087,9 @@ export default function MasterclassPage() {
                     {currentStep === 3 && (
                       <div className="space-y-6 animate-fadeIn">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Public principal *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.targetAudience} *</label>
                           <select name="targetAudience" value={formData.targetAudience} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all">
-                            <option value="">Sélectionner...</option>
+                            <option value="">{t.masterclass.formLabels.selectOption}</option>
                             <option value="Étudiants">Étudiants</option>
                             <option value="Particuliers">Particuliers</option>
                             <option value="Entrepreneurs / porteurs de projets">Entrepreneurs / porteurs de projets</option>
@@ -951,7 +1098,7 @@ export default function MasterclassPage() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Nombre de participants estimé *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.estimatedParticipants} *</label>
                           <input type="number" name="estimatedParticipants" value={formData.estimatedParticipants} onChange={handleInputChange} required min="1" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                         </div>
                       </div>
@@ -961,7 +1108,7 @@ export default function MasterclassPage() {
                     {currentStep === 4 && (
                       <div className="space-y-6 animate-fadeIn">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Format standard Cash360 ? *</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.standardFormat} ? *</label>
                           <select name="standardFormat" value={formData.standardFormat} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all">
                             <option value="Oui">Oui</option>
                             <option value="Non">Non (préciser)</option>
@@ -969,12 +1116,12 @@ export default function MasterclassPage() {
                         </div>
                         {formData.standardFormat === 'Non' && (
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Format personnalisé</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.customFormat}</label>
                             <textarea name="customFormat" value={formData.customFormat} onChange={handleInputChange} rows={3} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                           </div>
                         )}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Pitch entrepreneurial avec dotation ?</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.pitchEntrepreneurial} ?</label>
                           <select name="pitchEntrepreneurial" value={formData.pitchEntrepreneurial} onChange={handleInputChange} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all">
                             <option value="Non">Non</option>
                             <option value="Oui">Oui</option>
@@ -982,7 +1129,7 @@ export default function MasterclassPage() {
                         </div>
                         {formData.pitchEntrepreneurial === 'Oui' && (
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Détails du pitch</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.pitchDetails}</label>
                             <textarea name="pitchDetails" value={formData.pitchDetails} onChange={handleInputChange} rows={3} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
                           </div>
                         )}
@@ -1104,7 +1251,7 @@ export default function MasterclassPage() {
                         </div>
                         <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg mt-6">
                           <p className="text-sm text-gray-700 mb-3">
-                            📩 Après soumission, merci d'adresser la lettre d'invitation officielle à :<br />
+                            📩 {t.masterclass.formLabels.afterSubmission}<br />
                             <a href="mailto:myriamkonan@cash360.finance" className="font-semibold text-yellow-700 hover:underline">myriamkonan@cash360.finance</a>
                           </p>
                           <a
@@ -1115,7 +1262,7 @@ export default function MasterclassPage() {
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Télécharger la lettre d'invitation officielle
+                            {t.masterclass.process.steps[0].downloadLabel}
                           </a>
                         </div>
                       </div>
@@ -1131,7 +1278,7 @@ export default function MasterclassPage() {
                     disabled={currentStep === 0}
                     className="px-6 py-3 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    ← Précédent
+                    {t.masterclass.form.previous}
                   </button>
                   
                   {currentStep < formSteps.length - 1 ? (
@@ -1140,22 +1287,534 @@ export default function MasterclassPage() {
                       onClick={handleNext}
                       className="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-lg"
                     >
-                      Suivant →
+                      {t.masterclass.form.next}
                     </button>
                   ) : (
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? 'Envoi en cours...' : 'Envoyer la demande'}
-                    </button>
+                    <div className="flex gap-4 items-center">
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? t.masterclass.form.submitting : t.masterclass.form.submit}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('sponsors')}
+                        className="px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all"
+                      >
+                        {t.masterclass.form.sponsorButton}
+                      </button>
+                    </div>
                   )}
                 </div>
+                
+                {/* Bouton télécharger brochure */}
+                {currentStep === formSteps.length - 1 && (
+                  <div className="px-8 pb-8 border-t border-gray-200 bg-gray-50 flex justify-center">
+                    <a
+                      href="/pdf/CASH360_Masterclass.pdf"
+                      download="CASH360_Masterclass.pdf"
+                      className="inline-flex items-center px-6 py-2 text-gray-600 font-medium rounded-lg hover:text-gray-900 hover:bg-gray-100 transition-all text-sm"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {t.masterclass.form.downloadBrochure}
+                    </a>
+                  </div>
+                )}
               </form>
             )}
           </div>
         </section>
+          </>
+        ) : (
+          /* Contenu Onglet Sponsors */
+          <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
+            <div className="container mx-auto max-w-6xl">
+              {/* Header Sponsors */}
+              <div className="text-center mb-16">
+                <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+                  🤝 {t.masterclass.sponsors.title}
+                </h2>
+                <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
+                  {t.masterclass.sponsors.subtitle}
+                </p>
+                <p className="text-lg text-gray-700 max-w-4xl mx-auto">
+                  {t.masterclass.sponsors.intro}
+                </p>
+              </div>
+
+              {/* Pourquoi sponsoriser */}
+              <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-100 mb-16">
+                <h3 className="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                  <span className="text-3xl mr-3">🎯</span>
+                  {t.masterclass.sponsors.whyTitle}
+                </h3>
+                <p className="text-lg text-gray-700 mb-6">
+                  {t.masterclass.sponsors.whyDescription}
+                </p>
+                <ul className="space-y-3 mb-6">
+                  {t.masterclass.sponsors.whyItems.map((item, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-yellow-600 text-xl mr-3 mt-1">✓</span>
+                      <span className="text-gray-700 text-lg">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-r-lg">
+                  <p className="text-gray-800 font-semibold mb-2">{t.masterclass.sponsors.benefitsTitle}</p>
+                  <ul className="space-y-2">
+                    {t.masterclass.sponsors.benefits.map((item, idx) => (
+                      <li key={idx} className="flex items-start">
+                        <span className="text-yellow-600 mr-2">•</span>
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Dossier Sponsor */}
+              <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-10 shadow-2xl mb-16 text-white">
+                <h3 className="text-3xl font-bold mb-6 text-center text-white">📦 {t.masterclass.sponsors.dossierTitle}</h3>
+                <p className="text-lg text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+                  {t.masterclass.sponsors.dossierSubtitle}
+                </p>
+                
+                {/* Bouton téléchargement ZIP */}
+                <div className="text-center mb-12">
+                  <a
+                    href="/api/sponsors/download-dossier"
+                    download="dossier-sponsor-cash360.zip"
+                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-yellow-500/50"
+                    onClick={async (e) => {
+                      e.preventDefault()
+                      try {
+                        const response = await fetch('/api/sponsors/download-dossier')
+                        if (!response.ok) throw new Error('Erreur lors du téléchargement')
+                        const blob = await response.blob()
+                        const url = window.URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = 'dossier-sponsor-cash360.zip'
+                        document.body.appendChild(a)
+                        a.click()
+                        window.URL.revokeObjectURL(url)
+                        document.body.removeChild(a)
+                      } catch (error) {
+                        console.error('Erreur téléchargement ZIP:', error)
+                        alert('Erreur lors du téléchargement du dossier sponsor')
+                      }
+                    }}
+                  >
+                    <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {t.masterclass.sponsors.downloadZip}
+                  </a>
+                </div>
+
+                {/* Liste des documents */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    { num: '1️⃣', title: t.masterclass.sponsors.documents.plaquette.title, desc: t.masterclass.sponsors.documents.plaquette.desc, file: 'Cash360-Plaquette-sponsor.pdf', path: '/pdf/sponsors/Cash360-Plaquette-sponsor.pdf' },
+                    { num: '2️⃣', title: t.masterclass.sponsors.documents.contrat.title, desc: t.masterclass.sponsors.documents.contrat.desc, file: 'contrat_sponsor.pdf', path: '/pdf/sponsors/contrat_sponsor.pdf' },
+                    { num: '3️⃣', title: t.masterclass.sponsors.documents.institutionnelle.title, desc: t.masterclass.sponsors.documents.institutionnelle.desc, file: 'Cash360-Version-Institutionnelle.pdf', path: '/pdf/sponsors/Cash360-Version-Institutionnelle.pdf' },
+                    { num: '4️⃣', title: t.masterclass.sponsors.documents.internationale.title, desc: t.masterclass.sponsors.documents.internationale.desc, file: 'Cash360-Afrique-and-Diaspora-2.pdf', path: '/pdf/Cash360-Afrique-and-Diaspora-2.pdf' }
+                  ].map((doc, idx) => (
+                    <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all">
+                      <div className="flex items-start mb-3">
+                        <span className="text-2xl mr-3">{doc.num}</span>
+                        <div className="flex-1">
+                          <h4 className="text-white font-bold text-lg mb-2">{doc.title}</h4>
+                          <p className="text-gray-300 text-sm mb-4">{doc.desc}</p>
+                          <a
+                            href={doc.path || `/pdf/sponsors/${doc.file}`}
+                            download={doc.file}
+                            className="inline-flex items-center text-yellow-400 hover:text-yellow-300 font-semibold text-sm transition-colors"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            {t.masterclass.sponsors.downloadPdf}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Comment devenir sponsor */}
+              <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-100 mb-16">
+                <h3 className="text-3xl font-bold text-gray-900 mb-6">📝 {t.masterclass.sponsors.dossierTitle}</h3>
+                <ol className="space-y-4">
+                  {t.masterclass.sponsors.commitments.map((step: string, idx: number) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="flex-shrink-0 w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center font-bold mr-4">
+                        {idx + 1}
+                      </span>
+                      <span className="text-gray-700 text-lg pt-1">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              {/* Contact */}
+              <div className="bg-gradient-to-r from-yellow-50 to-blue-50 rounded-3xl p-10 shadow-xl border border-yellow-200 mb-16">
+                <h3 className="text-3xl font-bold text-gray-900 mb-6">📩 {t.masterclass.sponsors.contactTitle}</h3>
+                <p className="text-lg text-gray-700 mb-4">
+                  {t.masterclass.sponsors.contactText}
+                </p>
+                <div className="space-y-3">
+                  <p className="text-xl font-bold text-gray-900">Cash360 Finance</p>
+                  <p className="text-gray-700">📍 {t.masterclass.sponsors.contactAddress}</p>
+                  <a href={`mailto:${t.masterclass.sponsors.contactEmail}`} className="text-yellow-600 hover:text-yellow-700 font-semibold text-lg">
+                    📧 {t.masterclass.sponsors.contactEmail}
+                  </a>
+                </div>
+              </div>
+
+              {/* Cadre & engagement */}
+              <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-100">
+                <h3 className="text-3xl font-bold text-gray-900 mb-6">🔐 {t.masterclass.sponsors.commitmentTitle}</h3>
+                <ul className="space-y-3">
+                  {t.masterclass.sponsors.commitments.map((item, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-green-600 text-xl mr-3 mt-1">✓</span>
+                      <span className="text-gray-700 text-lg">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Formulaire de sponsoring */}
+              <div id="sponsor-form" className="mt-20">
+                {sponsorFormSubmitted ? (
+                  <div className="bg-white rounded-3xl p-12 shadow-xl text-center border border-gray-100">
+                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-4">{t.masterclass.formLabels.thankYou}</h3>
+                    <p className="text-lg text-gray-700 mb-6">
+                      {t.masterclass.formLabels.thankYouMessage}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      📩 Contact : <a href="mailto:myriamkonan@cash360.finance" className="text-yellow-600 hover:underline font-semibold">myriamkonan@cash360.finance</a>
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault()
+                    setSponsorIsSubmitting(true)
+                    try {
+                      const response = await fetch('/api/sponsors/request', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(sponsorFormData)
+                      })
+                      const result = await response.json()
+                      if (!response.ok) throw new Error(result.error || 'Erreur')
+                      setSponsorFormSubmitted(true)
+                    } catch (error) {
+                      alert('Erreur lors de l\'envoi. Veuillez réessayer ou contacter directement myriamkonan@cash360.finance')
+                    } finally {
+                      setSponsorIsSubmitting(false)
+                    }
+                  }} className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                    {/* Progress Bar */}
+                    <div className="h-2 bg-gray-200">
+                      <div 
+                        className="h-full bg-gradient-to-r from-yellow-400 to-yellow-600 transition-all duration-500"
+                        style={{ width: `${((sponsorCurrentStep + 1) / sponsorFormSteps.length) * 100}%` }}
+                      />
+                    </div>
+
+                    {/* Form Header */}
+                    <div className="p-8 border-b border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-semibold text-yellow-600">
+                          {t.masterclass.form.previous ? 'Étape' : 'Step'} {sponsorCurrentStep + 1} {t.masterclass.form.previous ? 'sur' : 'of'} {sponsorFormSteps.length}
+                        </span>
+                      </div>
+                      <h3 className="text-3xl font-bold text-gray-900">
+                        {sponsorFormSteps[sponsorCurrentStep].title}
+                      </h3>
+                    </div>
+
+                    {/* Form Content */}
+                    <div className="p-8 min-h-[400px]">
+                      <div className="max-w-2xl mx-auto space-y-6">
+                        {/* Step 1: Organization */}
+                        {sponsorCurrentStep === 0 && (
+                          <div className="space-y-6 animate-fadeIn">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.organizationName} *</label>
+                              <input type="text" name="organizationName" value={sponsorFormData.organizationName} onChange={(e) => setSponsorFormData(prev => ({ ...prev, organizationName: e.target.value }))} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.legalForm} *</label>
+                              <select name="legalForm" value={sponsorFormData.legalForm} onChange={(e) => setSponsorFormData(prev => ({ ...prev, legalForm: e.target.value }))} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all">
+                                <option value="">{t.masterclass.formLabels.selectOption}</option>
+                                <option value="Entreprise">Entreprise</option>
+                                <option value="Association">Association</option>
+                                <option value="Fondation">Fondation</option>
+                                <option value="Banque">Banque</option>
+                                <option value="ONG">ONG</option>
+                                <option value="Institution">Institution</option>
+                                <option value="Autre">Autre</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.registrationNumber} *</label>
+                              <input type="text" name="registrationNumber" value={sponsorFormData.registrationNumber} onChange={(e) => setSponsorFormData(prev => ({ ...prev, registrationNumber: e.target.value }))} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.organizationAddress} *</label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={sponsorAddressQuery}
+                                  onChange={(e) => {
+                                    const value = e.target.value
+                                    setSponsorAddressQuery(value)
+                                    setSponsorFormData(prev => ({ ...prev, organizationAddress: value }))
+                                    if (!value) setSponsorAddressSuggestions([])
+                                  }}
+                                  placeholder="Commencez à taper une adresse..."
+                                  required
+                                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all"
+                                />
+                                {sponsorAddressLoading && (
+                                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500"></div>
+                                  </div>
+                                )}
+                                {sponsorAddressSuggestions.length > 0 && (
+                                  <div className="absolute z-50 w-full max-h-56 overflow-auto bg-white border-2 border-gray-200 rounded-xl shadow-lg mt-2">
+                                    {sponsorAddressSuggestions.map((suggestion) => (
+                                      <button
+                                        type="button"
+                                        key={suggestion.id}
+                                        className="w-full text-left px-4 py-3 hover:bg-yellow-50 transition-colors border-b border-gray-100 last:border-b-0"
+                                        onClick={() => {
+                                          setSponsorFormData(prev => ({ ...prev, organizationAddress: suggestion.address }))
+                                          setSponsorAddressQuery(suggestion.label)
+                                          setSponsorAddressSuggestions([])
+                                        }}
+                                      >
+                                        <span className="text-gray-900 text-sm">{suggestion.label}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.organizationWebsite}</label>
+                              <input type="text" name="organizationWebsite" value={sponsorFormData.organizationWebsite} onChange={(e) => setSponsorFormData(prev => ({ ...prev, organizationWebsite: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Step 2: Contact */}
+                        {sponsorCurrentStep === 1 && (
+                          <div className="space-y-6 animate-fadeIn">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.contactName} *</label>
+                              <input type="text" name="contactName" value={sponsorFormData.contactName} onChange={(e) => setSponsorFormData(prev => ({ ...prev, contactName: e.target.value }))} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.contactFunction} *</label>
+                              <input type="text" name="contactFunction" value={sponsorFormData.contactFunction} onChange={(e) => setSponsorFormData(prev => ({ ...prev, contactFunction: e.target.value }))} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.contactEmail} *</label>
+                              <input 
+                                type="email" 
+                                name="contactEmail" 
+                                value={sponsorFormData.contactEmail} 
+                                onChange={(e) => setSponsorFormData(prev => ({ ...prev, contactEmail: e.target.value }))} 
+                                required 
+                                pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                                placeholder="exemple@entreprise.com"
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all invalid:border-red-300" 
+                              />
+                              {sponsorFormData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sponsorFormData.contactEmail) && (
+                                <p className="mt-1 text-sm text-red-600">{t.masterclass.formLabels.errorMessage || "Format email invalide"}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.contactPhone} *</label>
+                              <PhoneInput
+                                international
+                                defaultCountry="FR"
+                                value={sponsorFormData.contactPhone}
+                                onChange={(value) => setSponsorFormData(prev => ({ ...prev, contactPhone: value || '' }))}
+                                className="w-full"
+                                numberInputProps={{
+                                  className: 'w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all'
+                                }}
+                                countrySelectProps={{
+                                  className: 'px-4 py-3 border-2 border-gray-200 rounded-l-xl focus:border-yellow-500'
+                                }}
+                              />
+                              {sponsorFormData.contactPhone && sponsorFormData.contactPhone.length < 8 && (
+                                <p className="mt-1 text-sm text-red-600">{t.masterclass.formLabels.errorMessage || "Numéro de téléphone invalide"}</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Step 3: Partnership */}
+                        {sponsorCurrentStep === 2 && (
+                          <div className="space-y-6 animate-fadeIn">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.partnershipType} *</label>
+                              <select name="partnershipType" value={sponsorFormData.partnershipType} onChange={(e) => setSponsorFormData(prev => ({ ...prev, partnershipType: e.target.value }))} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all">
+                                <option value="">{t.masterclass.formLabels.selectOption}</option>
+                                <option value={t.masterclass.formOptions.partnershipTypes.eventSponsoring}>{t.masterclass.formOptions.partnershipTypes.eventSponsoring}</option>
+                                <option value={t.masterclass.formOptions.partnershipTypes.institutional}>{t.masterclass.formOptions.partnershipTypes.institutional}</option>
+                                <option value={t.masterclass.formOptions.partnershipTypes.coOrganization}>{t.masterclass.formOptions.partnershipTypes.coOrganization}</option>
+                                <option value={t.masterclass.formOptions.partnershipTypes.programSupport}>{t.masterclass.formOptions.partnershipTypes.programSupport}</option>
+                                <option value={t.masterclass.formOptions.partnershipTypes.other}>{t.masterclass.formOptions.partnershipTypes.other}</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.budgetRange} *</label>
+                              <select name="budgetRange" value={sponsorFormData.budgetRange} onChange={(e) => setSponsorFormData(prev => ({ ...prev, budgetRange: e.target.value }))} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all">
+                                <option value="">{t.masterclass.formLabels.selectOption}</option>
+                                <option value={t.masterclass.formOptions.budgetRanges.less1000}>{t.masterclass.formOptions.budgetRanges.less1000}</option>
+                                <option value={t.masterclass.formOptions.budgetRanges["1000-5000"]}>{t.masterclass.formOptions.budgetRanges["1000-5000"]}</option>
+                                <option value={t.masterclass.formOptions.budgetRanges["5000-10000"]}>{t.masterclass.formOptions.budgetRanges["5000-10000"]}</option>
+                                <option value={t.masterclass.formOptions.budgetRanges.more10000}>{t.masterclass.formOptions.budgetRanges.more10000}</option>
+                                <option value={t.masterclass.formOptions.budgetRanges.toDiscuss}>{t.masterclass.formOptions.budgetRanges.toDiscuss}</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">{t.masterclass.formLabels.targetAudienceSponsor}</label>
+                              <textarea name="targetAudience" value={sponsorFormData.targetAudience} onChange={(e) => setSponsorFormData(prev => ({ ...prev, targetAudience: e.target.value }))} rows={4} placeholder={t.masterclass.formLabels.targetAudienceSponsor + "..."} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Step 4: Commitment */}
+                        {sponsorCurrentStep === 3 && (
+                          <div className="space-y-6 animate-fadeIn">
+                            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-r-lg">
+                              <p className="text-gray-800 font-semibold mb-4">{t.masterclass.sponsors.commitmentTitle}</p>
+                              <ul className="space-y-2 mb-6">
+                                {t.masterclass.sponsors.commitments.map((item, idx) => (
+                                  <li key={idx} className="flex items-start">
+                                    <span className="text-green-600 mr-2">✓</span>
+                                    <span className="text-gray-700">{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <label className="flex items-start p-4 border-2 border-gray-200 rounded-xl hover:border-yellow-500 cursor-pointer transition-all">
+                              <input 
+                                type="checkbox" 
+                                name="termsAccepted" 
+                                checked={sponsorFormData.termsAccepted} 
+                                onChange={(e) => setSponsorFormData(prev => ({ ...prev, termsAccepted: e.target.checked }))} 
+                                required 
+                                className="mt-1 w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500" 
+                              />
+                              <span className="ml-3 text-gray-700">{t.masterclass.formLabels.termsAccepted} *</span>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Form Footer */}
+                    <div className="p-8 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+                      <button
+                        type="button"
+                        onClick={() => setSponsorCurrentStep(Math.max(0, sponsorCurrentStep - 1))}
+                        disabled={sponsorCurrentStep === 0}
+                        className="px-6 py-3 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {t.masterclass.form.previous}
+                      </button>
+                      
+                      {sponsorCurrentStep < sponsorFormSteps.length - 1 ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const step = sponsorFormSteps[sponsorCurrentStep]
+                            const isValid = step.fields.every(field => {
+                              const value = sponsorFormData[field as keyof typeof sponsorFormData]
+                              if (field === 'termsAccepted') return value === true
+                              if (field === 'organizationWebsite' || field === 'targetAudience') return true // Optionnels
+                              return value && (typeof value === 'string' ? value.trim() !== '' : true)
+                            })
+                            if (!isValid) {
+                              alert('Veuillez remplir tous les champs obligatoires')
+                              return
+                            }
+                            setSponsorCurrentStep(sponsorCurrentStep + 1)
+                          }}
+                          className="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-lg"
+                        >
+                          {t.masterclass.form.next}
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          disabled={sponsorIsSubmitting || !sponsorFormData.termsAccepted}
+                          className="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {sponsorIsSubmitting ? t.masterclass.form.submitting : t.masterclass.form.submit}
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Bouton télécharger dossier sponsor */}
+                    {sponsorCurrentStep === sponsorFormSteps.length - 1 && (
+                      <div className="px-8 pb-8 border-t border-gray-200 bg-gray-50 flex justify-center">
+                        <a
+                          href="/api/sponsors/download-dossier"
+                          download="dossier-sponsor-cash360.zip"
+                          className="inline-flex items-center px-6 py-2 text-gray-600 font-medium rounded-lg hover:text-gray-900 hover:bg-gray-100 transition-all text-sm"
+                          onClick={async (e) => {
+                            e.preventDefault()
+                            try {
+                              const response = await fetch('/api/sponsors/download-dossier')
+                              if (!response.ok) throw new Error('Erreur lors du téléchargement')
+                              const blob = await response.blob()
+                              const url = window.URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = 'dossier-sponsor-cash360.zip'
+                              document.body.appendChild(a)
+                              a.click()
+                              window.URL.revokeObjectURL(url)
+                              document.body.removeChild(a)
+                            } catch (error) {
+                              console.error('Erreur téléchargement ZIP:', error)
+                              alert('Erreur lors du téléchargement du dossier sponsor')
+                            }
+                          }}
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          {t.masterclass.form.downloadSponsorPack}
+                        </a>
+                      </div>
+                    )}
+                  </form>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
       </main>
 
       {/* Bouton retour en haut */}

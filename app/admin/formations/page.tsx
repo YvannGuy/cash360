@@ -955,7 +955,7 @@ export default function AdminFormationsPage() {
                     placeholder="https://calendly.com/..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A1C6]"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Lien pour prendre rendez-vous avec Pasteur Myriam</p>
+                  <p className="text-xs text-gray-500 mt-1">Lien pour prendre rendez-vous avec Myriam</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
   },
   // Corriger l'avertissement sur les lockfiles multiples
   outputFileTracingRoot: __dirname,
+  // Configuration pour archiver et autres modules Node.js
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || []
+      // Ne pas externaliser archiver côté serveur
+    }
+    return config
+  },
   // Exposer les variables d'environnement côté serveur uniquement
   env: {
     // Les variables sans NEXT_PUBLIC_ sont automatiquement disponibles côté serveur

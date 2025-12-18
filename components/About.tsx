@@ -68,17 +68,17 @@ export default function About() {
             </div>
           </div>
 
-          {/* À propos du Pasteur Myriam Konan Card */}
+          {/* À propos de Myriam Konan Card */}
           <div>
             <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t.about?.pastorTitle || 'À propos du Pasteur Myriam Konan'}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t.about?.pastorTitle || 'À propos de Myriam Konan'}</h3>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Photo carrée */}
                 <div className="lg:col-span-1">
                   <div className="w-full h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg relative">
                     <Image
                       src="/images/logo/myriam.jpeg"
-                      alt="Pasteur Myriam Konan"
+                      alt="Myriam Konan"
                       fill
                       className="object-cover"
                       sizes="(max-width: 1024px) 100vw, 33vw"
