@@ -180,8 +180,9 @@ export async function GET(request: NextRequest) {
       .lt('created_at', startDateISO)
 
     const previousRevenue = previousPayments?.reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0) || 0
-    const previousMRR = previousSubscriptions?.length 
-      ? previousSubscriptions.length * (subscriptions?.length > 0 ? mrr / subscriptions.length : 39.98)
+    const subscriptionPrice = subscriptions && subscriptions.length > 0 ? mrr / subscriptions.length : 39.98
+    const previousMRR = previousSubscriptions && previousSubscriptions.length > 0
+      ? previousSubscriptions.length * subscriptionPrice
       : 0
 
     // Calculer les variations en pourcentage

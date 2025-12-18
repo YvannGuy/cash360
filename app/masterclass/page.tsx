@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { useLanguage } from '@/lib/LanguageContext'
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 interface FormStep {
   id: string
@@ -13,11 +13,16 @@ interface FormStep {
 }
 
 export default function MasterclassPage() {
-  const { t } = useLanguage()
   const [currentStep, setCurrentStep] = useState(0)
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [structureAddressQuery, setStructureAddressQuery] = useState('')
+  const [structureAddressSuggestions, setStructureAddressSuggestions] = useState<
+    Array<{ id: string; address: string; label: string }>
+  >([])
+  const [structureAddressLoading, setStructureAddressLoading] = useState(false)
+
   const [formData, setFormData] = useState({
     // 1. Informations sur la structure organisatrice
     structureName: '',
@@ -30,7 +35,7 @@ export default function MasterclassPage() {
     responsibleName: '',
     responsibleFunction: '',
     responsibleEmail: '',
-    responsiblePhone: '',
+    responsiblePhone: '' as string | undefined,
     
     // 3. Informations générales sur l'événement
     city: '',
@@ -168,7 +173,76 @@ export default function MasterclassPage() {
     setFormData(prev => ({ ...prev, [name]: file }))
   }
 
+  // Validation des champs pour chaque étape
+  const validateStep = (stepIndex: number): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = []
+    const step = formSteps[stepIndex]
+    
+    step.fields.forEach((field) => {
+      const value = formData[field as keyof typeof formData]
+      
+      // Vérifier les champs obligatoires
+      if (field === 'responsibleEmail') {
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          errors.push('Email professionnel est requis')
+        } else if (typeof value === 'string' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.push('Format email invalide')
+        }
+      } else if (field === 'responsiblePhone') {
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          errors.push('Téléphone est requis')
+        } else if (typeof value === 'string' && value.length < 8) {
+          errors.push('Numéro de téléphone invalide')
+        }
+      } else if (field === 'structureAddress') {
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          errors.push('Adresse complète est requise')
+        }
+      } else if (field !== 'structureWebsite' && field !== 'customFormat' && field !== 'pitchDetails' && 
+                 field !== 'venueCapacity' && field !== 'percentageDetails' && field !== 'eventPresentation' &&
+                 field !== 'transport' && field !== 'accommodation' && field !== 'logistics' &&
+                 field !== 'communicationChannels') {
+        if (!value || (typeof value === 'string' && value.trim() === '') || 
+            (typeof value === 'boolean' && !value) ||
+            (Array.isArray(value) && value.length === 0)) {
+          const fieldLabels: Record<string, string> = {
+            structureName: 'Nom de la structure',
+            legalForm: 'Forme juridique',
+            registrationNumber: 'Numéro d\'immatriculation',
+            responsibleName: 'Nom et prénom',
+            responsibleFunction: 'Fonction',
+            city: 'Ville',
+            country: 'Pays',
+            proposedDate: 'Date(s) souhaitée(s)',
+            eventType: 'Type d\'événement',
+            targetAudience: 'Public principal',
+            estimatedParticipants: 'Nombre de participants estimé',
+            standardFormat: 'Format standard',
+            venueIdentified: 'Salle identifiée',
+            proposedFee: 'Cachet proposé',
+            structureDocument: 'Document de la structure',
+            identityDocument: 'Pièce d\'identité',
+            frameworkAcknowledged: 'Cadre officiel',
+            contractAccepted: 'Acceptation du contrat',
+            writtenAgreementAccepted: 'Acceptation de l\'accord écrit'
+          }
+          errors.push(fieldLabels[field] || field + ' est requis')
+        }
+      }
+    })
+    
+    return { isValid: errors.length === 0, errors }
+  }
+
   const handleNext = () => {
+    // Valider l'étape actuelle avant de passer à la suivante
+    const validation = validateStep(currentStep)
+    
+    if (!validation.isValid) {
+      alert('Veuillez remplir tous les champs obligatoires:\n\n' + validation.errors.join('\n'))
+      return
+    }
+    
     if (currentStep < formSteps.length - 1) {
       setCurrentStep(currentStep + 1)
       // Scroll vers le formulaire au lieu du haut de la page
@@ -210,6 +284,54 @@ export default function MasterclassPage() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Auto-complétion d'adresse avec Nominatim OpenStreetMap (comme dans le formulaire signup)
+  useEffect(() => {
+    if (!structureAddressQuery || structureAddressQuery.trim().length < 2) {
+      setStructureAddressSuggestions([])
+      setStructureAddressLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    const debounce = setTimeout(async () => {
+      try {
+        setStructureAddressLoading(true)
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(
+            structureAddressQuery.trim()
+          )}`,
+          {
+            headers: { Accept: 'application/json' },
+            signal: controller.signal
+          }
+        )
+        if (!response.ok) throw new Error('Erreur lors de la recherche d\'adresse')
+        const data = await response.json()
+        const suggestions =
+          (data || []).map((item: any) => {
+            const fullAddress = item.display_name || ''
+            return {
+              id: item.place_id?.toString() || `${item.lat}-${item.lon}`,
+              address: fullAddress,
+              label: fullAddress
+            }
+          }) ?? []
+        setStructureAddressSuggestions(suggestions)
+      } catch (fetchError) {
+        if ((fetchError as any)?.name !== 'AbortError') {
+          setStructureAddressSuggestions([])
+        }
+      } finally {
+        setStructureAddressLoading(false)
+      }
+    }, 350)
+
+    return () => {
+      clearTimeout(debounce)
+      controller.abort()
+    }
+  }, [structureAddressQuery])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -688,7 +810,46 @@ export default function MasterclassPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Adresse complète *</label>
-                          <textarea name="structureAddress" value={formData.structureAddress} onChange={handleInputChange} required rows={3} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={structureAddressQuery}
+                              onChange={(e) => {
+                                const value = e.target.value
+                                setStructureAddressQuery(value)
+                                setFormData(prev => ({ ...prev, structureAddress: value }))
+                                if (!value) {
+                                  setStructureAddressSuggestions([])
+                                }
+                              }}
+                              placeholder="Commencez à taper une adresse..."
+                              required
+                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all"
+                            />
+                            {structureAddressLoading && (
+                              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500"></div>
+                              </div>
+                            )}
+                            {structureAddressSuggestions.length > 0 && (
+                              <div className="absolute z-50 w-full max-h-56 overflow-auto bg-white border-2 border-gray-200 rounded-xl shadow-lg mt-2">
+                                {structureAddressSuggestions.map((suggestion) => (
+                                  <button
+                                    type="button"
+                                    key={suggestion.id}
+                                    className="w-full text-left px-4 py-3 hover:bg-yellow-50 transition-colors border-b border-gray-100 last:border-b-0"
+                                    onClick={() => {
+                                      setFormData(prev => ({ ...prev, structureAddress: suggestion.address }))
+                                      setStructureAddressQuery(suggestion.label)
+                                      setStructureAddressSuggestions([])
+                                    }}
+                                  >
+                                    <span className="text-gray-900 text-sm">{suggestion.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Site web / Réseaux sociaux</label>
@@ -710,11 +871,38 @@ export default function MasterclassPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Email professionnel *</label>
-                          <input type="email" name="responsibleEmail" value={formData.responsibleEmail} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                          <input 
+                            type="email" 
+                            name="responsibleEmail" 
+                            value={formData.responsibleEmail} 
+                            onChange={handleInputChange} 
+                            required 
+                            pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                            placeholder="exemple@entreprise.com"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all invalid:border-red-300" 
+                          />
+                          {formData.responsibleEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.responsibleEmail) && (
+                            <p className="mt-1 text-sm text-red-600">Format email invalide</p>
+                          )}
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Téléphone *</label>
-                          <input type="tel" name="responsiblePhone" value={formData.responsiblePhone} onChange={handleInputChange} required className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all" />
+                          <PhoneInput
+                            international
+                            defaultCountry="FR"
+                            value={formData.responsiblePhone}
+                            onChange={(value) => setFormData(prev => ({ ...prev, responsiblePhone: value || '' }))}
+                            className="w-full"
+                            numberInputProps={{
+                              className: 'w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all'
+                            }}
+                            countrySelectProps={{
+                              className: 'px-4 py-3 border-2 border-gray-200 rounded-l-xl focus:border-yellow-500'
+                            }}
+                          />
+                          {formData.responsiblePhone && formData.responsiblePhone.length < 8 && (
+                            <p className="mt-1 text-sm text-red-600">Numéro de téléphone invalide</p>
+                          )}
                         </div>
                       </div>
                     )}
