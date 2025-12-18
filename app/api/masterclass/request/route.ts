@@ -243,21 +243,34 @@ export async function POST(request: NextRequest) {
       eventPresentationUrl
     })
 
-    // Envoyer l'email à Cash360
+    // Envoyer l'email à Cash360 avec les documents en pièces jointes si disponibles
+    const adminAttachments = []
+    if (structureDocumentUrl) {
+      // Note: Les URLs Supabase sont publiques, on pourrait télécharger et joindre
+      // Mais pour l'instant, on laisse juste les liens dans l'email
+    }
+    
     await sendMail({
       to: 'myriamkonan@cash360.finance',
       subject: `[Cash360 Masterclass] Nouvelle demande d'événement - ${data.structureName} - ${data.city}, ${data.country}`,
-      html: adminEmailHtml
+      html: adminEmailHtml,
+      // Les documents sont accessibles via les liens dans l'email
     })
 
     // Générer le HTML de l'email de confirmation pour l'organisateur
     const confirmationEmailHtml = generateConfirmationEmailHtml(data)
 
-    // Envoyer l'email de confirmation à l'organisateur
+    // Envoyer l'email de confirmation à l'organisateur avec la lettre d'invitation en pièce jointe
     await sendMail({
       to: data.responsibleEmail,
       subject: `Cash360 - Confirmation de réception de votre demande de masterclass`,
-      html: confirmationEmailHtml
+      html: confirmationEmailHtml,
+      attachments: [
+        {
+          filename: 'Lettre_Invitation_Officielle_Cash360.pdf',
+          path: 'public/pdf/Lettre_Invitation_Officielle_Cash360.pdf'
+        }
+      ]
     })
 
     return NextResponse.json({ 
@@ -466,10 +479,34 @@ function generateAdminEmailHtml(data: any, files: any): string {
           <div class="section">
             <h3>9️⃣ Documents joints</h3>
             <div class="files">
-              ${files.structureDocumentUrl ? `<a href="${files.structureDocumentUrl}" class="file-link">Document structure</a>` : ''}
-              ${files.identityDocumentUrl ? `<a href="${files.identityDocumentUrl}" class="file-link">Pièce identité</a>` : ''}
-              ${files.eventPresentationUrl ? `<a href="${files.eventPresentationUrl}" class="file-link">Présentation événement</a>` : ''}
+              ${files.structureDocumentUrl ? `
+                <div style="margin-bottom: 10px;">
+                  <strong>Document structure:</strong><br>
+                  <a href="${files.structureDocumentUrl}" class="file-link" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 5px;">
+                    📄 Télécharger le document structure
+                  </a>
+                </div>
+              ` : '<p style="color: #999;">Aucun document structure fourni</p>'}
+              ${files.identityDocumentUrl ? `
+                <div style="margin-bottom: 10px;">
+                  <strong>Pièce d'identité:</strong><br>
+                  <a href="${files.identityDocumentUrl}" class="file-link" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 5px;">
+                    🆔 Télécharger la pièce d'identité
+                  </a>
+                </div>
+              ` : '<p style="color: #999;">Aucune pièce d\'identité fournie</p>'}
+              ${files.eventPresentationUrl ? `
+                <div style="margin-bottom: 10px;">
+                  <strong>Présentation événement:</strong><br>
+                  <a href="${files.eventPresentationUrl}" class="file-link" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 5px;">
+                    📊 Télécharger la présentation
+                  </a>
+                </div>
+              ` : '<p style="color: #999;">Aucune présentation fournie</p>'}
             </div>
+            <p style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px; color: #666;">
+              💡 <strong>Note:</strong> Les documents sont stockés dans Supabase Storage. Cliquez sur les liens ci-dessus pour les télécharger. Si les liens ne fonctionnent pas, vérifiez les permissions du bucket "masterclass-documents" dans Supabase.
+            </p>
           </div>
 
           <div class="section">
@@ -535,12 +572,16 @@ function generateConfirmationEmailHtml(data: any): string {
               <li><strong>Public visé:</strong> ${data.targetAudience}</li>
             </ul>
             <p>L'équipe Cash360 étudiera votre dossier et vous contactera si les conditions sont réunies pour envisager une collaboration.</p>
-            <p><strong>Important:</strong> N'oubliez pas d'adresser la lettre d'invitation officielle par e-mail à :</p>
-            <p style="text-align: center; margin: 20px 0;">
-              <a href="mailto:myriamkonan@cash360.finance" style="color: #D4AF37; font-weight: bold;">
-                myriamkonan@cash360.finance
-              </a>
-            </p>
+            <div style="background: #fff3cd; border-left: 4px solid #D4AF37; padding: 15px; margin: 20px 0; border-radius: 5px;">
+              <p style="margin: 0 0 10px 0;"><strong>📎 Pièce jointe importante:</strong></p>
+              <p style="margin: 0 0 10px 0;">Vous trouverez en pièce jointe de cet email la <strong>Lettre d'Invitation Officielle Cash360</strong> à remplir et à nous retourner.</p>
+              <p style="margin: 0;"><strong>Important:</strong> Merci d'adresser la lettre d'invitation officielle complétée par e-mail à :</p>
+              <p style="text-align: center; margin: 15px 0 0 0;">
+                <a href="mailto:myriamkonan@cash360.finance" style="color: #D4AF37; font-weight: bold; font-size: 16px;">
+                  📧 myriamkonan@cash360.finance
+                </a>
+              </p>
+            </div>
             <p>La lettre doit préciser la structure organisatrice, la ville et le pays, la date proposée, le public visé, et les conditions logistiques et financières.</p>
           </div>
           <div class="footer">

@@ -273,8 +273,10 @@ export default function MasterclassPage() {
           submitFormData.append(key, value)
         } else if (typeof value === 'boolean') {
           submitFormData.append(key, value.toString())
+        } else if (Array.isArray(value)) {
+          submitFormData.append(key, JSON.stringify(value))
         } else {
-          submitFormData.append(key, value || '')
+          submitFormData.append(key, String(value || ''))
         }
       })
 
@@ -567,15 +569,32 @@ export default function MasterclassPage() {
               <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Processus d'organisation</h2>
               <div className="space-y-8">
                 {[
-                  { num: '1️⃣', title: 'Invitation officielle', desc: 'Envoyer une lettre d\'invitation à myriamkonan@cash360.finance' },
+                  { 
+                    num: '1️⃣', 
+                    title: 'Invitation officielle', 
+                    desc: 'Envoyer une lettre d\'invitation à myriamkonan@cash360.finance',
+                    hasDownload: true
+                  },
                   { num: '2️⃣', title: 'Réunion de cadrage', desc: 'Validation du format, billetterie, conditions financières' },
                   { num: '3️⃣', title: 'Validation contractuelle', desc: 'Signature d\'un contrat de collaboration' }
                 ].map((step, idx) => (
                   <div key={idx} className="flex items-start p-6 bg-gray-50 rounded-2xl">
                     <div className="text-4xl mr-6">{step.num}</div>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
-                      <p className="text-gray-700">{step.desc}</p>
+                      <p className="text-gray-700 mb-2">{step.desc}</p>
+                      {step.hasDownload && (
+                        <a
+                          href="/pdf/Lettre_Invitation_Officielle_Cash360.pdf"
+                          download="Lettre_Invitation_Officielle_Cash360.pdf"
+                          className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-md mt-2"
+                        >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Télécharger la lettre d'invitation officielle
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -598,12 +617,24 @@ export default function MasterclassPage() {
                 <p className="text-lg text-gray-700 mb-6">
                   L'équipe Cash360 étudiera votre dossier et vous contactera si les conditions sont réunies pour envisager une collaboration.
                 </p>
-                <p className="text-sm text-gray-600">
-                  📩 N'oubliez pas d'adresser la lettre d'invitation officielle par e-mail à :<br />
-                  <a href="mailto:myriamkonan@cash360.finance" className="text-yellow-600 hover:underline font-semibold">
-                    myriamkonan@cash360.finance
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    📩 N'oubliez pas d'adresser la lettre d'invitation officielle par e-mail à :<br />
+                    <a href="mailto:myriamkonan@cash360.finance" className="text-yellow-600 hover:underline font-semibold">
+                      myriamkonan@cash360.finance
+                    </a>
+                  </p>
+                  <a
+                    href="/pdf/Lettre_Invitation_Officielle_Cash360.pdf"
+                    download="Lettre_Invitation_Officielle_Cash360.pdf"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-lg"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Télécharger la lettre d'invitation officielle
                   </a>
-                </p>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-2xl overflow-hidden">
@@ -884,10 +915,20 @@ export default function MasterclassPage() {
                           ))}
                         </div>
                         <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg mt-6">
-                          <p className="text-sm text-gray-700">
+                          <p className="text-sm text-gray-700 mb-3">
                             📩 Après soumission, merci d'adresser la lettre d'invitation officielle à :<br />
                             <a href="mailto:myriamkonan@cash360.finance" className="font-semibold text-yellow-700 hover:underline">myriamkonan@cash360.finance</a>
                           </p>
+                          <a
+                            href="/pdf/Lettre_Invitation_Officielle_Cash360.pdf"
+                            download="Lettre_Invitation_Officielle_Cash360.pdf"
+                            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-md text-sm"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Télécharger la lettre d'invitation officielle
+                          </a>
                         </div>
                       </div>
                     )}
