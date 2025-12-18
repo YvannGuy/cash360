@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCurrency } from '@/lib/CurrencyContext'
+import { tracking } from '@/lib/tracking'
+import { createClientBrowser } from '@/lib/supabase'
 
 type BudgetExpenseForm = {
   clientId: string
@@ -367,6 +369,27 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
   useEffect(() => {
     fetchBudget()
   }, [fetchBudget])
+
+  // Tracking: outil ouvert
+  useEffect(() => {
+    if (!loading && !requiresSubscription) {
+      const trackToolOpen = async () => {
+        try {
+          const supabase = createClientBrowser()
+          const { data: { user } } = await supabase.auth.getUser()
+          await tracking.toolUsed('budget_tracker', {
+            toolName: 'Budget & Suivi',
+            action: 'open',
+            hasIncome: !!monthlyIncome,
+            expenseCount: expenses.length
+          }, user?.id)
+        } catch (error) {
+          // Ignorer les erreurs de tracking silencieusement
+        }
+      }
+      trackToolOpen()
+    }
+  }, [loading, requiresSubscription, monthlyIncome, expenses.length])
 
   const handleAddExpense = () => {
     setExpenses((prev) => {

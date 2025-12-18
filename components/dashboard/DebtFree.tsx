@@ -1,9 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCurrency } from '@/lib/CurrencyContext'
 import Link from 'next/link'
+import { tracking } from '@/lib/tracking'
+import { createClientBrowser } from '@/lib/supabase'
 
 type DebtSummary = {
   totalDebtMonthlyPayments: number
@@ -28,7 +30,7 @@ const localeMap: Record<string, string> = {
 export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
   const isEmbedded = variant === 'embedded'
   const { t, language } = useLanguage()
-  const { format: formatCurrency, symbol: currencySymbol } = useCurrency()
+  const { format: formatCurrency } = useCurrency()
   const [loading, setLoading] = useState(true)
   const [summary, setSummary] = useState<DebtSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -59,6 +61,7 @@ export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
       } catch (err: any) {
         console.error('[DebtFree] fetch error', err)
         setError(err?.message || 'Erreur lors du chargement')
+        // error variable is used in the component render
       } finally {
         setLoading(false)
       }
@@ -66,6 +69,26 @@ export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
 
     fetchSummary()
   }, [])
+
+  // Tracking: outil ouvert
+  useEffect(() => {
+    if (!loading && !requiresSubscription) {
+      const trackToolOpen = async () => {
+        try {
+          const supabase = createClientBrowser()
+          const { data: { user } } = await supabase.auth.getUser()
+          await tracking.toolUsed('debt_free', {
+            toolName: 'Debt Free',
+            action: 'open',
+            hasDebts: !!summary && summary.totalDebtMonthlyPayments > 0
+          }, user?.id)
+        } catch {
+          // Ignorer les erreurs de tracking silencieusement
+        }
+      }
+      trackToolOpen()
+    }
+  }, [loading, requiresSubscription, summary])
 
   const hasDebts = summary && summary.totalDebtMonthlyPayments > 0
   const hasFast = summary && summary.fastSavingsMonthly > 0

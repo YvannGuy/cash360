@@ -39,25 +39,57 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer tous les utilisateurs pour enrichir les abonnements avec email et nom
-    const { data: allUsers } = await supabaseAdmin!.auth.admin.listUsers()
+    const MAX_PER_PAGE = 200
+    const allUsersList: any[] = []
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      const { data: usersData, error: usersError } = await supabaseAdmin!.auth.admin.listUsers({
+        page,
+        perPage: MAX_PER_PAGE
+      })
+
+      if (usersError) {
+        console.error('[SUBSCRIPTIONS API] Erreur récupération utilisateurs:', usersError)
+        break
+      }
+
+      if (usersData?.users) {
+        allUsersList.push(...usersData.users)
+      }
+
+      if (!usersData?.users || usersData.users.length < MAX_PER_PAGE) {
+        hasMore = false
+      } else {
+        page += 1
+      }
+    }
+
     const userMap = new Map<string, { email: string, name?: string }>()
     
-    if (allUsers?.users) {
-      allUsers.users.forEach((user) => {
-        userMap.set(user.id, {
-          email: user.email || '',
-          name: user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.first_name || undefined
-        })
+    allUsersList.forEach((user) => {
+      const firstName = user.user_metadata?.first_name || ''
+      const lastName = user.user_metadata?.last_name || ''
+      const fullName = [firstName, lastName].filter(Boolean).join(' ').trim()
+      const name = fullName || user.user_metadata?.full_name || user.user_metadata?.name || undefined
+      
+      userMap.set(user.id, {
+        email: user.email || '',
+        name: name
       })
-    }
+    })
 
     // Enrichir les abonnements avec les informations utilisateur
     const enrichedSubscriptions = (subscriptions || []).map((sub: any) => {
       const userInfo = userMap.get(sub.user_id)
+      const email = userInfo?.email || null
+      const name = userInfo?.name || (email ? email.split('@')[0] : null)
+      
       return {
         ...sub,
-        user_email: userInfo?.email || null,
-        user_name: userInfo?.name || userInfo?.email?.split('@')[0] || null
+        user_email: email,
+        user_name: name
       }
     })
 

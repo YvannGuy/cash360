@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCurrency } from '@/lib/CurrencyContext'
+import { tracking } from '@/lib/tracking'
+import { createClientBrowser } from '@/lib/supabase'
 
 type CategoryBudget = {
   target: number
@@ -201,6 +203,26 @@ export default function FinancialFast({ variant = 'page', onStatusChange }: Fina
     fetchFast()
   }, [fetchFast])
 
+  // Tracking: outil ouvert
+  useEffect(() => {
+    if (!loading && !requiresSubscription) {
+      const trackToolOpen = async () => {
+        try {
+          const supabase = createClientBrowser()
+          const { data: { user } } = await supabase.auth.getUser()
+          await tracking.toolUsed('financial_fast', {
+            toolName: 'Jeûne Financier',
+            action: 'open',
+            hasActiveFast: !!fast
+          }, user?.id)
+        } catch (error) {
+          // Ignorer les erreurs de tracking silencieusement
+        }
+      }
+      trackToolOpen()
+    }
+  }, [loading, requiresSubscription, fast])
+
   const handleCreateFast = async () => {
     setFormError(null)
     setSubmitting(true)
@@ -245,6 +267,20 @@ export default function FinancialFast({ variant = 'page', onStatusChange }: Fina
         setFormError(copy.subscriptionLockedDescription || 'Abonnement requis pour accéder au jeûne financier.')
         setSubmitting(false)
         return
+      }
+
+      // Tracking: jeûne créé
+      try {
+        const supabase = createClientBrowser()
+        const { data: { user } } = await supabase.auth.getUser()
+        await tracking.toolUsed('financial_fast', {
+          toolName: 'Jeûne Financier',
+          action: 'create',
+          categoryCount: selectedCategories.length,
+          estimatedMonthlySpend: amount
+        }, user?.id)
+      } catch (error) {
+        // Ignorer les erreurs de tracking silencieusement
       }
 
       if (!response.ok) {
