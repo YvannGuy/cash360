@@ -127,6 +127,20 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Récupérer les commandes Mobile Money (Orange Money, Wave, Congo) pour les inclure dans les métriques
+    const { data: mobileMoneyOrders, error: ordersError } = await supabaseAdmin!
+      .from('orders')
+      .select('id, user_id, status, payment_method, operator, created_at, transaction_id')
+      .eq('payment_method', 'mobile_money')
+      .in('operator', ['orange_money', 'wave', 'congo_mobile_money'])
+      .gte('created_at', startDateISO)
+    
+    if (ordersError) {
+      console.warn('[METRICS SIMPLE] ⚠️ Erreur récupération commandes Mobile Money:', ordersError)
+    } else {
+      console.log(`[METRICS SIMPLE] 📱 ${mobileMoneyOrders?.length || 0} commande(s) Mobile Money trouvée(s)`)
+    }
+
     // Analyser les événements panier
     const cartStats = {
       cartOpened: 0,
@@ -137,6 +151,7 @@ export async function GET(request: NextRequest) {
 
     const cartSessions = new Map<string, { opened: boolean, checkoutStarted: boolean, completed: boolean }>()
 
+    // Traiter les événements de tracking
     cartEvents.forEach((event: any) => {
       const eventType = event.event_type
       const userId = event.user_id
@@ -162,6 +177,38 @@ export async function GET(request: NextRequest) {
         session.opened = true
       }
     })
+
+    // Traiter les commandes Mobile Money
+    // Chaque commande Mobile Money représente :
+    // - Un checkout démarré (l'utilisateur a soumis le formulaire)
+    // - Un achat complété si status = 'paid' (validé par l'admin)
+    if (mobileMoneyOrders && mobileMoneyOrders.length > 0) {
+      mobileMoneyOrders.forEach((order: any) => {
+        // Utiliser transaction_id comme identifiant de session pour Mobile Money
+        const sessionId = `mobile_money_${order.transaction_id || order.id}`
+        
+        if (!cartSessions.has(sessionId)) {
+          cartSessions.set(sessionId, { opened: false, checkoutStarted: false, completed: false })
+        }
+        
+        const session = cartSessions.get(sessionId)!
+        
+        // Toute commande Mobile Money = checkout démarré (l'utilisateur a soumis le formulaire)
+        session.checkoutStarted = true
+        cartStats.checkoutStarted++
+        
+        // Si la commande est payée (validée), c'est un achat complété
+        if (order.status === 'paid' || order.status === 'completed' || order.status === 'succeeded' || order.status === 'success') {
+          session.completed = true
+          cartStats.checkoutCompleted++
+        }
+        
+        // Pour Mobile Money, on considère qu'il y a eu une ouverture de panier implicite
+        // (l'utilisateur a dû ouvrir le panier pour arriver au paiement)
+        session.opened = true
+        cartStats.cartOpened++
+      })
+    }
 
     // Calculer les abandons (panier ouvert mais pas de checkout complété)
     cartSessions.forEach((session) => {

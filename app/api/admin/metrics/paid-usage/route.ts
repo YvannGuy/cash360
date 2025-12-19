@@ -160,7 +160,19 @@ export async function GET(request: NextRequest) {
         ['shop.cart_opened', 'shop.checkout_started', 'shop.purchase_completed'].includes(e.event_type)
       ) || []
 
+      // Récupérer les commandes Mobile Money (Orange Money, Wave, Congo) pour les inclure dans les métriques
+      const { data: mobileMoneyOrders } = await supabaseAdmin!
+        .from('orders')
+        .select('id, user_id, status, payment_method, operator, created_at, transaction_id')
+        .eq('payment_method', 'mobile_money')
+        .in('operator', ['orange_money', 'wave', 'congo_mobile_money'])
+        .gte('created_at', startDate)
+      
+      console.log(`[METRICS PAID-USAGE] 📱 ${mobileMoneyOrders?.length || 0} commande(s) Mobile Money trouvée(s)`)
+
       const cartSessions = new Map<string, { opened: boolean, checkoutStarted: boolean, completed: boolean }>()
+      
+      // Traiter les événements de tracking
       cartEvents.forEach((event: any) => {
         const sessionKey = event.session_id || event.user_id || `anon_${event.id}`
         if (!cartSessions.has(sessionKey)) {
@@ -171,6 +183,31 @@ export async function GET(request: NextRequest) {
         if (event.event_type === 'shop.checkout_started') session.checkoutStarted = true
         if (event.event_type === 'shop.purchase_completed') session.completed = true
       })
+
+      // Traiter les commandes Mobile Money
+      if (mobileMoneyOrders && mobileMoneyOrders.length > 0) {
+        mobileMoneyOrders.forEach((order: any) => {
+          // Utiliser transaction_id comme identifiant de session pour Mobile Money
+          const sessionKey = `mobile_money_${order.transaction_id || order.id}`
+          
+          if (!cartSessions.has(sessionKey)) {
+            cartSessions.set(sessionKey, { opened: false, checkoutStarted: false, completed: false })
+          }
+          
+          const session = cartSessions.get(sessionKey)!
+          
+          // Toute commande Mobile Money = checkout démarré (l'utilisateur a soumis le formulaire)
+          session.checkoutStarted = true
+          
+          // Si la commande est payée (validée), c'est un achat complété
+          if (order.status === 'paid' || order.status === 'completed' || order.status === 'succeeded' || order.status === 'success') {
+            session.completed = true
+          }
+          
+          // Pour Mobile Money, on considère qu'il y a eu une ouverture de panier implicite
+          session.opened = true
+        })
+      }
 
       cartFunnel = {
         carts_opened: Array.from(cartSessions.values()).filter(s => s.opened).length,
@@ -286,7 +323,20 @@ export async function GET(request: NextRequest) {
         ['shop.cart_opened', 'shop.checkout_started', 'shop.purchase_completed'].includes(e.event_type)
       ) || []
 
+      // Récupérer les commandes Mobile Money (Orange Money, Wave, Congo) pour les inclure dans les métriques
+      const startDateFallback = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+      const { data: mobileMoneyOrdersFallback } = await supabaseAdmin!
+        .from('orders')
+        .select('id, user_id, status, payment_method, operator, created_at, transaction_id')
+        .eq('payment_method', 'mobile_money')
+        .in('operator', ['orange_money', 'wave', 'congo_mobile_money'])
+        .gte('created_at', startDateFallback)
+      
+      console.log(`[METRICS PAID-USAGE FALLBACK] 📱 ${mobileMoneyOrdersFallback?.length || 0} commande(s) Mobile Money trouvée(s)`)
+
       const cartSessions = new Map<string, { opened: boolean, checkoutStarted: boolean, completed: boolean }>()
+      
+      // Traiter les événements de tracking
       cartEvents.forEach((event: any) => {
         const sessionKey = event.session_id || event.user_id || `anon_${event.id}`
         if (!cartSessions.has(sessionKey)) {
@@ -297,6 +347,31 @@ export async function GET(request: NextRequest) {
         if (event.event_type === 'shop.checkout_started') session.checkoutStarted = true
         if (event.event_type === 'shop.purchase_completed') session.completed = true
       })
+
+      // Traiter les commandes Mobile Money
+      if (mobileMoneyOrdersFallback && mobileMoneyOrdersFallback.length > 0) {
+        mobileMoneyOrdersFallback.forEach((order: any) => {
+          // Utiliser transaction_id comme identifiant de session pour Mobile Money
+          const sessionKey = `mobile_money_${order.transaction_id || order.id}`
+          
+          if (!cartSessions.has(sessionKey)) {
+            cartSessions.set(sessionKey, { opened: false, checkoutStarted: false, completed: false })
+          }
+          
+          const session = cartSessions.get(sessionKey)!
+          
+          // Toute commande Mobile Money = checkout démarré (l'utilisateur a soumis le formulaire)
+          session.checkoutStarted = true
+          
+          // Si la commande est payée (validée), c'est un achat complété
+          if (order.status === 'paid' || order.status === 'completed' || order.status === 'succeeded' || order.status === 'success') {
+            session.completed = true
+          }
+          
+          // Pour Mobile Money, on considère qu'il y a eu une ouverture de panier implicite
+          session.opened = true
+        })
+      }
 
       cartFunnel = {
         carts_opened: Array.from(cartSessions.values()).filter(s => s.opened).length,
