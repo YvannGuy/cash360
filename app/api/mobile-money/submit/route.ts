@@ -253,7 +253,10 @@ export async function POST(request: NextRequest) {
           msisdn: msisdn,
           tx_ref: txRef || null,
           proof_path: filePath,
-          transaction_id: `${orderId}-${item.id}`
+          transaction_id: `${orderId}-${item.id}`,
+          customer_email: email, // Requis par la table orders
+          subtotal: itemAmount, // Requis par la table orders
+          total: itemAmount // Requis par la table orders
         }
         
         orderEntries.push(orderEntry)
@@ -273,7 +276,10 @@ export async function POST(request: NextRequest) {
         msisdn: msisdn,
         tx_ref: txRef || null,
         proof_path: filePath,
-        transaction_id: orderId
+        transaction_id: orderId,
+        customer_email: email, // Requis par la table orders
+        subtotal: amountEUR, // Requis par la table orders
+        total: amountEUR // Requis par la table orders
       }
       orderEntries.push(orderEntry)
     }
@@ -285,15 +291,63 @@ export async function POST(request: NextRequest) {
 
     // Insérer toutes les commandes
     if (orderEntries.length > 0) {
-      const { data: createdOrders, error: orderError } = await supabaseAdmin!
-        .from('orders')
-        .insert(orderEntries)
-        .select()
+      console.log('[MOBILE-MONEY] 🔍 Tentative insertion de', orderEntries.length, 'commande(s)')
+      console.log('[MOBILE-MONEY] 🔍 Premier orderEntry:', JSON.stringify(orderEntries[0], null, 2))
+      
+      // Tentative d'insertion avec retry en cas d'erreur de contrainte CHECK
+      let createdOrders: any = null
+      let orderError: any = null
+      let retryCount = 0
+      const maxRetries = 2
+      
+      while (retryCount <= maxRetries) {
+        const { data, error } = await supabaseAdmin!
+          .from('orders')
+          .insert(orderEntries)
+          .select()
+        
+        if (error) {
+          orderError = error
+          // Si c'est une erreur de contrainte CHECK et qu'on n'a pas encore fait tous les retries
+          if (error.code === '23514' && retryCount < maxRetries) {
+            console.warn(`[MOBILE-MONEY] ⚠️ Erreur contrainte CHECK (tentative ${retryCount + 1}/${maxRetries + 1}), attente avant retry...`)
+            // Attendre un peu pour que PostgREST rafraîchisse son cache
+            await new Promise(resolve => setTimeout(resolve, 2000))
+            retryCount++
+            continue
+          }
+          break
+        } else {
+          createdOrders = data
+          break
+        }
+      }
 
       if (orderError) {
-        console.error('[MOBILE-MONEY] ❌ Erreur création commandes:', orderError)
+        console.error('[MOBILE-MONEY] ❌ Erreur création commandes après retries:', orderError)
         console.error('[MOBILE-MONEY] Détails erreur:', JSON.stringify(orderError, null, 2))
-        // On continue quand même, la preuve est uploadée
+        console.error('[MOBILE-MONEY] Code erreur:', orderError.code)
+        console.error('[MOBILE-MONEY] Message erreur:', orderError.message)
+        console.error('[MOBILE-MONEY] Détails complets:', orderError)
+        
+        // Message d'erreur spécifique pour les contraintes CHECK
+        if (orderError.code === '23514') {
+          console.error('[MOBILE-MONEY] 🔧 Erreur de contrainte CHECK détectée. Le cache PostgREST pourrait être obsolète.')
+          console.error('[MOBILE-MONEY] 🔧 Solution: Redémarrer le serveur Next.js ou attendre quelques minutes.')
+        }
+        
+        // Retourner l'erreur au lieu de continuer silencieusement
+        return NextResponse.json(
+          { 
+            error: 'Erreur lors de la création de la commande',
+            details: orderError.message,
+            code: orderError.code,
+            suggestion: orderError.code === '23514' 
+              ? 'Le cache PostgREST pourrait être obsolète. Redémarrez le serveur Next.js ou attendez quelques minutes.'
+              : undefined
+          },
+          { status: 500 }
+        )
       } else {
         console.log(`[MOBILE-MONEY] ✅ ${createdOrders?.length || 0} commande(s) créée(s) avec succès`)
         console.log(`[MOBILE-MONEY] Détails commandes créées:`, createdOrders?.map((o: any) => ({ 
@@ -304,9 +358,31 @@ export async function POST(request: NextRequest) {
           operator: o.operator,
           payment_method: o.payment_method
         })))
+        
+        // Vérifier immédiatement après insertion
+        if (operator === 'congo_mobile_money' && createdOrders && createdOrders.length > 0) {
+          const congoOrderIds = createdOrders.map((o: any) => o.id)
+          console.log('[MOBILE-MONEY] 🔍 Vérification immédiate commandes Congo créées:', congoOrderIds)
+          
+          const { data: verifyCongo, error: verifyError } = await supabaseAdmin!
+            .from('orders')
+            .select('*')
+            .in('id', congoOrderIds)
+            .eq('operator', 'congo_mobile_money')
+          
+          console.log('[MOBILE-MONEY] 🔍 Résultat vérification:', {
+            count: verifyCongo?.length || 0,
+            orders: verifyCongo,
+            error: verifyError
+          })
+        }
       }
     } else {
       console.warn('[MOBILE-MONEY] ⚠️ Aucune commande à créer (orderEntries vide)')
+      return NextResponse.json(
+        { error: 'Aucune commande à créer' },
+        { status: 400 }
+      )
     }
 
     // Générer les emails
@@ -439,8 +515,10 @@ export async function POST(request: NextRequest) {
       // On continue quand même
     }
 
-    // Vérifier que les commandes Congo ont bien été créées
+    // Vérifier que les commandes Congo ont bien été créées (après un petit délai pour laisser la DB se synchroniser)
     if (operator === 'congo_mobile_money') {
+      await new Promise(resolve => setTimeout(resolve, 500)) // Attendre 500ms
+      
       const { data: congoOrders, error: congoCheckError } = await supabaseAdmin!
         .from('orders')
         .select('*')
@@ -458,6 +536,25 @@ export async function POST(request: NextRequest) {
           created_at: o.created_at
         })),
         error: congoCheckError
+      })
+      
+      // Vérifier aussi toutes les commandes mobile_money récentes pour debug
+      const { data: allRecentMobileMoney, error: allRecentError } = await supabaseAdmin!
+        .from('orders')
+        .select('*')
+        .eq('payment_method', 'mobile_money')
+        .order('created_at', { ascending: false })
+        .limit(10)
+      
+      console.log('[MOBILE-MONEY] 🔍 Toutes les commandes mobile_money récentes:', {
+        count: allRecentMobileMoney?.length || 0,
+        orders: allRecentMobileMoney?.map((o: any) => ({
+          id: o.id,
+          operator: o.operator,
+          status: o.status,
+          created_at: o.created_at
+        })),
+        error: allRecentError
       })
     }
 
