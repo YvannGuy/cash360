@@ -254,6 +254,24 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('[ORDERS API]', orders?.length || 0, 'commandes récupérées depuis orders')
+    console.log('[ORDERS API] Filtres appliqués:', { userId, status, paymentMethod })
+    console.log('[ORDERS API] Commandes mobile_money:', orders?.filter((o: any) => o.payment_method === 'mobile_money').map((o: any) => ({
+      id: o.id,
+      operator: o.operator,
+      status: o.status,
+      payment_method: o.payment_method,
+      product_id: o.product_id,
+      product_name: o.product_name
+    })))
+    console.log('[ORDERS API] Commandes Congo:', orders?.filter((o: any) => o.operator === 'congo_mobile_money').map((o: any) => ({
+      id: o.id,
+      operator: o.operator,
+      status: o.status,
+      payment_method: o.payment_method,
+      product_id: o.product_id,
+      product_name: o.product_name,
+      created_at: o.created_at
+    })))
 
     // Récupérer aussi TOUS les achats depuis user_capsules pour avoir une vue complète
     // Cela inclut TOUS les types de produits : masterclass, coaching, capsules, packs, etc.
@@ -515,8 +533,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Combiner les commandes réelles et virtuelles
+    // Combiner les commandes réelles et virtuelles et trier par date (plus récent en premier)
     const allOrders = [...(orders || []), ...virtualOrders]
+      .sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at || 0).getTime()
+        const dateB = new Date(b.created_at || 0).getTime()
+        return dateB - dateA // Plus récent en premier
+      })
+    
+    console.log('[ORDERS API] Total commandes après combinaison:', allOrders.length)
+    console.log('[ORDERS API] Commandes Congo dans allOrders:', allOrders.filter((o: any) => o.operator === 'congo_mobile_money').length)
 
     // Récupérer tous les utilisateurs pour enrichir les commandes avec email et nom
     // IMPORTANT: listUsers retourne seulement 50 utilisateurs par page par défaut, il faut paginer
@@ -605,6 +631,15 @@ export async function GET(request: NextRequest) {
       stripe: enrichedOrders.filter((o: any) => o.payment_method === 'stripe').length,
       totalRevenue: enrichedOrders.filter((o: any) => validPaidStatuses.includes(o.status) && o.amount).reduce((sum: number, o: any) => sum + (parseFloat(o.amount) || 0), 0) || 0
     }
+
+    // Log final pour déboguer
+    console.log('[ORDERS API] 📊 Résumé final:')
+    console.log('[ORDERS API] - Total commandes:', enrichedOrders.length)
+    console.log('[ORDERS API] - Mobile Money:', enrichedOrders.filter((o: any) => o.payment_method === 'mobile_money').length)
+    console.log('[ORDERS API] - Orange Money:', enrichedOrders.filter((o: any) => o.operator === 'orange_money').length)
+    console.log('[ORDERS API] - Wave:', enrichedOrders.filter((o: any) => o.operator === 'wave').length)
+    console.log('[ORDERS API] - Congo:', enrichedOrders.filter((o: any) => o.operator === 'congo_mobile_money').length)
+    console.log('[ORDERS API] - Tous les opérateurs uniques:', [...new Set(enrichedOrders.map((o: any) => o.operator).filter(Boolean))])
 
     return NextResponse.json({
       success: true,

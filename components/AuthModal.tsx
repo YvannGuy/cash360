@@ -81,7 +81,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           }
         }
         
-        setMessage('Vérifiez votre email pour confirmer votre compte. Si vous ne recevez pas l\'email, vérifiez vos spams.')
+        setMessage('📧 IMPORTANT : Un email de confirmation vous a été envoyé ! Vérifiez votre boîte de réception ET vos spams. Cliquez sur le lien dans l\'email pour activer votre compte.')
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -190,8 +190,26 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             )}
 
             {message && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                {message}
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg p-4 shadow-lg animate-pulse">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-yellow-900 text-base mb-1">⚠️ Vérification email requise</h3>
+                    <p className="text-yellow-800 text-sm leading-relaxed">{message}</p>
+                    <div className="mt-3 pt-3 border-t border-yellow-300">
+                      <p className="text-xs font-semibold text-yellow-900 mb-1">💡 Où chercher ?</p>
+                      <ul className="text-xs text-yellow-800 space-y-1 list-disc list-inside">
+                        <li>Boîte de réception principale</li>
+                        <li>Dossier Spam / Courrier indésirable</li>
+                        <li>L'email peut prendre 2-3 minutes à arriver</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

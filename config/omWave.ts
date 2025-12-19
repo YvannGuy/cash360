@@ -8,6 +8,11 @@ export const OM_WAVE_CONFIG = {
     phone: "+225 07 88 39 95 30",
     qr: "/images/wavemoney.jpeg",
     name: "Ouattara Noura Marie Meliane"
+  },
+  congo_mobile_money: {
+    phone: "+243 899 101 087",
+    qr: null, // Pas de QR code pour le Congo
+    name: "Benedicte Mbuyi"
   }
 } as const;
 

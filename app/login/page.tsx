@@ -32,6 +32,11 @@ export default function LoginPage() {
   const [cityLoading, setCityLoading] = useState(false)
   const [profession, setProfession] = useState('')
   const [signUpStep, setSignUpStep] = useState(1)
+  
+  // États pour les erreurs de validation
+  const [firstNameError, setFirstNameError] = useState('')
+  const [lastNameError, setLastNameError] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   const router = useRouter()
 
@@ -42,13 +47,83 @@ export default function LoginPage() {
   ]
   const totalSignUpSteps = signUpStepsConfig.length
 
+  // Fonctions de validation
+  const validateNameFormat = (name: string): boolean => {
+    // Seulement des lettres, espaces, tirets et apostrophes (pas de chiffres ni caractères spéciaux)
+    const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/
+    return nameRegex.test(name.trim())
+  }
+
+  const validateNameLength = (name: string): boolean => {
+    // Minimum 2 caractères
+    return name.trim().length >= 2
+  }
+
+  const validateName = (name: string): boolean => {
+    return validateNameFormat(name) && validateNameLength(name)
+  }
+
+  const validateEmail = (email: string): boolean => {
+    // Validation email stricte avec @ obligatoire
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email.trim()) && email.includes('@')
+  }
+
+  const handleFirstNameChange = (value: string) => {
+    setFirstName(value)
+    if (!value.trim()) {
+      setFirstNameError('')
+      return
+    }
+    
+    // Vérifier d'abord le format (lettres uniquement)
+    if (!validateNameFormat(value)) {
+      setFirstNameError('Le prénom ne doit contenir que des lettres')
+    } else if (!validateNameLength(value)) {
+      // Si format valide mais trop court
+      setFirstNameError('Minimum 2 lettres')
+    } else {
+      setFirstNameError('')
+    }
+  }
+
+  const handleLastNameChange = (value: string) => {
+    setLastName(value)
+    if (!value.trim()) {
+      setLastNameError('')
+      return
+    }
+    
+    // Vérifier d'abord le format (lettres uniquement)
+    if (!validateNameFormat(value)) {
+      setLastNameError('Le nom ne doit contenir que des lettres')
+    } else if (!validateNameLength(value)) {
+      // Si format valide mais trop court
+      setLastNameError('Minimum 2 lettres')
+    } else {
+      setLastNameError('')
+    }
+  }
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value)
+    if (value.trim() && !validateEmail(value)) {
+      setEmailError('Veuillez entrer une adresse email valide (ex: nom@exemple.com)')
+    } else {
+      setEmailError('')
+    }
+  }
+
   const isStepValid = (step: number) => {
     switch (step) {
       case 1:
         return (
-          firstName.trim().length > 0 &&
-          lastName.trim().length > 0 &&
-          email.trim().length > 0
+          validateName(firstName) &&
+          validateName(lastName) &&
+          validateEmail(email) &&
+          !firstNameError &&
+          !lastNameError &&
+          !emailError
         )
       case 2:
         return city.trim().length > 1 && profession.trim().length > 0
@@ -78,7 +153,7 @@ export default function LoginPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-900 mb-2">
                   Prénom *
                 </label>
                 <input
@@ -86,13 +161,20 @@ export default function LoginPage() {
                   type="text"
                   required
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleFirstNameChange(e.target.value)}
+                  className={`w-full px-3 py-2 text-sm bg-white border rounded-md shadow-sm transition-colors ${
+                    firstNameError
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  } focus:outline-none focus:ring-2 focus:ring-offset-0`}
                   placeholder="Votre prénom"
                 />
+                {firstNameError && (
+                  <p className="mt-1 text-xs text-red-600">{firstNameError}</p>
+                )}
               </div>
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-900 mb-2">
                   Nom *
                 </label>
                 <input
@@ -100,28 +182,45 @@ export default function LoginPage() {
                   type="text"
                   required
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleLastNameChange(e.target.value)}
+                  className={`w-full px-3 py-2 text-sm bg-white border rounded-md shadow-sm transition-colors ${
+                    lastNameError
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  } focus:outline-none focus:ring-2 focus:ring-offset-0`}
                   placeholder="Votre nom"
                 />
+                {lastNameError && (
+                  <p className="mt-1 text-xs text-red-600">{lastNameError}</p>
+                )}
               </div>
             </div>
             <div>
-              <label htmlFor="signup-email" className="block text-sm font-medium text-white mb-1 sm:mb-2">
-                {t.login.email}
+              <label htmlFor="signup-email" className="block text-sm font-medium text-gray-900 mb-2">
+                {t.login.email} *
               </label>
               <input
                 id="signup-email"
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={t.login.emailPlaceholder}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                className={`w-full px-3 py-2 text-sm bg-white border rounded-md shadow-sm transition-colors ${
+                  emailError
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                } focus:outline-none focus:ring-2 focus:ring-offset-0`}
+                placeholder={t.login.emailPlaceholder || "nom@exemple.com"}
               />
+              {emailError && (
+                <p className="mt-1 text-xs text-red-600">{emailError}</p>
+              )}
+              {!emailError && email && (
+                <p className="mt-1 text-xs text-gray-500">Format email valide</p>
+              )}
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-900 mb-2">
                 Téléphone
               </label>
               <input
@@ -129,7 +228,7 @@ export default function LoginPage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="+33 X XX XX XX XX"
               />
             </div>
@@ -139,7 +238,7 @@ export default function LoginPage() {
         return (
           <>
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+              <label htmlFor="city" className="block text-sm font-medium text-gray-900 mb-2">
                 Ville *
               </label>
               <div className="relative">
@@ -157,22 +256,22 @@ export default function LoginPage() {
                       setCitySuggestions([])
                     }
                   }}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="Paris, France"
                   autoComplete="off"
                 />
                 {cityLoading && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/80 animate-pulse">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 animate-pulse">
                     ...
                   </span>
                 )}
                 {citySuggestions.length > 0 && (
-                  <div className="absolute z-10 w-full max-h-56 overflow-auto bg-white/95 text-gray-900 rounded-xl shadow-2xl border border-gray-100 mt-2">
+                  <div className="absolute z-10 w-full max-h-56 overflow-auto bg-white text-gray-900 rounded-md shadow-lg border border-gray-200 mt-1">
                     {citySuggestions.map((suggestion) => (
                       <button
                         type="button"
                         key={suggestion.id}
-                        className="w-full text-left px-4 py-2 hover:bg-yellow-50 transition-colors flex flex-col"
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex flex-col border-b border-gray-100 last:border-b-0"
                         onClick={() => {
                           setCity(suggestion.city)
                           setCountry(suggestion.country)
@@ -180,7 +279,7 @@ export default function LoginPage() {
                           setCitySuggestions([])
                         }}
                       >
-                        <span className="font-semibold">{suggestion.city}</span>
+                        <span className="font-medium text-sm">{suggestion.city}</span>
                         {suggestion.country && (
                           <span className="text-xs text-gray-500">{suggestion.country}</span>
                         )}
@@ -189,14 +288,14 @@ export default function LoginPage() {
                   </div>
                 )}
                 {country && (
-                  <p className="text-xs text-gray-300 mt-2">
+                  <p className="text-xs text-gray-600 mt-1">
                     Pays détecté : <span className="font-semibold">{country}</span>
                   </p>
                 )}
               </div>
             </div>
             <div>
-              <label htmlFor="profession" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+              <label htmlFor="profession" className="block text-sm font-medium text-gray-900 mb-2">
                 Profession *
               </label>
               <input
@@ -205,7 +304,7 @@ export default function LoginPage() {
                 required
                 value={profession}
                 onChange={(e) => setProfession(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Votre profession"
               />
             </div>
@@ -215,7 +314,7 @@ export default function LoginPage() {
         return (
           <>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-2">
                 {t.login.password}
               </label>
               <input
@@ -224,13 +323,13 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={t.login.passwordPlaceholder}
+                className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-400"
+                placeholder={t.login.passwordPlaceholder || "Votre mot de passe"}
               />
-              <p className="text-xs text-gray-300 mt-2">Minimum 8 caractères</p>
+              <p className="text-xs text-gray-500 mt-1">Minimum 8 caractères</p>
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900 mb-2">
                 {t.login.confirmPassword}
               </label>
               <input
@@ -239,9 +338,12 @@ export default function LoginPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={t.login.passwordPlaceholder}
+                className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-400"
+                placeholder={t.login.passwordPlaceholder || "Confirmez votre mot de passe"}
               />
+              {confirmPassword && password !== confirmPassword && (
+                <p className="mt-1 text-xs text-red-600">Les mots de passe ne correspondent pas</p>
+              )}
             </div>
           </>
         )
@@ -348,10 +450,34 @@ export default function LoginPage() {
     setError('')
     setMessage('')
 
-    if (isSignUp && password !== confirmPassword) {
-      setError(t.login.errorPasswordMismatch)
-      setLoading(false)
-      return
+    // Validation pour l'inscription
+    if (isSignUp) {
+      // Valider le nom et prénom
+      if (!validateName(firstName)) {
+        setFirstNameError('Le prénom ne doit contenir que des lettres')
+        setError('Veuillez corriger les erreurs dans le formulaire')
+        setLoading(false)
+        return
+      }
+      if (!validateName(lastName)) {
+        setLastNameError('Le nom ne doit contenir que des lettres')
+        setError('Veuillez corriger les erreurs dans le formulaire')
+        setLoading(false)
+        return
+      }
+      // Valider l'email
+      if (!validateEmail(email)) {
+        setEmailError('Veuillez entrer une adresse email valide (ex: nom@exemple.com)')
+        setError('Veuillez entrer une adresse email valide')
+        setLoading(false)
+        return
+      }
+      // Valider le mot de passe
+      if (password !== confirmPassword) {
+        setError(t.login.errorPasswordMismatch)
+        setLoading(false)
+        return
+      }
     }
 
     try {
@@ -453,12 +579,13 @@ export default function LoginPage() {
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-yellow-500/5 rounded-full blur-2xl"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="bg-white rounded-lg mx-auto mb-3 sm:mb-4 inline-block">
+          <div className="bg-white rounded-lg mx-auto mb-3 sm:mb-4 inline-block p-2">
             <Image
               src="/images/logo/logofinal.png"
               alt="Cash360"
@@ -470,30 +597,48 @@ export default function LoginPage() {
           <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">
             {isSignUp ? t.login.createAccount : t.login.signIn}
           </h1>
-          <p className="text-sm sm:text-base text-gray-300">
+          <p className="text-sm sm:text-base text-white/90">
             {isSignUp ? t.login.joinCommunity : t.login.accessAccount}
           </p>
         </div>
 
         {/* Formulaire de connexion */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-8 border border-white/20">
+        <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-gray-200">
           <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="space-y-4 sm:space-y-6">
             {error && (
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
-                <p className="text-red-200 text-sm">{error}</p>
+              <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                <p className="text-red-800 text-sm">{error}</p>
               </div>
             )}
 
             {message && (
-              <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-3">
-                <p className="text-green-200 text-sm">{message}</p>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg p-4 shadow-lg animate-pulse">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-yellow-900 text-base mb-1">⚠️ Vérification email requise</h3>
+                    <p className="text-yellow-800 text-sm leading-relaxed">{message}</p>
+                    <div className="mt-3 pt-3 border-t border-yellow-300">
+                      <p className="text-xs font-semibold text-yellow-900 mb-1">💡 Où chercher ?</p>
+                      <ul className="text-xs text-yellow-800 space-y-1 list-disc list-inside">
+                        <li>Boîte de réception principale</li>
+                        <li>Dossier Spam / Courrier indésirable</li>
+                        <li>L'email peut prendre 2-3 minutes à arriver</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
             {isSignUp ? (
               <>
                 <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-white/60 mb-4">
+                  <p className="text-sm font-medium text-gray-900 mb-4">
                     {t.login.progressLabel || 'Étapes d’inscription'}
                   </p>
                   <div className="flex items-center justify-between gap-2">
@@ -506,23 +651,21 @@ export default function LoginPage() {
                             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
                               isComplete
                                 ? 'bg-green-500 text-white'
-                                : isActive
-                                ? 'bg-white text-slate-900'
-                                : 'border border-white/30 text-white/70'
+                                : 'bg-[#FEBE02] text-[#012F4E]'
                             }`}
                           >
                             {isComplete ? '✓' : step.id}
                           </div>
-                          <p className={`text-xs mt-2 ${isActive ? 'text-white' : 'text-white/60'}`}>
+                          <p className={`text-xs mt-2 font-medium ${isActive ? 'text-gray-900' : 'text-gray-600'}`}>
                             {step.label}
                           </p>
                         </div>
                       )
                     })}
                   </div>
-                  <div className="mt-4 h-1 bg-white/20 rounded-full">
+                  <div className="mt-4 h-2 bg-gray-200 rounded-full">
                     <div
-                      className="h-1 bg-yellow-400 rounded-full transition-all duration-300"
+                      className="h-2 bg-[#FEBE02] rounded-full transition-all duration-300"
                       style={{ width: `${signUpProgress}%` }}
                     />
                   </div>
@@ -535,7 +678,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={handlePrevStep}
-                      className="w-full sm:w-auto px-4 py-2 rounded-lg border border-white/30 text-white hover:bg-white/10 transition-colors"
+                      className="w-full sm:w-auto px-4 py-2 rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors font-medium text-sm"
                     >
                       {t.login.backButton || 'Retour'}
                     </button>
@@ -548,7 +691,7 @@ export default function LoginPage() {
                       type="button"
                       onClick={handleNextStep}
                       disabled={!isStepValid(signUpStep)}
-                      className="w-full sm:w-auto px-4 py-2 rounded-lg bg-white text-slate-900 font-semibold hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full sm:w-auto px-4 py-2 rounded-md bg-gradient-to-r from-[#FEBE02] to-[#FEBE02] text-[#012F4E] font-semibold hover:from-[#e6a802] hover:to-[#e6a802] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-md"
                     >
                       {t.login.nextButton || 'Suivant'}
                     </button>
@@ -556,11 +699,11 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={loading || !isStepValid(signUpStep)}
-                      className="w-full sm:w-auto px-6 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-600 text-slate-900 font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full sm:w-auto px-6 py-2 rounded-md bg-gradient-to-r from-[#FEBE02] to-[#FEBE02] text-[#012F4E] font-semibold hover:from-[#e6a802] hover:to-[#e6a802] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-md"
                     >
                       {loading ? (
                         <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mr-2"></div>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#012F4E] mr-2"></div>
                           {t.login.loading}
                         </div>
                       ) : (
@@ -573,7 +716,7 @@ export default function LoginPage() {
             ) : (
               <>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
                     {t.login.email}
                   </label>
                   <input
@@ -582,13 +725,13 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder={t.login.emailPlaceholder}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-white mb-1 sm:mb-2">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-2">
                     {t.login.password}
                   </label>
                   <input
@@ -597,7 +740,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder={t.login.passwordPlaceholder}
                   />
                 </div>
@@ -605,11 +748,11 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2 sm:py-3 px-4 text-sm sm:text-base bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full py-2 px-4 text-sm bg-gradient-to-r from-[#FEBE02] to-[#FEBE02] text-[#012F4E] font-semibold rounded-md hover:from-[#e6a802] hover:to-[#e6a802] focus:outline-none focus:ring-2 focus:ring-[#FEBE02] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mr-2"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#012F4E] mr-2"></div>
                       {t.login.loading}
                     </div>
                   ) : (
@@ -621,8 +764,8 @@ export default function LoginPage() {
           </form>
 
           {/* Toggle inscription/connexion */}
-          <div className="mt-4 sm:mt-6 text-center">
-            <p className="text-gray-300 text-xs sm:text-sm">
+          <div className="mt-6 text-center">
+            <p className="text-gray-700 text-sm">
               {isSignUp ? t.login.alreadyAccount : t.login.noAccount}
               <button
                 type="button"
@@ -636,8 +779,11 @@ export default function LoginPage() {
                   setCountry('')
                   setPassword('')
                   setConfirmPassword('')
+                  setFirstNameError('')
+                  setLastNameError('')
+                  setEmailError('')
                 }}
-                className="ml-1 sm:ml-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors duration-200"
+                className="ml-2 text-[#012F4E] hover:text-[#023d68] font-semibold transition-colors"
               >
                 {isSignUp ? t.login.signIn : t.login.createAccount}
               </button>
@@ -646,11 +792,11 @@ export default function LoginPage() {
 
           {/* Mot de passe oublié */}
           {!isSignUp && (
-            <div className="mt-3 sm:mt-4 text-center">
+            <div className="mt-4 text-center">
               <button
                 type="button"
                 onClick={handlePasswordReset}
-                className="text-xs sm:text-sm text-red-400 hover:text-red-300 font-medium transition-colors duration-200"
+                className="text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
               >
                 {t.login.forgotPassword}
               </button>
@@ -661,21 +807,11 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <button
               onClick={() => router.push('/')}
-              className="text-gray-300 hover:text-white text-sm transition-colors duration-200"
+              className="text-gray-600 hover:text-gray-900 text-sm transition-colors"
             >
               {t.login.backToSite}
             </button>
           </div>
-        </div>
-
-        {/* Lien vers l'espace admin */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => window.location.href = '/admin/login'}
-            className="text-gray-300 hover:text-white text-sm transition-colors duration-200"
-          >
-            {t.login.adminSpace}
-          </button>
         </div>
       </div>
     </div>

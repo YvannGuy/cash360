@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCart } from '@/lib/CartContext'
 import { useCurrency } from '@/lib/CurrencyContext'
+import { tracking } from '@/lib/tracking'
 import LanguageSwitch from '@/components/LanguageSwitch'
 import CurrencySelector from '@/components/CurrencySelector'
 import PayWithOMWaveButton from '@/components/PayWithOMWaveButton'
@@ -45,6 +46,9 @@ export default function CartPage() {
     }
 
     setIsProcessing(true)
+
+    // Tracker le début du checkout
+    tracking.checkoutStarted(total, cartItems.length)
 
     try {
       // Créer une session Stripe Checkout

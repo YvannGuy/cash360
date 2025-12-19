@@ -1,6 +1,7 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
+import { tracking } from './tracking'
 
 export interface CartItem {
   id: string
@@ -26,6 +27,16 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
 
+  // Tracker l'ouverture du panier (une fois par session)
+  useEffect(() => {
+    const hasTrackedCartOpen = sessionStorage.getItem('cart_opened_tracked')
+    if (!hasTrackedCartOpen && cartItems.length > 0) {
+      // Utiliser cartOpened au lieu de toolUsed pour le panier
+      tracking.cartOpened(cartItems.length)
+      sessionStorage.setItem('cart_opened_tracked', 'true')
+    }
+  }, [cartItems.length])
+
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     setCartItems(prev => {
       const existingItem = prev.find(cartItem => cartItem.id === item.id)
@@ -36,11 +47,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (existingItem) {
         if (itemCategory === 'analyse-financiere') {
           // Analyse financière : quantités illimitées, on peut toujours augmenter
-          return prev.map(cartItem =>
+          const updated = prev.map(cartItem =>
             cartItem.id === item.id 
               ? { ...cartItem, quantity: cartItem.quantity + 1 } 
               : cartItem
           )
+          // Tracker l'ajout au panier
+          tracking.addToCart(item.id, existingItem.quantity + 1, item.price)
+          return updated
         } else {
           // Autres produits : maximum 1 quantité
           if (existingItem.quantity >= 1) {
@@ -48,6 +62,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }
         }
       }
+      // Tracker l'ajout au panier
+      tracking.addToCart(item.id, 1, item.price)
       return [...prev, { ...item, quantity: 1 }]
     })
   }

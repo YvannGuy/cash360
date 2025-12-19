@@ -373,21 +373,12 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
   // Tracking: outil ouvert
   useEffect(() => {
     if (!loading && !requiresSubscription) {
-      const trackToolOpen = async () => {
-        try {
-          const supabase = createClientBrowser()
-          const { data: { user } } = await supabase.auth.getUser()
-          await tracking.toolUsed('budget_tracker', {
-            toolName: 'Budget & Suivi',
-            action: 'open',
-            hasIncome: !!monthlyIncome,
-            expenseCount: expenses.length
-          }, user?.id)
-        } catch (error) {
-          // Ignorer les erreurs de tracking silencieusement
-        }
-      }
-      trackToolOpen()
+      tracking.toolOpened('budget', '/dashboard/budget', {
+        hasIncome: !!monthlyIncome,
+        expenseCount: expenses.length
+      }).catch(() => {
+        // Ignorer les erreurs de tracking silencieusement
+      })
     }
   }, [loading, requiresSubscription, monthlyIncome, expenses.length])
 
@@ -460,6 +451,31 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
 
       await fetchBudget(false)
       setStatus({ type: 'success', text: copy.toastSuccess || 'Budget enregistré avec succès !' })
+      
+      // Tracking: budget sauvegardé
+      try {
+        const totalExpenses = sanitizedExpenses.reduce((sum, exp) => sum + exp.amount, 0)
+        await tracking.budgetSaved(Number(incomeValue.toFixed(2)), sanitizedExpenses.length, totalExpenses)
+        
+        // Tracking: paiements de dettes (si dépenses avec mots-clés dette)
+        const DEBT_KEYWORDS = ['dette', 'dettes', 'debt', 'crédit', 'credit', 'crédits', 'remboursement', 'repayment', 'prêt', 'loan', 'prêts', 'mensualité', 'monthly payment', 'paiement', 'payment']
+        const debtExpenses = sanitizedExpenses.filter(exp => {
+          const categoryLower = exp.category.toLowerCase().trim()
+          return DEBT_KEYWORDS.some(keyword => categoryLower.includes(keyword))
+        })
+        
+        if (debtExpenses.length > 0) {
+          // Tracker chaque paiement de dette individuellement
+          for (const debtExp of debtExpenses) {
+            await tracking.debtPaymentMade(debtExp.amount, debtExp.id)
+          }
+          // Tracker aussi l'ajout global de dettes
+          const totalDebtAmount = debtExpenses.reduce((sum, exp) => sum + exp.amount, 0)
+          await tracking.debtAdded(totalDebtAmount, totalDebtAmount)
+        }
+      } catch (trackingError) {
+        // Ignorer les erreurs de tracking silencieusement
+      }
     } catch (error: any) {
       setStatus({ type: 'error', text: error?.message || copy.saveError || 'Impossible de sauvegarder vos données.' })
     } finally {

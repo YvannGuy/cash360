@@ -2,6 +2,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useLanguage } from '@/lib/LanguageContext';
 import LanguageSwitch from './LanguageSwitch';
 
@@ -12,7 +13,7 @@ export default function Header() {
     <header className="w-full bg-transparent">
       <div className="container mx-auto px-6 py-10">
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
+          <Link href="/" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
             <Image 
               src="https://static.readdy.ai/image/da957b73b52f8479bc0334fc9a75f115/278ed0c1279a8f73de226a782353c037.png"
               alt="Cash360"
@@ -24,7 +25,7 @@ export default function Header() {
               <h1 className="text-2xl font-bold text-white">{t.header.title}</h1>
               <p className="text-white/80 text-sm">{t.header.subtitle}</p>
             </div>
-          </div>
+          </Link>
           
           <div className="flex items-center gap-3">
             <LanguageSwitch />

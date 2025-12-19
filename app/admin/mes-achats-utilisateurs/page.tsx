@@ -119,6 +119,28 @@ export default function AdminMesAchatsPage() {
       const data = await response.json()
       
       if (data.success) {
+        console.log('[ADMIN] Commandes chargées:', data.orders?.length || 0)
+        console.log('[ADMIN] Commandes mobile_money:', data.orders?.filter((o: any) => o.payment_method === 'mobile_money').map((o: any) => ({
+          id: o.id,
+          operator: o.operator,
+          status: o.status,
+          product_id: o.product_id,
+          product_name: o.product_name
+        })))
+        console.log('[ADMIN] Commandes Congo:', data.orders?.filter((o: any) => o.operator === 'congo_mobile_money').map((o: any) => ({
+          id: o.id,
+          operator: o.operator,
+          status: o.status,
+          product_id: o.product_id,
+          product_name: o.product_name,
+          created_at: o.created_at
+        })))
+        console.log('[ADMIN] Toutes les commandes avec operator:', data.orders?.map((o: any) => ({
+          id: o.id,
+          operator: o.operator,
+          payment_method: o.payment_method,
+          status: o.status
+        })))
         setOrders(data.orders || [])
         setStats(data.stats || {})
       } else {
@@ -549,6 +571,11 @@ export default function AdminMesAchatsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getPaymentMethodBadge(order.payment_method)}
+                        {order.payment_method === 'mobile_money' && order.operator && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {order.operator === 'orange_money' ? 'Orange Money' : order.operator === 'wave' ? 'Wave' : order.operator === 'congo_mobile_money' ? 'Mobile Money RDC' : order.operator}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(order.status)}
@@ -705,7 +732,7 @@ export default function AdminMesAchatsPage() {
                   {selectedOrder.payment_method === 'mobile_money' && (
                     <div className="mt-2 space-y-1">
                       {selectedOrder.operator && (
-                        <p className="text-sm text-gray-600">Opérateur: {selectedOrder.operator === 'orange_money' ? 'Orange Money' : 'Wave'}</p>
+                        <p className="text-sm text-gray-600">Opérateur: {selectedOrder.operator === 'orange_money' ? 'Orange Money' : selectedOrder.operator === 'wave' ? 'Wave' : 'Mobile Money RDC'}</p>
                       )}
                       {selectedOrder.msisdn && (
                         <p className="text-sm text-gray-600">Téléphone: {selectedOrder.msisdn}</p>
@@ -870,6 +897,7 @@ export default function AdminMesAchatsPage() {
                         <option value="">Sélectionner</option>
                         <option value="orange_money">Orange Money</option>
                         <option value="wave">Wave</option>
+                        <option value="congo_mobile_money">Mobile Money RDC</option>
                       </select>
                     </div>
                     <div>

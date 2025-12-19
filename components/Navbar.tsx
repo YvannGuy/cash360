@@ -105,7 +105,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <div className="flex items-center">
+            <a href="/" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/logo/logofinal.png"
@@ -114,7 +114,7 @@ export default function Navbar() {
                 loading="eager"
                 fetchPriority="high"
               />
-            </div>
+            </a>
           </div>
 
           {/* Navigation Desktop */}

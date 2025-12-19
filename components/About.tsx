@@ -123,7 +123,7 @@ export default function About() {
                   <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
                     {/* CTA Button */}
                     <a
-                      href="mailto:cash@cash360.finance"
+                      href="/masterclass"
                       className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       {t.about?.ctaButton || 'Rencontrer Myriam'}

@@ -32,9 +32,9 @@ export async function GET(request: NextRequest) {
       console.warn('[PAIEMENTS API] Erreur accès table payments:', err)
     }
 
-    // Si la table payments n'existe pas ou est vide, récupérer depuis orders et user_subscriptions
+    // Si la table payments n'existe pas ou est vide, récupérer depuis orders
     if (!payments || payments.length === 0 || paymentsError) {
-      console.log('[PAIEMENTS API] Récupération depuis orders et user_subscriptions...')
+      console.log('[PAIEMENTS API] Récupération depuis orders...')
       
       // Récupérer depuis orders (si la structure contient les champs nécessaires)
       let ordersData = null
@@ -48,20 +48,6 @@ export async function GET(request: NextRequest) {
       } catch (err) {
         console.error('Erreur lors de la récupération des orders:', err)
         ordersData = null
-      }
-
-      // Récupérer depuis user_subscriptions pour les abonnements
-      let subscriptionsData = null
-      try {
-        const result = await supabaseAdmin!
-          .from('user_subscriptions')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(1000)
-        subscriptionsData = result.data
-      } catch (err) {
-        console.error('Erreur lors de la récupération des subscriptions:', err)
-        subscriptionsData = null
       }
 
       // Convertir les orders en format payments si la structure le permet
@@ -95,34 +81,75 @@ export async function GET(request: NextRequest) {
           payments = convertedPayments
         }
       }
+    }
 
-      // Ajouter les abonnements depuis user_subscriptions
-      if (subscriptionsData && Array.isArray(subscriptionsData) && subscriptionsData.length > 0) {
-        // Récupérer le prix de l'abonnement depuis products
-        const { data: subscriptionProducts } = await supabaseAdmin!
-          .from('products')
-          .select('id, name, price, category')
-          .or('category.eq.abonnement,id.eq.abonnement')
-          .limit(1)
-        
-        const subscriptionPrice = subscriptionProducts && subscriptionProducts.length > 0 
-          ? parseFloat(subscriptionProducts[0].price || '0') 
-          : 0
-        
-        const subscriptionPayments = subscriptionsData.map((sub: any) => ({
-          id: `sub-${sub.id || sub.user_id}`,
+    // TOUJOURS récupérer les abonnements depuis user_subscriptions (même si payments existe)
+    // Car les abonnements peuvent ne pas être dans payments
+    console.log('[PAIEMENTS API] Récupération des abonnements depuis user_subscriptions...')
+    let subscriptionsData = null
+    try {
+      const result = await supabaseAdmin!
+        .from('user_subscriptions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1000)
+      subscriptionsData = result.data
+      console.log(`[PAIEMENTS API] ${subscriptionsData?.length || 0} abonnement(s) trouvé(s) dans user_subscriptions`)
+    } catch (err) {
+      console.error('Erreur lors de la récupération des subscriptions:', err)
+      subscriptionsData = null
+    }
+
+    // Ajouter les abonnements depuis user_subscriptions
+    if (subscriptionsData && Array.isArray(subscriptionsData) && subscriptionsData.length > 0) {
+      // Récupérer le prix de l'abonnement depuis products
+      const { data: subscriptionProducts } = await supabaseAdmin!
+        .from('products')
+        .select('id, name, price, category')
+        .or('category.eq.abonnement,id.eq.abonnement')
+        .limit(1)
+      
+      const subscriptionPrice = subscriptionProducts && subscriptionProducts.length > 0 
+        ? parseFloat(subscriptionProducts[0].price || '0') 
+        : 0
+      
+      // Filtrer pour éviter les doublons avec les paiements existants
+      // Vérifier si un paiement existe déjà pour cet abonnement
+      const existingSubscriptionIds = new Set(
+        payments
+          .filter((p: any) => p.payment_type === 'abonnement' || p.product_id === 'abonnement')
+          .map((p: any) => p.user_id)
+      )
+
+      const subscriptionPayments = subscriptionsData
+        .filter((sub: any) => !existingSubscriptionIds.has(sub.user_id)) // Éviter les doublons
+        .map((sub: any) => ({
+          id: `sub-${sub.user_id}-${sub.created_at || Date.now()}`,
           user_id: sub.user_id,
           product_id: 'abonnement',
           payment_type: 'abonnement',
           amount: subscriptionPrice,
-          status: sub.status === 'active' ? 'paid' : (sub.status === 'canceled' ? 'completed' : (sub.status === 'past_due' ? 'pending' : 'paid')),
+          status: sub.status === 'active' ? 'paid' : (sub.status === 'canceled' ? 'completed' : (sub.status === 'past_due' ? 'pending' : (sub.status === 'trialing' ? 'paid' : 'paid'))),
           method: sub.stripe_subscription_id ? 'stripe' : 'mobile_money',
           transaction_id: sub.stripe_subscription_id || `subscription-${sub.user_id}`,
           created_at: sub.created_at || sub.current_period_start || new Date().toISOString()
         }))
+      
+      if (subscriptionPayments.length > 0) {
         payments = [...payments, ...subscriptionPayments]
         console.log(`[PAIEMENTS API] ${subscriptionPayments.length} abonnement(s) ajouté(s) depuis user_subscriptions`)
+      } else {
+        console.log('[PAIEMENTS API] Aucun nouvel abonnement à ajouter (déjà présents dans payments)')
       }
+    }
+
+    // Trier tous les paiements par date (plus récent en premier) après toutes les modifications
+    if (payments && payments.length > 0) {
+      payments = payments.sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at || 0).getTime()
+        const dateB = new Date(b.created_at || 0).getTime()
+        return dateB - dateA // Plus récent en premier
+      })
     }
 
     if (paymentsError && (!payments || payments.length === 0)) {
@@ -394,18 +421,49 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const paymentId = searchParams.get('paymentId')
+    const paymentIdRaw = searchParams.get('paymentId')
 
-    if (!paymentId) {
+    if (!paymentIdRaw) {
       return NextResponse.json(
         { error: 'ID de paiement manquant' },
         { status: 400 }
       )
     }
 
-    console.log('Suppression du paiement:', paymentId)
+    // Extraire uniquement l'UUID du paymentId (peut contenir une date après l'UUID)
+    // Format attendu: UUID standard (36 caractères avec tirets) ou UUID suivi d'une date
+    // Exemple: "sub-86ef448c-3ebf-411f-8ffe-ff4981f0fed4-2025-12-03T10:03:59.84+00:00"
+    // Regex pour extraire un UUID (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+    const uuidRegex = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i
+    
+    let paymentId = paymentIdRaw
+    
+    // Si le paymentId commence par "sub-", extraire l'UUID qui suit
+    if (paymentIdRaw.startsWith('sub-')) {
+      // Prendre les 36 caractères après "sub-" (longueur d'un UUID standard)
+      const uuidPart = paymentIdRaw.substring(4, 40) // "sub-" (4 chars) + UUID (36 chars)
+      if (uuidPart.match(uuidRegex)) {
+        paymentId = uuidPart
+        console.log('UUID extrait depuis sub-:', paymentId, '(original:', paymentIdRaw, ')')
+      } else {
+        // Fallback: chercher l'UUID dans toute la chaîne
+        const match = paymentIdRaw.match(uuidRegex)
+        if (match) {
+          paymentId = match[1]
+          console.log('UUID extrait via regex:', paymentId, '(original:', paymentIdRaw, ')')
+        }
+      }
+    } else {
+      // Si pas de préfixe "sub-", chercher l'UUID dans la chaîne
+      const match = paymentIdRaw.match(uuidRegex)
+      if (match) {
+        paymentId = match[1]
+      }
+    }
 
-    // Supprimer le paiement de la base de données
+    console.log('Suppression du paiement:', paymentId, '(original reçu:', paymentIdRaw, ')')
+
+    // Supprimer le paiement de la base de données avec l'ID nettoyé
     const { error: deleteError } = await supabaseAdmin!
       .from('payments')
       .delete()

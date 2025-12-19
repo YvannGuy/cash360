@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier l'opérateur
-    if (operator !== 'orange_money' && operator !== 'wave') {
+    if (operator !== 'orange_money' && operator !== 'wave' && operator !== 'congo_mobile_money') {
       return NextResponse.json(
         { error: 'Opérateur invalide' },
         { status: 400 }
@@ -280,6 +280,8 @@ export async function POST(request: NextRequest) {
 
     console.log(`[MOBILE-MONEY] Création de ${orderEntries.length} commande(s) Mobile Money:`, orderEntries)
     console.log(`[MOBILE-MONEY] user_id utilisé:`, userId)
+    console.log(`[MOBILE-MONEY] Opérateur:`, operator)
+    console.log(`[MOBILE-MONEY] Détails orderEntries:`, JSON.stringify(orderEntries, null, 2))
 
     // Insérer toutes les commandes
     if (orderEntries.length > 0) {
@@ -290,9 +292,18 @@ export async function POST(request: NextRequest) {
 
       if (orderError) {
         console.error('[MOBILE-MONEY] ❌ Erreur création commandes:', orderError)
+        console.error('[MOBILE-MONEY] Détails erreur:', JSON.stringify(orderError, null, 2))
         // On continue quand même, la preuve est uploadée
       } else {
-        console.log(`[MOBILE-MONEY] ✅ ${createdOrders?.length || 0} commande(s) créée(s) avec succès:`, createdOrders?.map((o: any) => ({ id: o.id, product_id: o.product_id, user_id: o.user_id, status: o.status })))
+        console.log(`[MOBILE-MONEY] ✅ ${createdOrders?.length || 0} commande(s) créée(s) avec succès`)
+        console.log(`[MOBILE-MONEY] Détails commandes créées:`, createdOrders?.map((o: any) => ({ 
+          id: o.id, 
+          product_id: o.product_id, 
+          user_id: o.user_id, 
+          status: o.status,
+          operator: o.operator,
+          payment_method: o.payment_method
+        })))
       }
     } else {
       console.warn('[MOBILE-MONEY] ⚠️ Aucune commande à créer (orderEntries vide)')
@@ -328,7 +339,7 @@ export async function POST(request: NextRequest) {
             <p><strong>Référence commande :</strong> C360-AFRIQUE</p>
             <p><strong>Produit :</strong> ${productName}</p>
             <p><strong>Montant :</strong> € ${amountEUR.toFixed(2)} (${amountFcfa.toLocaleString('fr-FR')} FCFA)</p>
-            <p><strong>Opérateur :</strong> ${operator === 'orange_money' ? 'Orange Money' : 'Wave'}</p>
+            <p><strong>Opérateur :</strong> ${operator === 'orange_money' ? 'Orange Money' : operator === 'wave' ? 'Wave' : 'Mobile Money RDC'}</p>
             ${txRef ? `<p><strong>Référence transaction :</strong> ${txRef}</p>` : ''}
           </div>
           
@@ -390,7 +401,7 @@ export async function POST(request: NextRequest) {
             <h3 style="margin-top: 0; color: #0B1B2B;">Détails de votre commande</h3>
             <p><strong>Produit :</strong> ${productName}</p>
             <p><strong>Montant :</strong> € ${amountEUR.toFixed(2)} (${amountFcfa.toLocaleString('fr-FR')} FCFA)</p>
-            <p><strong>Opérateur :</strong> ${operator === 'orange_money' ? 'Orange Money' : 'Wave'}</p>
+            <p><strong>Opérateur :</strong> ${operator === 'orange_money' ? 'Orange Money' : operator === 'wave' ? 'Wave' : 'Mobile Money RDC'}</p>
             <p><strong>Référence :</strong> C360-AFRIQUE</p>
           </div>
           
@@ -426,6 +437,28 @@ export async function POST(request: NextRequest) {
     } catch (emailError: any) {
       console.error('Erreur envoi email client:', emailError)
       // On continue quand même
+    }
+
+    // Vérifier que les commandes Congo ont bien été créées
+    if (operator === 'congo_mobile_money') {
+      const { data: congoOrders, error: congoCheckError } = await supabaseAdmin!
+        .from('orders')
+        .select('*')
+        .eq('operator', 'congo_mobile_money')
+        .order('created_at', { ascending: false })
+        .limit(5)
+      
+      console.log('[MOBILE-MONEY] 🔍 Vérification commandes Congo après création:', {
+        count: congoOrders?.length || 0,
+        orders: congoOrders?.map((o: any) => ({
+          id: o.id,
+          operator: o.operator,
+          status: o.status,
+          product_id: o.product_id,
+          created_at: o.created_at
+        })),
+        error: congoCheckError
+      })
     }
 
     return NextResponse.json({ 

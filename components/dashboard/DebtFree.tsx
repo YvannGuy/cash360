@@ -5,7 +5,6 @@ import { useLanguage } from '@/lib/LanguageContext'
 import { useCurrency } from '@/lib/CurrencyContext'
 import Link from 'next/link'
 import { tracking } from '@/lib/tracking'
-import { createClientBrowser } from '@/lib/supabase'
 
 type DebtSummary = {
   totalDebtMonthlyPayments: number
@@ -73,20 +72,11 @@ export default function DebtFree({ variant = 'page' }: DebtFreeProps) {
   // Tracking: outil ouvert
   useEffect(() => {
     if (!loading && !requiresSubscription) {
-      const trackToolOpen = async () => {
-        try {
-          const supabase = createClientBrowser()
-          const { data: { user } } = await supabase.auth.getUser()
-          await tracking.toolUsed('debt_free', {
-            toolName: 'Debt Free',
-            action: 'open',
-            hasDebts: !!summary && summary.totalDebtMonthlyPayments > 0
-          }, user?.id)
-        } catch {
-          // Ignorer les erreurs de tracking silencieusement
-        }
-      }
-      trackToolOpen()
+      tracking.toolOpened('debt_free', '/dashboard/debt-free', {
+        hasDebts: !!summary && summary.totalDebtMonthlyPayments > 0
+      }).catch(() => {
+        // Ignorer les erreurs de tracking silencieusement
+      })
     }
   }, [loading, requiresSubscription, summary])
 

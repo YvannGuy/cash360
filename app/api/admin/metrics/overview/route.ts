@@ -24,6 +24,16 @@ export async function GET(request: NextRequest) {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
     const startDateISO = startDate.toISOString()
+    
+    // Log pour vérification des dates calculées
+    console.log('[METRICS OVERVIEW] Calcul des dates:', {
+      range,
+      days,
+      startDate: startDate.toISOString(),
+      startDateLocal: startDate.toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }),
+      now: new Date().toISOString(),
+      nowLocal: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })
+    })
 
     // Calculer en temps réel pour avoir les données les plus récentes
     let metrics: any = {}
@@ -57,21 +67,38 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer les autres données
+    const day7dAgoISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     const [
       { data: subscriptions, error: subscriptionsError },
       { data: payments, error: paymentsError },
-      { count: activeUsers7dFromEvents },
-      { count: activeUsers30dFromEvents }
+      { count: activeUsers7dFromEvents, error: trackingEvents7dError },
+      { count: activeUsers30dFromEvents, error: trackingEvents30dError },
+      { data: allTrackingEvents7d, error: trackingEvents7dDataError },
+      { data: allTrackingEvents30d, error: trackingEvents30dDataError }
     ] = await Promise.all([
       supabaseAdmin.from('user_subscriptions').select('*').in('status', ['active', 'trialing']),
       supabaseAdmin.from('payments').select('*').eq('status', 'success').gte('created_at', startDateISO),
-      supabaseAdmin.from('tracking_events').select('user_id', { count: 'exact', head: true }).not('user_id', 'is', null).gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-      supabaseAdmin.from('tracking_events').select('user_id', { count: 'exact', head: true }).not('user_id', 'is', null).gte('created_at', startDateISO)
+      supabaseAdmin.from('tracking_events').select('user_id', { count: 'exact', head: true }).not('user_id', 'is', null).gte('created_at', day7dAgoISO),
+      supabaseAdmin.from('tracking_events').select('user_id', { count: 'exact', head: true }).not('user_id', 'is', null).gte('created_at', startDateISO),
+      supabaseAdmin.from('tracking_events').select('user_id, event_type').not('user_id', 'is', null).gte('created_at', day7dAgoISO),
+      supabaseAdmin.from('tracking_events').select('user_id, event_type').not('user_id', 'is', null).gte('created_at', startDateISO)
     ])
 
     // Log des erreurs critiques uniquement
     if (subscriptionsError) console.error('[METRICS OVERVIEW] Erreur subscriptions:', subscriptionsError)
     if (paymentsError) console.error('[METRICS OVERVIEW] Erreur payments:', paymentsError)
+    if (trackingEvents7dError) {
+      console.error('[METRICS OVERVIEW] Erreur tracking_events 7d:', trackingEvents7dError)
+      if (trackingEvents7dError.code === 'PGRST205') {
+        console.warn('[METRICS OVERVIEW] PostgREST cache not refreshed for tracking_events. Using fallback to last_sign_in_at.')
+      }
+    }
+    if (trackingEvents30dError) {
+      console.error('[METRICS OVERVIEW] Erreur tracking_events 30d:', trackingEvents30dError)
+      if (trackingEvents30dError.code === 'PGRST205') {
+        console.warn('[METRICS OVERVIEW] PostgREST cache not refreshed for tracking_events. Using fallback to last_sign_in_at.')
+      }
+    }
 
     // Calculer les métriques depuis les utilisateurs
     const totalUsers = allUsersList.length
@@ -100,36 +127,143 @@ export async function GET(request: NextRequest) {
     const finalActiveUsers7d = activeUsers7dFromEvents && activeUsers7dFromEvents > 0 ? activeUsers7dFromEvents : activeUsers7d
     const finalActiveUsers30d = activeUsers30dFromEvents && activeUsers30dFromEvents > 0 ? activeUsers30dFromEvents : activeUsers30d
 
-    // Calculer MRR depuis les abonnements
-    let mrr = 0
-    if (subscriptions && subscriptions.length > 0) {
-      // Récupérer le prix de l'abonnement depuis la table products
-      const { data: subscriptionProducts } = await supabaseAdmin
-        .from('products')
-        .select('price')
-        .or('category.eq.abonnement,id.eq.abonnement')
-        .limit(1)
-      
-      const subscriptionPrice = subscriptionProducts && subscriptionProducts.length > 0 && subscriptionProducts[0]?.price
-        ? parseFloat(subscriptionProducts[0].price) 
-        : 39.98 // Fallback: valeur par défaut
-      
-      mrr = subscriptions.length * subscriptionPrice
+    // Calculer les utilisateurs "Active Core" (au moins 1 core event dans la période)
+    // Core events: budget.saved, budget.expense_added, debt.payment_made, debt.added, fast.day_logged, fast.started
+    const CORE_EVENT_TYPES = new Set([
+      'budget.saved',
+      'budget.expense_added',
+      'debt.payment_made',
+      'debt.added',
+      'fast.day_logged',
+      'fast.started'
+    ])
+
+    const activeCoreUsers7d = new Set<string>()
+    const activeCoreUsers30d = new Set<string>()
+
+    if (allTrackingEvents7d && Array.isArray(allTrackingEvents7d)) {
+      allTrackingEvents7d.forEach((event: any) => {
+        if (event?.user_id && CORE_EVENT_TYPES.has(event.event_type)) {
+          activeCoreUsers7d.add(event.user_id)
+        }
+      })
     }
+
+    if (allTrackingEvents30d && Array.isArray(allTrackingEvents30d)) {
+      allTrackingEvents30d.forEach((event: any) => {
+        if (event?.user_id && CORE_EVENT_TYPES.has(event.event_type)) {
+          activeCoreUsers30d.add(event.user_id)
+        }
+      })
+    }
+
+    // Log pour vérification (debug)
+    console.log('[METRICS OVERVIEW] Active Core vs Active Any:', {
+      '7d': {
+        any: finalActiveUsers7d,
+        core: activeCoreUsers7d.size,
+        diff: finalActiveUsers7d - activeCoreUsers7d.size
+      },
+      '30d': {
+        any: finalActiveUsers30d,
+        core: activeCoreUsers30d.size,
+        diff: finalActiveUsers30d - activeCoreUsers30d.size
+      }
+    })
+
+    // Calculer MRR depuis les abonnements actifs
+    // MRR = Monthly Recurring Revenue = revenu récurrent mensuel à l'instant T
+    // Inclut: active, trialing, et past_due avec grace_until valide
+    let mrr = 0
+    let subscriptionPrice = 39.98 // Prix par défaut
+    
+    // Récupérer le prix de l'abonnement depuis la table products
+    const { data: subscriptionProducts } = await supabaseAdmin
+      .from('products')
+      .select('*')
+      .or('category.eq.abonnement,id.eq.abonnement')
+      .limit(1)
+    
+    if (subscriptionProducts && subscriptionProducts.length > 0) {
+      // Essayer différents champs pour le prix
+      const product = subscriptionProducts[0]
+      subscriptionPrice = parseFloat(product.price || product.amount || product.monthly_price || '39.98') || 39.98
+    }
+    
+    // Récupérer TOUS les abonnements actifs (y compris past_due avec grace_until valide)
+    // 1. Abonnements active/trialing
+    const { data: activeTrialingSubs } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('*')
+      .in('status', ['active', 'trialing'])
+    
+    // 2. Abonnements past_due avec grace_until valide
+    const nowISO = new Date().toISOString()
+    const { data: pastDueValidSubs } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('*')
+      .eq('status', 'past_due')
+      .not('grace_until', 'is', null)
+      .gt('grace_until', nowISO)
+    
+    const allActiveSubscriptions = [
+      ...(activeTrialingSubs || []),
+      ...(pastDueValidSubs || [])
+    ]
+    const activeSubsCount = allActiveSubscriptions.length
+    mrr = activeSubsCount * subscriptionPrice
 
     // Calculer le revenu du mois
     const revenueMonth = payments?.reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0) || 0
+    
+    // Log détaillé pour vérification des revenus
+    const paymentsByType = new Map<string, { count: number, total: number }>()
+    payments?.forEach((p: any) => {
+      const type = p.payment_type || p.product_id || 'unknown'
+      const amount = parseFloat(p.amount) || 0
+      const current = paymentsByType.get(type) || { count: 0, total: 0 }
+      paymentsByType.set(type, {
+        count: current.count + 1,
+        total: current.total + amount
+      })
+    })
+    
+    console.log('[METRICS OVERVIEW] Calcul des revenus (30j):', {
+      periode: {
+        startDate: startDateISO,
+        startDateLocal: startDate.toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }),
+        endDate: new Date().toISOString(),
+        endDateLocal: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }),
+        jours: days
+      },
+      paiements: {
+        total: payments?.length || 0,
+        avecMontant: payments?.filter((p: any) => parseFloat(p.amount || 0) > 0).length || 0,
+        sansMontant: payments?.filter((p: any) => !p.amount || parseFloat(p.amount) === 0).length || 0
+      },
+      revenuTotal: revenueMonth,
+      revenuParType: Object.fromEntries(paymentsByType),
+      detailPaiements: payments?.slice(0, 5).map((p: any) => ({
+        id: p.id,
+        type: p.payment_type || p.product_id,
+        amount: parseFloat(p.amount) || 0,
+        status: p.status,
+        date: p.created_at
+      }))
+    })
 
     metrics = {
       totalUsers,
       newUsers24h,
       newUsers7d,
       newUsers30d,
-      activeUsers7d: finalActiveUsers7d,
-      activeUsers30d: finalActiveUsers30d,
+      activeUsers7d: finalActiveUsers7d, // Active Any (7j)
+      activeUsers30d: finalActiveUsers30d, // Active Any (30j)
+      activeCoreUsers7d: activeCoreUsers7d.size, // Active Core (7j) - au moins 1 core event
+      activeCoreUsers30d: activeCoreUsers30d.size, // Active Core (30j) - au moins 1 core event
       emailVerifiedCount: emailVerified,
       emailVerifiedRate: totalUsers > 0 ? (emailVerified / totalUsers) * 100 : 0,
-      activeSubscriptions: subscriptions?.length || 0,
+      activeSubscriptions: activeSubsCount,
       mrr,
       revenueMonth,
       paymentsCount: payments?.length || 0
@@ -172,18 +306,39 @@ export async function GET(request: NextRequest) {
       .gte('created_at', previousStartDateISO)
       .lt('created_at', startDateISO)
 
-    // Récupérer les abonnements de la période précédente pour MRR
-    const { data: previousSubscriptions } = await supabaseAdmin
+    // Calculer le MRR de la période précédente (même date du mois précédent)
+    // Pour une comparaison juste, on calcule le MRR qui existait il y a X jours
+    const previousComparisonDate = new Date(startDate)
+    previousComparisonDate.setDate(previousComparisonDate.getDate() - days)
+    const previousComparisonDateISO = previousComparisonDate.toISOString()
+    
+    // Récupérer les abonnements qui étaient actifs à la date de comparaison
+    // Note: On utilise created_at < date_comparison car on veut savoir combien étaient actifs à ce moment
+    // En réalité, pour un vrai MRR historique, il faudrait une table de snapshots, mais on approxime
+    const { data: previousActiveTrialing } = await supabaseAdmin
       .from('user_subscriptions')
       .select('*')
       .in('status', ['active', 'trialing'])
-      .lt('created_at', startDateISO)
+      .lt('created_at', previousComparisonDateISO)
+    
+    const { data: previousPastDueValid } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('*')
+      .eq('status', 'past_due')
+      .not('grace_until', 'is', null)
+      .gt('grace_until', previousComparisonDateISO)
+      .lt('created_at', previousComparisonDateISO)
+    
+    const previousSubscriptions = [
+      ...(previousActiveTrialing || []),
+      ...(previousPastDueValid || [])
+    ]
 
     const previousRevenue = previousPayments?.reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0) || 0
-    const subscriptionPrice = subscriptions && subscriptions.length > 0 ? mrr / subscriptions.length : 39.98
-    const previousMRR = previousSubscriptions && previousSubscriptions.length > 0
-      ? previousSubscriptions.length * subscriptionPrice
-      : 0
+    
+    // Utiliser le même prix pour la comparaison (pas de calcul circulaire)
+    const previousSubsCount = previousSubscriptions?.length || 0
+    const previousMRR = previousSubsCount * subscriptionPrice
 
     // Calculer les variations en pourcentage
     const calculateVariation = (current: number, previous: number): number => {

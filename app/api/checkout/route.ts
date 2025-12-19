@@ -100,7 +100,15 @@ export async function POST(request: NextRequest) {
       // Vérifier les abonnements
       else if (product?.category === 'abonnement') {
         paymentType = 'abonnement'
-      } 
+      }
+      // Vérifier les coaching
+      else if (product?.category === 'coaching') {
+        paymentType = 'coaching'
+      }
+      // Vérifier les masterclass
+      else if (product?.category === 'masterclass') {
+        paymentType = 'masterclass'
+      }
       // Vérifier les capsules prédéfinies (capsule1-5)
       else if (/^capsule[1-5]$/.test(item.id)) {
         paymentType = 'capsule'

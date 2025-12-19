@@ -206,20 +206,11 @@ export default function FinancialFast({ variant = 'page', onStatusChange }: Fina
   // Tracking: outil ouvert
   useEffect(() => {
     if (!loading && !requiresSubscription) {
-      const trackToolOpen = async () => {
-        try {
-          const supabase = createClientBrowser()
-          const { data: { user } } = await supabase.auth.getUser()
-          await tracking.toolUsed('financial_fast', {
-            toolName: 'Jeûne Financier',
-            action: 'open',
-            hasActiveFast: !!fast
-          }, user?.id)
-        } catch (error) {
-          // Ignorer les erreurs de tracking silencieusement
-        }
-      }
-      trackToolOpen()
+      tracking.toolOpened('fast', '/dashboard/fast', {
+        hasActiveFast: !!fast
+      }).catch(() => {
+        // Ignorer les erreurs de tracking silencieusement
+      })
     }
   }, [loading, requiresSubscription, fast])
 
@@ -269,20 +260,6 @@ export default function FinancialFast({ variant = 'page', onStatusChange }: Fina
         return
       }
 
-      // Tracking: jeûne créé
-      try {
-        const supabase = createClientBrowser()
-        const { data: { user } } = await supabase.auth.getUser()
-        await tracking.toolUsed('financial_fast', {
-          toolName: 'Jeûne Financier',
-          action: 'create',
-          categoryCount: selectedCategories.length,
-          estimatedMonthlySpend: amount
-        }, user?.id)
-      } catch (error) {
-        // Ignorer les erreurs de tracking silencieusement
-      }
-
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}))
         const errorKey = payload?.error
@@ -311,6 +288,14 @@ export default function FinancialFast({ variant = 'page', onStatusChange }: Fina
       setCategoryBudgets({})
       setLastAnswer(null)
       setDailyReflection('')
+      
+      // Tracking: jeûne démarré
+      try {
+        await tracking.fastStarted(selectedCategories.length, amount)
+      } catch (error) {
+        // Ignorer les erreurs de tracking silencieusement
+      }
+      
       onStatusChange?.()
     } catch (err) {
       console.error('create fast error', err)
@@ -358,6 +343,14 @@ export default function FinancialFast({ variant = 'page', onStatusChange }: Fina
       )
       setLastAnswer(answer ? 'yes' : 'no')
       setDailyReflection(updatedDay.reflection || '')
+      
+      // Tracking: jour logué
+      try {
+        await tracking.fastDayLogged(updatedDay.dayIndex, answer)
+      } catch (error) {
+        // Ignorer les erreurs de tracking silencieusement
+      }
+      
       onStatusChange?.()
     } catch (err) {
       console.error('day update error', err)

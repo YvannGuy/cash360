@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
+import { Tooltip } from '@/components/Helpers'
 
 interface AdminSession {
   isAdmin: boolean
@@ -34,33 +35,7 @@ interface Metrics {
   }
 }
 
-interface UsageMetrics {
-  topCapsules: Array<{ id: string; count: number }>
-  topTools: Array<{ key: string; count: number; displayName?: string }>
-  subscriberUsageRate: number
-  funnel: {
-    viewed: number
-    progress50: number
-    progress100: number
-  }
-}
-
-interface ShopMetrics {
-  productMetrics: Array<{
-    productId: string
-    productName: string
-    views: number
-    addToCarts: number
-    purchases: number
-    revenue: number
-    conversionRate: number
-  }>
-  totalViews: number
-  totalAddToCarts: number
-  totalCheckouts: number
-  totalPurchases: number
-  overallConversionRate: number
-}
+// Interfaces supprimées - on repart de zéro pour les métriques d'usage et boutique
 
 interface GeoMetrics {
   regionsBreakdown: Array<{
@@ -116,9 +91,9 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [metrics, setMetrics] = useState<Metrics | null>(null)
-  const [usageMetrics, setUsageMetrics] = useState<UsageMetrics | null>(null)
-  const [shopMetrics, setShopMetrics] = useState<ShopMetrics | null>(null)
   const [geoMetrics, setGeoMetrics] = useState<GeoMetrics | null>(null)
+  const [simpleMetrics, setSimpleMetrics] = useState<any>(null)
+  const [paidUsageMetrics, setPaidUsageMetrics] = useState<any>(null)
   const [loadingGeo, setLoadingGeo] = useState(false)
   const [range, setRange] = useState<'7d' | '30d'>('30d')
   const [geoRange, setGeoRange] = useState<'7d' | '30d' | '90d' | '365d'>('30d')
@@ -164,10 +139,10 @@ export default function AdminDashboardPage() {
   const loadMetrics = async () => {
     setLoadingMetrics(true)
     try {
-      const [overviewRes, usageRes, shopRes] = await Promise.all([
+      const [overviewRes, simpleRes, paidUsageRes] = await Promise.all([
         fetch(`/api/admin/metrics/overview?range=${range}`),
-        fetch(`/api/admin/metrics/usage?range=${range}`),
-        fetch(`/api/admin/metrics/shop?range=${range}`)
+        fetch(`/api/admin/metrics/simple?range=${range}`),
+        fetch(`/api/admin/metrics/paid-usage?range=${range}`)
       ])
 
       if (overviewRes.ok) {
@@ -177,17 +152,17 @@ export default function AdminDashboardPage() {
         }
       }
 
-      if (usageRes.ok) {
-        const usageData = await usageRes.json()
-        if (usageData.success) {
-          setUsageMetrics(usageData.usage)
+      if (simpleRes.ok) {
+        const simpleData = await simpleRes.json()
+        if (simpleData.success) {
+          setSimpleMetrics(simpleData)
         }
       }
 
-      if (shopRes.ok) {
-        const shopData = await shopRes.json()
-        if (shopData.success) {
-          setShopMetrics(shopData.shop)
+      if (paidUsageRes.ok) {
+        const paidUsageData = await paidUsageRes.json()
+        if (paidUsageData.success) {
+          setPaidUsageMetrics(paidUsageData)
         }
       }
 
@@ -256,7 +231,7 @@ export default function AdminDashboardPage() {
       
       <div className="md:ml-64">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
+        <div className="bg-white border-b border-gray-200 px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <button
@@ -292,7 +267,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="p-6 lg:p-8">
           {loadingMetrics && !metrics ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -305,7 +280,12 @@ export default function AdminDashboardPage() {
                 {/* Utilisateurs totaux */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">Utilisateurs totaux</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">Utilisateurs totaux</p>
+                      <Tooltip content="Nombre total d'utilisateurs ayant créé un compte sur la plateforme, toutes périodes confondues.">
+                        <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-100 text-gray-600 rounded-full text-xs cursor-help hover:bg-gray-200">?</span>
+                      </Tooltip>
+                    </div>
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
@@ -316,7 +296,12 @@ export default function AdminDashboardPage() {
                 {/* Nouveaux utilisateurs */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">Nouveaux ({range})</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">Nouveaux ({range})</p>
+                      <Tooltip content={`Nombre d'utilisateurs ayant créé un compte dans les ${range === '7d' ? '7 derniers jours' : '30 derniers jours'}. Le pourcentage indique l'évolution par rapport à la période précédente.`}>
+                        <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-100 text-gray-600 rounded-full text-xs cursor-help hover:bg-gray-200">?</span>
+                      </Tooltip>
+                    </div>
                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getVariationColor(metrics?.variations.newUsers30d || 0)} bg-opacity-10`}>
                       {getVariationIcon(metrics?.variations.newUsers30d || 0)} {Math.abs(metrics?.variations.newUsers30d || 0)}%
                     </span>
@@ -330,7 +315,12 @@ export default function AdminDashboardPage() {
                 {/* Email validé */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">Email validé</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">Email validé</p>
+                      <Tooltip content="Nombre d'utilisateurs ayant vérifié leur adresse email. Un email vérifié est nécessaire pour accéder aux fonctionnalités premium.">
+                        <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-100 text-gray-600 rounded-full text-xs cursor-help hover:bg-gray-200">?</span>
+                      </Tooltip>
+                    </div>
                     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -342,7 +332,12 @@ export default function AdminDashboardPage() {
                 {/* Abonnements actifs */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">Abonnements actifs</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">Abonnements actifs</p>
+                      <Tooltip content="Nombre d'abonnements actuellement actifs (statut 'active' ou 'trialing') ou en période de grâce (past_due avec grace_until valide). Ces utilisateurs ont accès aux fonctionnalités premium.">
+                        <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-100 text-gray-600 rounded-full text-xs cursor-help hover:bg-gray-200">?</span>
+                      </Tooltip>
+                    </div>
                     <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
@@ -353,7 +348,12 @@ export default function AdminDashboardPage() {
                 {/* MRR */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">MRR</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">MRR</p>
+                      <Tooltip content="Monthly Recurring Revenue (Revenu récurrent mensuel) : montant total des revenus mensuels générés par tous les abonnements actifs à l'instant présent. Inclut les abonnements 'active', 'trialing' et 'past_due' avec période de grâce valide. C'est un indicateur clé de la santé financière de l'entreprise. Le pourcentage indique l'évolution par rapport à la même période du mois précédent.">
+                        <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-100 text-gray-600 rounded-full text-xs cursor-help hover:bg-gray-200">?</span>
+                      </Tooltip>
+                    </div>
                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getVariationColor(metrics?.variations.mrr || 0)} bg-opacity-10`}>
                       {getVariationIcon(metrics?.variations.mrr || 0)} {Math.abs(metrics?.variations.mrr || 0)}%
                     </span>
@@ -364,7 +364,12 @@ export default function AdminDashboardPage() {
                 {/* Revenus du mois */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">Revenus ({range})</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">Revenus ({range})</p>
+                      <Tooltip content={`Montant total des revenus générés sur les ${range === '7d' ? '7 derniers jours' : '30 derniers jours'}, incluant les abonnements et les achats ponctuels (capsules, analyses, etc.).`}>
+                        <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-100 text-gray-600 rounded-full text-xs cursor-help hover:bg-gray-200">?</span>
+                      </Tooltip>
+                    </div>
                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getVariationColor(metrics?.variations.revenueMonth || 0)} bg-opacity-10`}>
                       {getVariationIcon(metrics?.variations.revenueMonth || 0)} {Math.abs(metrics?.variations.revenueMonth || 0)}%
                     </span>
@@ -375,7 +380,12 @@ export default function AdminDashboardPage() {
                 {/* Paiements */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">Paiements ({range})</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">Paiements ({range})</p>
+                      <Tooltip content={`Nombre total de transactions réussies sur les ${range === '7d' ? '7 derniers jours' : '30 derniers jours'}, incluant les abonnements, capsules, analyses financières et autres produits.`}>
+                        <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-100 text-gray-600 rounded-full text-xs cursor-help hover:bg-gray-200">?</span>
+                      </Tooltip>
+                    </div>
                     <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -386,7 +396,12 @@ export default function AdminDashboardPage() {
                 {/* Utilisateurs actifs */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">Actifs ({range})</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">Actifs ({range})</p>
+                      <Tooltip content={`Nombre d'utilisateurs ayant eu une activité sur la plateforme dans les ${range === '7d' ? '7 derniers jours' : '30 derniers jours'}. Un utilisateur est considéré actif s'il a utilisé au moins un outil (Budget, Debt Free, Jeûne Financier) ou interagi avec le panier.`}>
+                        <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-100 text-gray-600 rounded-full text-xs cursor-help hover:bg-gray-200">?</span>
+                      </Tooltip>
+                    </div>
                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getVariationColor(metrics?.variations.activeUsers30d || 0)} bg-opacity-10`}>
                       {getVariationIcon(metrics?.variations.activeUsers30d || 0)} {Math.abs(metrics?.variations.activeUsers30d || 0)}%
                     </span>
@@ -398,178 +413,131 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Section Usage */}
-              {usageMetrics && (
+              {/* Section Métriques - Usage des abonnés actifs */}
+              {paidUsageMetrics && (
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Produit / Usage</h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Usage des outils et panier</h2>
                   
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Top capsules */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Top capsules consultées</h3>
-                      {usageMetrics.topCapsules.length > 0 ? (
-                        <div className="space-y-2">
-                          {usageMetrics.topCapsules.map((capsule, index) => (
-                            <div key={capsule.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                              <div className="flex items-center gap-3">
-                                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                                  index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                  index === 1 ? 'bg-gray-100 text-gray-700' :
-                                  index === 2 ? 'bg-orange-100 text-orange-700' :
-                                  'bg-blue-100 text-blue-600'
-                                }`}>
-                                  {index + 1}
-                                </span>
-                                <span className="font-medium text-gray-900">{capsule.id}</span>
-                              </div>
-                              <span className="text-sm font-semibold text-purple-600">{capsule.count} vues</span>
-                            </div>
-                          ))}
+                  {/* Outils - Abonnés actifs */}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Usage des abonnés (30j)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Budget */}
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-gray-600">Budget & Suivi</p>
+                          <Tooltip content="Nombre d'abonnés actifs ayant utilisé l'outil Budget & Suivi sur 30 jours. Les actions comptent les sauvegardes de budget et ajouts de dépenses. Les sessions représentent les visites distinctes de l'outil.">
+                            <span className="inline-flex items-center justify-center w-4 h-4 bg-blue-100 text-blue-600 rounded-full text-xs cursor-help hover:bg-blue-200">?</span>
+                          </Tooltip>
                         </div>
-                      ) : (
-                        <p className="text-gray-500 text-sm text-center py-4">Aucune donnée disponible</p>
-                      )}
-                    </div>
-
-                    {/* Top outils */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Outils les plus utilisés</h3>
-                      {usageMetrics.topTools.length > 0 ? (
-                        <div className="space-y-2">
-                          {usageMetrics.topTools.map((tool, index) => (
-                            <div key={tool.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                              <div className="flex items-center gap-3">
-                                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                                  index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                  index === 1 ? 'bg-gray-100 text-gray-700' :
-                                  index === 2 ? 'bg-orange-100 text-orange-700' :
-                                  'bg-purple-100 text-purple-600'
-                                }`}>
-                                  {index + 1}
-                                </span>
-                                <span className="font-medium text-gray-900">{tool.displayName || tool.key}</span>
-                              </div>
-                              <span className="text-sm font-semibold text-blue-600">{tool.count} utilisations</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 text-sm text-center py-4">Aucune donnée disponible</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Taux d'usage abonnés */}
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Taux d'usage abonnés</h3>
-                        <p className="text-sm text-gray-600">% abonnés ayant utilisé ≥1 outil sur {range}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`text-4xl font-bold ${
-                          usageMetrics.subscriberUsageRate > 50 ? 'text-green-600' :
-                          usageMetrics.subscriberUsageRate > 25 ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
-                          {formatPercent(usageMetrics.subscriberUsageRate)}
+                        <p className="text-2xl font-bold text-blue-600">
+                          {paidUsageMetrics.tools.budget.paidUsersUsed} / {paidUsageMetrics.tools.budget.totalActive}
                         </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {paidUsageMetrics.tools.budget.sessions} sessions • {paidUsageMetrics.tools.budget.coreActions} actions
+                        </p>
+                        {paidUsageMetrics.tools.budget.lastActivity && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            Dernière activité: {new Date(paidUsageMetrics.tools.budget.lastActivity).toLocaleDateString('fr-FR')}
+                          </p>
+                        )}
+                      </div>
+                      {/* Debt Free */}
+                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-gray-600">Debt Free</p>
+                          <Tooltip content="Nombre d'abonnés actifs ayant utilisé l'outil Debt Free sur 30 jours. Les actions comptent les ajouts de dettes et paiements de dettes enregistrés dans le budget. Les sessions représentent les visites distinctes de l'outil.">
+                            <span className="inline-flex items-center justify-center w-4 h-4 bg-green-100 text-green-600 rounded-full text-xs cursor-help hover:bg-green-200">?</span>
+                          </Tooltip>
+                        </div>
+                        <p className="text-2xl font-bold text-green-600">
+                          {paidUsageMetrics.tools.debt_free.paidUsersUsed} / {paidUsageMetrics.tools.debt_free.totalActive}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {paidUsageMetrics.tools.debt_free.sessions} sessions • {paidUsageMetrics.tools.debt_free.coreActions} actions
+                        </p>
+                        {paidUsageMetrics.tools.debt_free.lastActivity && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            Dernière activité: {new Date(paidUsageMetrics.tools.debt_free.lastActivity).toLocaleDateString('fr-FR')}
+                          </p>
+                        )}
+                      </div>
+                      {/* Fast */}
+                      <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-gray-600">Jeûne Financier</p>
+                          <Tooltip content="Nombre d'abonnés actifs ayant utilisé l'outil Jeûne Financier sur 30 jours. Les actions comptent les démarrages de jeûne et les jours logués (marqués comme respectés ou non). Les sessions représentent les visites distinctes de l'outil.">
+                            <span className="inline-flex items-center justify-center w-4 h-4 bg-purple-100 text-purple-600 rounded-full text-xs cursor-help hover:bg-purple-200">?</span>
+                          </Tooltip>
+                        </div>
+                        <p className="text-2xl font-bold text-purple-600">
+                          {paidUsageMetrics.tools.fast.paidUsersUsed} / {paidUsageMetrics.tools.fast.totalActive}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {paidUsageMetrics.tools.fast.sessions} sessions • {paidUsageMetrics.tools.fast.coreActions} actions
+                        </p>
+                        {paidUsageMetrics.tools.fast.lastActivity && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            Dernière activité: {new Date(paidUsageMetrics.tools.fast.lastActivity).toLocaleDateString('fr-FR')}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Funnel */}
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Funnel capsule</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-3xl font-bold text-blue-600">{usageMetrics.funnel.viewed}</p>
-                        <p className="text-sm text-gray-600 mt-1 font-medium">Vues</p>
+                  {/* Panier */}
+                  <div className="pt-6 border-t border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Activité panier ({range})</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-gray-600">Paniers ouverts</p>
+                          <Tooltip content="Nombre de fois où un utilisateur a ouvert son panier d'achat (clic sur l'icône panier). Un panier est considéré ouvert même s'il est vide.">
+                            <span className="inline-flex items-center justify-center w-4 h-4 bg-gray-200 text-gray-700 rounded-full text-xs cursor-help hover:bg-gray-300">?</span>
+                          </Tooltip>
+                        </div>
+                        <p className="text-2xl font-bold text-gray-900">{paidUsageMetrics.cart.cartsOpened}</p>
                       </div>
-                      <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                        <p className="text-3xl font-bold text-yellow-600">{usageMetrics.funnel.progress50}</p>
-                        <p className="text-sm text-gray-600 mt-1 font-medium">50%+</p>
+                      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-gray-600">Checkouts démarrés</p>
+                          <Tooltip content="Nombre d'utilisateurs ayant cliqué sur 'Passer la commande' pour démarrer le processus de paiement. C'est l'étape après l'ouverture du panier.">
+                            <span className="inline-flex items-center justify-center w-4 h-4 bg-yellow-100 text-yellow-700 rounded-full text-xs cursor-help hover:bg-yellow-200">?</span>
+                          </Tooltip>
+                        </div>
+                        <p className="text-2xl font-bold text-yellow-600">{paidUsageMetrics.cart.checkoutsStarted}</p>
                       </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-                        <p className="text-3xl font-bold text-green-600">{usageMetrics.funnel.progress100}</p>
-                        <p className="text-sm text-gray-600 mt-1 font-medium">100%</p>
+                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-gray-600">Achats complétés</p>
+                          <Tooltip content="Nombre de transactions réussies et finalisées. Un achat est complété lorsque le paiement est validé et que la commande est confirmée.">
+                            <span className="inline-flex items-center justify-center w-4 h-4 bg-green-100 text-green-700 rounded-full text-xs cursor-help hover:bg-green-200">?</span>
+                          </Tooltip>
+                        </div>
+                        <p className="text-2xl font-bold text-green-600">{paidUsageMetrics.cart.purchasesCompleted}</p>
+                      </div>
+                      <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-gray-600">Paniers abandonnés</p>
+                          <Tooltip content="Nombre de paniers où un checkout a été démarré mais l'achat n'a pas été complété. Un panier abandonné = checkout démarré mais pas d'achat complété.">
+                            <span className="inline-flex items-center justify-center w-4 h-4 bg-red-100 text-red-700 rounded-full text-xs cursor-help hover:bg-red-200">?</span>
+                          </Tooltip>
+                        </div>
+                        <p className="text-2xl font-bold text-red-600">{paidUsageMetrics.cart.abandoned}</p>
                       </div>
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Section Boutique */}
-              {shopMetrics && (
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Boutique</h2>
-                  
-                  {/* Métriques globales */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">{shopMetrics.totalViews}</p>
-                      <p className="text-sm text-gray-600 mt-1">Vues produits</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">{shopMetrics.totalAddToCarts}</p>
-                      <p className="text-sm text-gray-600 mt-1">Ajouts panier</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">{shopMetrics.totalCheckouts}</p>
-                      <p className="text-sm text-gray-600 mt-1">Checkouts</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">{shopMetrics.totalPurchases}</p>
-                      <p className="text-sm text-gray-600 mt-1">Achats</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-blue-600">{formatPercent(shopMetrics.overallConversionRate)}</p>
-                      <p className="text-sm text-gray-600 mt-1">Taux conversion</p>
-                    </div>
-                  </div>
-
-                  {/* Top produits */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Top produits</h3>
-                    {shopMetrics.productMetrics.length > 0 ? (
-                      <div className="overflow-x-auto -mx-4 sm:mx-0">
-                        <div className="inline-block min-w-full align-middle px-4 sm:px-0">
-                          <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Produit</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Vues</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Panier</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Achats</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Revenu</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Conversion</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {shopMetrics.productMetrics.slice(0, 10).map((product) => (
-                              <tr key={product.productId} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{product.productName}</td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{product.views}</td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{product.addToCarts}</td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{product.purchases}</td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{formatCurrency(product.revenue)}</td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    product.conversionRate > 5 ? 'bg-green-100 text-green-800' :
-                                    product.conversionRate > 2 ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-gray-100 text-gray-800'
-                                  }`}>
-                                    {formatPercent(product.conversionRate)}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                          </table>
+                    {paidUsageMetrics.cart.cartsOpened > 0 && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-700">
+                            <span className="font-semibold">Taux de conversion:</span>{' '}
+                            {paidUsageMetrics.cart.conversionRate}%
+                          </p>
+                          <Tooltip content="Pourcentage de paniers ouverts qui se sont transformés en achats complétés. Calcul: (Achats complétés / Paniers ouverts) × 100. Un taux élevé indique une bonne conversion.">
+                            <span className="inline-flex items-center justify-center w-4 h-4 bg-blue-100 text-blue-700 rounded-full text-xs cursor-help hover:bg-blue-200">?</span>
+                          </Tooltip>
                         </div>
                       </div>
-                    ) : (
-                      <p className="text-gray-500 text-sm text-center py-4">Aucune donnée disponible</p>
                     )}
                   </div>
                 </div>

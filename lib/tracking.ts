@@ -22,11 +22,8 @@ import { createClientBrowser } from './supabase'
 
 export interface TrackingEvent {
   event_type: string
-  user_id?: string
   payload?: Record<string, any>
   session_id?: string
-  ip_address?: string
-  user_agent?: string
 }
 
 const MAX_PAYLOAD_SIZE = 10000 // 10KB max pour éviter l'explosion de la base
@@ -36,37 +33,16 @@ const MAX_PAYLOAD_SIZE = 10000 // 10KB max pour éviter l'explosion de la base
  * 
  * @param eventType - Type d'événement (ex: 'auth.signup', 'shop.product_viewed')
  * @param payload - Données additionnelles (sans données sensibles)
- * @param userId - ID utilisateur (optionnel, récupéré automatiquement si non fourni)
  */
 export async function trackEvent(
   eventType: string,
-  payload?: Record<string, any>,
-  userId?: string
+  payload?: Record<string, any>
 ): Promise<void> {
   try {
-    // Ne pas tracker en développement sauf si explicitement activé
-    // Note: NEXT_PUBLIC_ est requis pour les variables d'environnement côté client
-    const enableTracking = process.env.NEXT_PUBLIC_ENABLE_TRACKING === 'true' || process.env.ENABLE_TRACKING === 'true'
-    if (process.env.NODE_ENV === 'development' && !enableTracking) {
-      return
-    }
-
     // Nettoyer le payload (enlever données sensibles, limiter taille)
     const cleanPayload = sanitizePayload(payload || {})
-    
-    // Récupérer l'utilisateur si non fourni (côté client uniquement)
-    let finalUserId = userId
-    if (!finalUserId && typeof window !== 'undefined') {
-      try {
-        const supabase = createClientBrowser()
-        const { data: { user } } = await supabase.auth.getUser()
-        finalUserId = user?.id
-      } catch (error) {
-        // Ignorer les erreurs d'auth silencieusement
-      }
-    }
 
-    // Générer un session_id côté client
+    // Récupérer ou créer un session_id (valide 30 min)
     let sessionId: string | undefined
     if (typeof window !== 'undefined') {
       sessionId = getOrCreateSessionId()
@@ -74,24 +50,43 @@ export async function trackEvent(
 
     const event: TrackingEvent = {
       event_type: eventType,
-      user_id: finalUserId,
       payload: cleanPayload,
-      session_id: sessionId,
-      user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined
+      session_id: sessionId
     }
 
     // Envoyer l'événement via API route (plus sécurisé)
     if (typeof window !== 'undefined') {
+      // Récupérer le token JWT pour l'authentification
+      const supabase = createClientBrowser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const authHeader = session?.access_token ? `Bearer ${session.access_token}` : undefined
+
       // Côté client: utiliser API route
-      fetch('/api/tracking/event', {
+      const response = await fetch('/api/tracking/event', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(authHeader && { 'Authorization': authHeader })
+        },
         body: JSON.stringify(event),
         keepalive: true // Important pour ne pas perdre les events si la page se ferme
       }).catch((error) => {
         // Ne pas bloquer l'UI en cas d'erreur de tracking
         console.warn('[TRACKING] Failed to send event:', error)
+        return null
       })
+
+      // Si le serveur a généré un session_id, le stocker
+      if (response) {
+        try {
+          const result = await response.json()
+          if (result.success && result.session_id && typeof window !== 'undefined') {
+            storeSessionId(result.session_id)
+          }
+        } catch {
+          // Ignorer les erreurs de parsing
+        }
+      }
     } else {
       // Côté serveur: insérer directement dans la base
       const { supabaseAdmin } = await import('./supabase')
@@ -101,11 +96,8 @@ export async function trackEvent(
             .from('tracking_events')
             .insert({
               event_type: event.event_type,
-              user_id: event.user_id,
               payload: event.payload,
-              session_id: event.session_id,
-              user_agent: event.user_agent,
-              created_at: new Date().toISOString()
+              session_id: event.session_id
             })
         } catch (error) {
           console.warn('[TRACKING] Failed to insert event:', error)
@@ -154,20 +146,50 @@ function sanitizePayload(payload: Record<string, any>): Record<string, any> {
 }
 
 /**
- * Génère ou récupère un session_id unique pour cette session
+ * Génère ou récupère un session_id unique pour cette session (valide 30 min)
  */
 function getOrCreateSessionId(): string {
   if (typeof window === 'undefined') return ''
   
   const storageKey = 'cash360_session_id'
-  let sessionId = sessionStorage.getItem(storageKey)
+  const expiryKey = 'cash360_session_expiry'
   
-  if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    sessionStorage.setItem(storageKey, sessionId)
+  const storedId = sessionStorage.getItem(storageKey)
+  const storedExpiry = sessionStorage.getItem(expiryKey)
+  
+  // Vérifier si le session_id existe et est encore valide (30 min)
+  if (storedId && storedExpiry) {
+    const expiry = parseInt(storedExpiry, 10)
+    if (Date.now() < expiry) {
+      return storedId
+    }
+    // Expiré, on nettoie
+    sessionStorage.removeItem(storageKey)
+    sessionStorage.removeItem(expiryKey)
   }
   
+  // Créer un nouveau session_id
+  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const expiry = Date.now() + (30 * 60 * 1000) // 30 minutes
+  
+  sessionStorage.setItem(storageKey, sessionId)
+  sessionStorage.setItem(expiryKey, expiry.toString())
+  
   return sessionId
+}
+
+/**
+ * Stocke un session_id retourné par le serveur (valide 30 min)
+ */
+function storeSessionId(sessionId: string): void {
+  if (typeof window === 'undefined') return
+  
+  const storageKey = 'cash360_session_id'
+  const expiryKey = 'cash360_session_expiry'
+  const expiry = Date.now() + (30 * 60 * 1000) // 30 minutes
+  
+  sessionStorage.setItem(storageKey, sessionId)
+  sessionStorage.setItem(expiryKey, expiry.toString())
 }
 
 /**
@@ -176,49 +198,76 @@ function getOrCreateSessionId(): string {
 export const tracking = {
   // Auth
   signup: (userId: string, metadata?: Record<string, any>) => 
-    trackEvent('auth.signup', { userId, ...metadata }, userId),
+    trackEvent('auth.signup', { userId, ...metadata }),
   
   emailVerified: (userId: string) => 
-    trackEvent('auth.email_verified', { userId }, userId),
+    trackEvent('auth.email_verified', { userId }),
   
   // Subscription
   subscriptionStarted: (userId: string, planId: string, amount?: number) => 
-    trackEvent('subscription.started', { userId, planId, amount }, userId),
+    trackEvent('subscription.started', { userId, planId, amount }),
   
   subscriptionRenewed: (userId: string, planId: string, amount?: number) => 
-    trackEvent('subscription.renewed', { userId, planId, amount }, userId),
+    trackEvent('subscription.renewed', { userId, planId, amount }),
   
   subscriptionCanceled: (userId: string, planId: string, reason?: string) => 
-    trackEvent('subscription.canceled', { userId, planId, reason }, userId),
+    trackEvent('subscription.canceled', { userId, planId, reason }),
   
   // Payment
   paymentSucceeded: (userId: string, amount: number, currency: string, productId?: string) => 
-    trackEvent('payment.succeeded', { userId, amount, currency, productId }, userId),
+    trackEvent('payment.succeeded', { userId, amount, currency, productId }),
   
   paymentFailed: (userId: string, amount: number, currency: string, reason?: string) => 
-    trackEvent('payment.failed', { userId, amount, currency, reason }, userId),
+    trackEvent('payment.failed', { userId, amount, currency, reason }),
   
   // Content
-  capsuleViewed: (capsuleId: string, userId?: string) => 
-    trackEvent('content.capsule_viewed', { capsuleId }, userId),
+  capsuleViewed: (capsuleId: string) => 
+    trackEvent('content.capsule_viewed', { capsuleId }),
   
-  capsuleProgress: (capsuleId: string, percent: number, userId?: string) => 
-    trackEvent('content.capsule_progress', { capsuleId, percent }, userId),
+  capsuleProgress: (capsuleId: string, percent: number) => 
+    trackEvent('content.capsule_progress', { capsuleId, percent }),
   
   // Tools
-  toolUsed: (toolKey: string, context?: Record<string, any>, userId?: string) => 
-    trackEvent('tool.used', { toolKey, ...context }, userId),
+  toolUsed: (toolKey: string, context?: Record<string, any>) => 
+    trackEvent('tool.used', { toolKey, ...context }),
+  
+  toolOpened: (tool: 'budget' | 'debt_free' | 'fast', page?: string, context?: Record<string, any>) => 
+    trackEvent('tool.opened', { tool, page, ...context }),
+  
+  // Budget core actions
+  budgetSaved: (monthlyIncome: number, expenseCount: number, totalExpenses: number) =>
+    trackEvent('budget.saved', { tool: 'budget', monthlyIncome, expenseCount, totalExpenses }),
+  
+  budgetExpenseAdded: (category: string, amount: number) =>
+    trackEvent('budget.expense_added', { tool: 'budget', category, amount }),
+  
+  // Debt core actions
+  debtPaymentMade: (amount: number, debtId?: string) =>
+    trackEvent('debt.payment_made', { tool: 'debt_free', amount, debtId }),
+  
+  debtAdded: (monthlyPayment: number, totalAmount?: number) =>
+    trackEvent('debt.added', { tool: 'debt_free', monthlyPayment, totalAmount }),
+  
+  // Fast core actions
+  fastStarted: (categoryCount: number, estimatedMonthlySpend: number) =>
+    trackEvent('fast.started', { tool: 'fast', categoryCount, estimatedMonthlySpend }),
+  
+  fastDayLogged: (dayIndex: number, respected: boolean) =>
+    trackEvent('fast.day_logged', { tool: 'fast', dayIndex, respected }),
   
   // Shop
-  productViewed: (productId: string, userId?: string) => 
-    trackEvent('shop.product_viewed', { productId }, userId),
+  productViewed: (productId: string) => 
+    trackEvent('shop.product_viewed', { productId }),
   
-  addToCart: (productId: string, quantity: number, price: number, userId?: string) => 
-    trackEvent('shop.add_to_cart', { productId, quantity, price }, userId),
+  addToCart: (productId: string, quantity: number, price: number) => 
+    trackEvent('shop.add_to_cart', { productId, quantity, price }),
   
-  checkoutStarted: (cartValue: number, itemCount: number, userId?: string) => 
-    trackEvent('shop.checkout_started', { cartValue, itemCount }, userId),
+  cartOpened: (itemCount: number) =>
+    trackEvent('shop.cart_opened', { itemCount }),
   
-  purchaseCompleted: (orderId: string, value: number, currency: string, items: any[], userId?: string) => 
-    trackEvent('shop.purchase_completed', { orderId, value, currency, items }, userId)
+  checkoutStarted: (cartValue: number, itemCount: number) => 
+    trackEvent('shop.checkout_started', { cartValue, itemCount }),
+  
+  purchaseCompleted: (orderId: string, value: number, currency: string, items: any[]) => 
+    trackEvent('shop.purchase_completed', { orderId, value, currency, items })
 }

@@ -18,7 +18,7 @@ interface ModalOMWaveProps {
   amountFCFA: number
 }
 
-const operatorSchema = z.enum(['orange_money', 'wave'])
+const operatorSchema = z.enum(['orange_money', 'wave', 'congo_mobile_money'])
 
 const proofSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -39,7 +39,7 @@ type ProofFormData = z.infer<typeof proofSchema>
 
 export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, productName, amountEUR, amountFCFA }: ModalOMWaveProps) {
   const [step, setStep] = useState<'operator' | 'details' | 'proof'>('operator')
-  const [selectedOperator, setSelectedOperator] = useState<'orange_money' | 'wave' | null>(null)
+  const [selectedOperator, setSelectedOperator] = useState<'orange_money' | 'wave' | 'congo_mobile_money' | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState('')
@@ -126,7 +126,7 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
     }
   }, [isOpen, onClose])
 
-  const handleOperatorSelect = (operator: 'orange_money' | 'wave') => {
+  const handleOperatorSelect = (operator: 'orange_money' | 'wave' | 'congo_mobile_money') => {
     setSelectedOperator(operator)
     setValue('operator', operator)
     setValue('amountFcfa', amountFCFA)
@@ -176,7 +176,7 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
   if (!isOpen) return null
 
   const operatorConfig = selectedOperator ? OM_WAVE_CONFIG[selectedOperator] : null
-  const operatorLabel = selectedOperator === 'orange_money' ? 'Orange Money' : 'Wave'
+  const operatorLabel = selectedOperator === 'orange_money' ? 'Orange Money' : selectedOperator === 'wave' ? 'Wave' : 'Mobile Money RDC'
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center">
@@ -225,7 +225,7 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
                 </ol>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Orange Money */}
                 <button
                   onClick={() => handleOperatorSelect('orange_money')}
@@ -235,19 +235,37 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
                     <img src="/images/orange1.png" alt="Orange Money" className="w-full h-full object-contain" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Orange Money</h3>
-                  <p className="text-sm text-gray-600">Côte d'Ivoire & International</p>
+                  <p className="text-sm text-gray-600">Afrique de l'ouest</p>
                 </button>
 
                 {/* Wave */}
                 <button
                   onClick={() => handleOperatorSelect('wave')}
-                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center"
+                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center relative"
                 >
+                  <div className="absolute top-2 right-2">
+                    <span className="text-2xl">🇨🇮</span>
+                  </div>
                   <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <img src="/images/wave1.png" alt="Wave" className="w-full h-full object-contain" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Wave</h3>
                   <p className="text-sm text-gray-600">Côte d'Ivoire</p>
+                </button>
+
+                {/* Mobile Money RDC */}
+                <button
+                  onClick={() => handleOperatorSelect('congo_mobile_money')}
+                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center relative"
+                >
+                  <div className="absolute top-2 right-2">
+                    <span className="text-2xl">🇨🇩</span>
+                  </div>
+                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-blue-500 to-yellow-500 rounded-lg">
+                    <span className="text-white text-2xl font-bold">MM</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Mobile Money</h3>
+                  <p className="text-sm text-gray-600">République Démocratique du Congo</p>
                 </button>
               </div>
             </div>
@@ -315,8 +333,8 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
                     </div>
                   </div>
 
-                  {/* QR Code (si disponible) */}
-                  {operatorConfig.qr && (
+                  {/* QR Code (si disponible et pas Congo) */}
+                  {operatorConfig.qr && selectedOperator !== 'congo_mobile_money' && (
                     <div className="bg-white rounded-lg p-4 border border-gray-200">
                       <div className="text-center">
                         <p className="text-sm font-semibold text-gray-700 mb-3">Ou scannez :</p>
@@ -436,7 +454,7 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
                   <input
                     {...register('msisdn')}
                     type="tel"
-                    placeholder="+225 XX XX XX XX XX"
+                    placeholder={selectedOperator === 'congo_mobile_money' ? '+243 XX XXX XXXX' : '+225 XX XX XX XX XX'}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.msisdn && (

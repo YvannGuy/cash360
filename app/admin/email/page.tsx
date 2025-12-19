@@ -11,7 +11,7 @@ interface AdminSession {
   role?: 'admin' | 'commercial'
 }
 
-export default function AnnouncementEmailPage() {
+export default function EmailPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
@@ -19,6 +19,7 @@ export default function AnnouncementEmailPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<number>(1)
   const [emailSubject, setEmailSubject] = useState<string>('')
   const [emailBody, setEmailBody] = useState<string>('')
+  const [isHtmlMode, setIsHtmlMode] = useState<boolean>(false)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const [sending, setSending] = useState(false)
   const [sendResult, setSendResult] = useState<any>(null)
@@ -50,7 +51,7 @@ export default function AnnouncementEmailPage() {
 
     setLoadingPreview(true)
     try {
-      const response = await fetch('/api/admin/send-announcement-email', {
+      const response = await fetch('/api/admin/send-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +60,8 @@ export default function AnnouncementEmailPage() {
           preview: true,
           templateId: selectedTemplate,
           subject: emailSubject,
-          body: emailBody
+          body: emailBody,
+          isHtml: isHtmlMode
         }),
       })
       const data = await response.json()
@@ -84,7 +86,7 @@ export default function AnnouncementEmailPage() {
       return
     }
 
-    if (!confirm('Êtes-vous sûr de vouloir envoyer cet email à TOUS les utilisateurs de la plateforme ?')) {
+    if (!confirm('Êtes-vous sûr de vouloir envoyer cet email à TOUS les utilisateurs ayant validé leur email ?')) {
       return
     }
 
@@ -96,7 +98,7 @@ export default function AnnouncementEmailPage() {
     setSendResult(null)
     
     try {
-      const response = await fetch('/api/admin/send-announcement-email', {
+      const response = await fetch('/api/admin/send-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +107,8 @@ export default function AnnouncementEmailPage() {
           confirm: true,
           templateId: selectedTemplate,
           subject: emailSubject,
-          body: emailBody
+          body: emailBody,
+          isHtml: isHtmlMode
         }),
       })
       
@@ -156,7 +159,7 @@ export default function AnnouncementEmailPage() {
       <AdminSidebar 
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)} 
-        activeTab="mail"
+        activeTab="email"
       />
       
       <div className="lg:pl-64">
@@ -173,10 +176,10 @@ export default function AnnouncementEmailPage() {
             </button>
             
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              📧 Newsletter - Cash360
+              📧 Envoyer un email
             </h1>
             <p className="text-gray-600">
-              Créez et envoyez des emails à tous les utilisateurs avec différents templates
+              Créez et envoyez des emails à tous les utilisateurs ayant validé leur email
             </p>
           </div>
 
@@ -214,7 +217,7 @@ export default function AnnouncementEmailPage() {
               </label>
               <input
                 type="text"
-                placeholder="Ex: 🎉 Cash360 évolue ! Découvrez nos nouveautés"
+                placeholder="Tapez l'objet de votre email ici..."
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent"
@@ -223,18 +226,43 @@ export default function AnnouncementEmailPage() {
 
             {/* Corps de l'email */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Corps de l'email *
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Corps de l'email *
+                </label>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Texte</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsHtmlMode(!isHtmlMode)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isHtmlMode ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isHtmlMode ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-sm text-gray-600">HTML</span>
+                </div>
+              </div>
               <textarea
-                placeholder="Tapez votre message ici...&#10;&#10;Vous pouvez utiliser plusieurs lignes.&#10;Les retours à la ligne seront conservés dans l'email."
+                placeholder={isHtmlMode 
+                  ? "Tapez votre message en HTML ici...\n\nExemple:\n<h1>Titre</h1>\n<p>Paragraphe avec <strong>texte en gras</strong></p>\n<a href='https://example.com'>Lien</a>"
+                  : "Tapez votre message ici...\n\nVous pouvez utiliser plusieurs lignes.\nLes retours à la ligne seront conservés dans l'email."
+                }
                 value={emailBody}
                 onChange={(e) => setEmailBody(e.target.value)}
-                rows={10}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent resize-y"
+                rows={12}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#00A1C6] focus:border-transparent resize-y font-mono"
               />
               <p className="mt-2 text-sm text-gray-500">
-                Les retours à la ligne seront automatiquement convertis en sauts de ligne dans l'email.
+                {isHtmlMode 
+                  ? 'Mode HTML activé : vous pouvez utiliser des balises HTML pour formater votre message.'
+                  : 'Les retours à la ligne seront automatiquement convertis en sauts de ligne dans l\'email.'
+                }
               </p>
             </div>
           </div>
@@ -255,7 +283,7 @@ export default function AnnouncementEmailPage() {
                 disabled={sending || !emailSubject.trim() || !emailBody.trim()}
                 className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-500 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg"
               >
-                {sending ? '⏳ Envoi en cours...' : '🚀 Envoyer à tous les utilisateurs'}
+                {sending ? '⏳ Envoi en cours...' : '🚀 Envoyer aux utilisateurs validés'}
               </button>
             </div>
             

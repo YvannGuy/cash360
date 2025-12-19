@@ -11,6 +11,7 @@ import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCart, type CartItem } from '@/lib/CartContext'
 import { useCurrency } from '@/lib/CurrencyContext'
+import { tracking } from '@/lib/tracking'
 import LanguageSwitch from '@/components/LanguageSwitch'
 import CurrencySelector from '@/components/CurrencySelector'
 import AnalysisCard from '@/components/AnalysisCard'
@@ -2218,10 +2219,17 @@ const refreshFastSummary = useCallback(async () => {
               {user && (
                 <div className="flex items-center gap-1 sm:gap-3">
                   {/* Icône Panier */}
-                  <div className="relative cart-container z-[10000]">
-                    <button
-                      onClick={() => setShowCartDropdown(!showCartDropdown)}
-                      data-onboarding="cart"
+                    <div className="relative cart-container z-[10000]">
+                      <button
+                      onClick={() => {
+                        const wasOpen = showCartDropdown
+                        setShowCartDropdown(!showCartDropdown)
+                        // Tracker l'ouverture du panier (seulement quand on ouvre, pas quand on ferme)
+                        if (!wasOpen && cartItems.length > 0) {
+                          tracking.cartOpened(cartItems.length)
+                        }
+                      }}
+                        data-onboarding="cart"
                       className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3446,7 +3454,15 @@ const refreshFastSummary = useCallback(async () => {
                                   )
                                 ) : isCoaching ? (
                                   // Pour Coaching : utiliser calendly_link
-                                  formation && formation.calendly_link ? (
+                                  // Vérifier si la commande est en attente de validation
+                                  (c as any).orderStatus && (c as any).orderStatus.status === 'pending_review' ? (
+                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed font-medium">
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                      {t.dashboard.purchases.takeAppointment || 'Prendre rendez-vous'}
+                                    </span>
+                                  ) : formation && formation.calendly_link ? (
                                     <a
                                       href={formation.calendly_link}
                                       target="_blank"

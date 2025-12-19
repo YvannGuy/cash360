@@ -162,13 +162,23 @@ export async function POST(request: NextRequest) {
       else if (product?.category === 'abonnement') {
         paymentType = 'abonnement'
         console.log(`[VERIFY-PAYMENT] ✅ Abonnement détecté: ${item.id} → paymentType: abonnement`)
-      } 
-      // 6. Vérifier les capsules de la boutique (par catégorie)
+      }
+      // 6. Vérifier les coaching
+      else if (product?.category === 'coaching') {
+        paymentType = 'coaching'
+        console.log(`[VERIFY-PAYMENT] ✅ Coaching détecté: ${item.id} → paymentType: coaching`)
+      }
+      // 7. Vérifier les masterclass
+      else if (product?.category === 'masterclass') {
+        paymentType = 'masterclass'
+        console.log(`[VERIFY-PAYMENT] ✅ Masterclass détectée: ${item.id} → paymentType: masterclass`)
+      }
+      // 8. Vérifier les capsules de la boutique (par catégorie)
       else if (product?.category === 'capsules') {
         paymentType = 'capsule'
         console.log(`[VERIFY-PAYMENT] ✅ Capsule boutique détectée: ${item.id} → paymentType: capsule`)
       }
-      // 7. Sinon, par défaut 'capsule'
+      // 9. Sinon, par défaut 'capsule'
       else {
         paymentType = 'capsule'
         console.log(`[VERIFY-PAYMENT] ⚠️ Type par défaut utilisé pour ${item.id}: capsule (product: ${product ? 'trouvé' : 'non trouvé'}, category: ${product?.category || 'N/A'})`)

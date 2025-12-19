@@ -640,7 +640,7 @@ export const translations = {
       adminSpace: "Espace Administrateur →",
       errorPasswordMismatch: "Les mots de passe ne correspondent pas",
       errorEnterEmail: "Veuillez entrer votre email",
-      messageVerifyEmail: "Vérifiez votre email pour confirmer votre compte. Vérifiez vos spams.",
+      messageVerifyEmail: "📧 IMPORTANT : Un email de confirmation vous a été envoyé ! Vérifiez votre boîte de réception ET vos spams. Cliquez sur le lien dans l'email pour activer votre compte.",
       messageResetSent: "Lien de réinitialisation envoyé par email"
     },
 

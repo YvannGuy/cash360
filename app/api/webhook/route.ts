@@ -208,6 +208,23 @@ export async function POST(request: NextRequest) {
       const userId = session.metadata?.user_id
       const itemsJson = session.metadata?.items
 
+      // Tracker l'achat complété
+      if (userId && session.amount_total) {
+        try {
+          const { tracking } = await import('@/lib/tracking')
+          const items = itemsJson ? JSON.parse(itemsJson) : []
+          await tracking.purchaseCompleted(
+            session.id,
+            session.amount_total / 100, // Convertir de centimes en euros
+            'eur',
+            items,
+            userId
+          )
+        } catch (trackingError) {
+          console.warn('[WEBHOOK] Erreur tracking purchase_completed:', trackingError)
+        }
+      }
+
       if (!userId || !itemsJson) {
         console.error('[WEBHOOK] ❌ Metadata manquante dans la session Stripe')
         console.error('[WEBHOOK] userId:', userId)
@@ -315,13 +332,23 @@ export async function POST(request: NextRequest) {
         else if (product?.category === 'abonnement') {
           paymentType = 'abonnement'
           console.log(`[WEBHOOK] ✅ Abonnement détecté: ${item.id} → paymentType: abonnement`)
-        } 
-        // 6. Vérifier les capsules de la boutique (par catégorie)
+        }
+        // 6. Vérifier les coaching
+        else if (product?.category === 'coaching') {
+          paymentType = 'coaching'
+          console.log(`[WEBHOOK] ✅ Coaching détecté: ${item.id} → paymentType: coaching`)
+        }
+        // 7. Vérifier les masterclass
+        else if (product?.category === 'masterclass') {
+          paymentType = 'masterclass'
+          console.log(`[WEBHOOK] ✅ Masterclass détectée: ${item.id} → paymentType: masterclass`)
+        }
+        // 8. Vérifier les capsules de la boutique (par catégorie)
         else if (product?.category === 'capsules') {
           paymentType = 'capsule'
           console.log(`[WEBHOOK] ✅ Capsule boutique détectée: ${item.id} (category: ${product.category}) → paymentType: capsule`)
         }
-        // 7. Sinon, par défaut 'capsule' (pour les capsules prédéfinies non reconnues ou autres cas)
+        // 9. Sinon, par défaut 'capsule' (pour les capsules prédéfinies non reconnues ou autres cas)
         else {
           paymentType = 'capsule'
           console.log(`[WEBHOOK] ⚠️ Type par défaut utilisé pour ${item.id}: capsule (product: ${product ? 'trouvé' : 'non trouvé'}, category: ${product?.category || 'N/A'})`)
