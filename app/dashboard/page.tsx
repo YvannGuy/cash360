@@ -2192,6 +2192,96 @@ const refreshFastSummary = useCallback(async () => {
     )
   }
 
+  // Fonction pour normaliser le pays (simplifiée, basée sur la logique de l'API geo)
+  const normalizeCountryForCheck = (country: string | null | undefined): string => {
+    if (!country) return ''
+    const normalized = country.trim().toLowerCase()
+    if (!normalized) return ''
+    
+    // Normaliser les espaces et apostrophes
+    let cleaned = normalized.replace(/\s+/g, ' ').replace(/[''`´]/g, "'")
+    
+    // Mapping des variantes vers noms canoniques
+    const countryMap: Record<string, string> = {
+      'rdc': 'République démocratique du Congo',
+      'congo-kinshasa': 'République démocratique du Congo',
+      'congo (rdc)': 'République démocratique du Congo',
+      'congo-k': 'République démocratique du Congo',
+      'drc': 'République démocratique du Congo',
+      'democratic republic of congo': 'République démocratique du Congo',
+      'république démocratique du congo': 'République démocratique du Congo',
+      'republique democratique du congo': 'République démocratique du Congo',
+      'côte d\'ivoire': 'Côte d\'Ivoire',
+      'cote d\'ivoire': 'Côte d\'Ivoire',
+      'côte d ivoire': 'Côte d\'Ivoire',
+      'cote d ivoire': 'Côte d\'Ivoire',
+      'ivory coast': 'Côte d\'Ivoire',
+      'ci': 'Côte d\'Ivoire',
+      'congo': 'Congo',
+      'congo-brazzaville': 'Congo',
+      'république du congo': 'Congo',
+      'republique du congo': 'Congo',
+      'republic of congo': 'Congo',
+      'cg': 'Congo',
+      'sénégal': 'Sénégal',
+      'senegal': 'Sénégal',
+      'sn': 'Sénégal',
+      'mali': 'Mali',
+      'ml': 'Mali',
+      'burkina faso': 'Burkina Faso',
+      'burkina': 'Burkina Faso',
+      'bf': 'Burkina Faso',
+      'niger': 'Niger',
+      'ne': 'Niger',
+      'guinée': 'Guinée',
+      'guinee': 'Guinée',
+      'guinea': 'Guinée',
+      'gn': 'Guinée',
+      'bénin': 'Bénin',
+      'benin': 'Bénin',
+      'bj': 'Bénin',
+      'togo': 'Togo',
+      'tg': 'Togo',
+      'ghana': 'Ghana',
+      'gh': 'Ghana',
+      'nigeria': 'Nigeria',
+      'ng': 'Nigeria'
+    }
+    
+    return countryMap[cleaned] || cleaned
+  }
+
+  // Fonction pour vérifier si l'utilisateur est d'Afrique de l'ouest ou RDC/Congo Brazzaville
+  const isAfricanRegion = useMemo(() => {
+    if (!user?.user_metadata?.country) return false
+    
+    const normalizedCountry = normalizeCountryForCheck(user.user_metadata.country)
+    if (!normalizedCountry) return false
+    
+    // Pays d'Afrique de l'ouest
+    const westAfricaCountries = [
+      'Côte d\'Ivoire',
+      'Sénégal',
+      'Mali',
+      'Burkina Faso',
+      'Niger',
+      'Guinée',
+      'Bénin',
+      'Togo',
+      'Ghana',
+      'Nigeria'
+    ]
+    
+    // RDC et Congo Brazzaville
+    const centralAfricaCountries = [
+      'République démocratique du Congo',
+      'Congo'
+    ]
+    
+    return westAfricaCountries.includes(normalizedCountry) || 
+           centralAfricaCountries.includes(normalizedCountry)
+  }, [user])
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -2376,6 +2466,34 @@ const refreshFastSummary = useCallback(async () => {
           </div>
         </div>
       </header>
+
+      {/* Bandeau moyens de paiement mobile money (uniquement pour Afrique de l'ouest et RDC/Congo Brazzaville) */}
+      {isAfricanRegion && (
+        <div className="bg-gradient-to-r from-blue-50 to-yellow-50 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-[10px] sm:text-xs lg:text-sm">
+              <div className="flex items-center gap-1 sm:gap-2 text-gray-700 flex-wrap justify-center">
+                <span className="whitespace-nowrap font-semibold text-gray-800">Paiement disponible en</span>
+                <span className="whitespace-nowrap font-semibold text-gray-800">Afrique de l'ouest et centrale</span>
+                <span className="text-gray-600 hidden sm:inline">(République Démocratique du Congo et Brazzaville)</span>
+                <span className="text-gray-600 sm:hidden">(RDC & Brazzaville)</span>
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <img 
+                  src="/images/orange1.png" 
+                  alt="Orange Money" 
+                  className="h-4 sm:h-5 w-auto object-contain"
+                />
+                <img 
+                  src="/images/wave1.png" 
+                  alt="Wave" 
+                  className="h-4 sm:h-5 w-auto object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contenu principal */}
       <div className="py-8">
