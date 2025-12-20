@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
 import Image from 'next/image'
@@ -21,6 +21,21 @@ export default function AdminTirageAuSortPage() {
   const [drawing, setDrawing] = useState(false)
   const [winner, setWinner] = useState<RaffleEntry | null>(null)
   const [adminSession, setAdminSession] = useState<any>(null)
+
+  const loadEntries = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/raffle')
+      const data = await response.json()
+      
+      if (data.success) {
+        setEntries(data.entries || [])
+      }
+    } catch (error) {
+      console.error('Erreur chargement entries:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     // Vérifier la session admin
@@ -44,22 +59,7 @@ export default function AdminTirageAuSortPage() {
     }
 
     checkAdminSession()
-  }, [router])
-
-  const loadEntries = async () => {
-    try {
-      const response = await fetch('/api/admin/raffle')
-      const data = await response.json()
-      
-      if (data.success) {
-        setEntries(data.entries || [])
-      }
-    } catch (error) {
-      console.error('Erreur chargement entries:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [router, loadEntries])
 
   const handleDraw = async () => {
     if (entries.length === 0) {
@@ -94,6 +94,42 @@ export default function AdminTirageAuSortPage() {
       alert('Erreur lors du tirage au sort')
     } finally {
       setDrawing(false)
+    }
+  }
+
+  const handleResetDraw = () => {
+    if (!confirm('Êtes-vous sûr de vouloir réinitialiser le tirage au sort ? Le gagnant actuel sera effacé.')) {
+      return
+    }
+    setWinner(null)
+  }
+
+  const handleDeleteEntry = async (entryId: string, entryName: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${entryName} de la liste des participants ?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/raffle?id=${entryId}`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Recharger la liste des participants
+        await loadEntries()
+        // Si le participant supprimé était le gagnant, réinitialiser le gagnant
+        if (winner?.id === entryId) {
+          setWinner(null)
+        }
+        alert('Participant supprimé avec succès')
+      } else {
+        alert(data.error || 'Erreur lors de la suppression')
+      }
+    } catch (error) {
+      console.error('Erreur suppression participant:', error)
+      alert('Erreur lors de la suppression')
     }
   }
 
@@ -172,13 +208,23 @@ export default function AdminTirageAuSortPage() {
                   Cliquez sur le bouton ci-dessous pour sélectionner un gagnant au hasard parmi les {entries.length} participant(s)
                 </p>
               </div>
-              <button
-                onClick={handleDraw}
-                disabled={drawing || entries.length === 0}
-                className="ml-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold py-3 px-8 rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {drawing ? 'Tirage en cours...' : 'Tirer au sort'}
-              </button>
+              <div className="flex gap-3">
+                {winner && (
+                  <button
+                    onClick={handleResetDraw}
+                    className="bg-red-500 text-white font-semibold py-3 px-6 rounded-xl hover:bg-red-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    Reset le tirage
+                  </button>
+                )}
+                <button
+                  onClick={handleDraw}
+                  disabled={drawing || entries.length === 0}
+                  className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold py-3 px-8 rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {drawing ? 'Tirage en cours...' : 'Tirer au sort'}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -239,6 +285,9 @@ export default function AdminTirageAuSortPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date d'inscription
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -261,6 +310,14 @@ export default function AdminTirageAuSortPage() {
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <button
+                            onClick={() => handleDeleteEntry(entry.id, `${entry.first_name} ${entry.last_name}`)}
+                            className="text-red-600 hover:text-red-800 font-medium hover:underline"
+                          >
+                            Supprimer
+                          </button>
                         </td>
                       </tr>
                     ))}

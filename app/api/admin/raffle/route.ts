@@ -17,6 +17,21 @@ function readEntries(): any[] {
   return []
 }
 
+// Fonction helper pour écrire les entrées
+function writeEntries(entries: any[]): void {
+  try {
+    // Créer le dossier data s'il n'existe pas
+    const dataDir = path.dirname(DATA_FILE)
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true })
+    }
+    fs.writeFileSync(DATA_FILE, JSON.stringify(entries, null, 2), 'utf-8')
+  } catch (error) {
+    console.error('Erreur écriture fichier:', error)
+    throw error
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     // Note: L'authentification admin est gérée côté client via localStorage
@@ -38,6 +53,49 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Erreur API admin raffle:', error)
+    return NextResponse.json(
+      { error: 'Erreur serveur' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const entryId = searchParams.get('id')
+
+    if (!entryId) {
+      return NextResponse.json(
+        { error: 'ID de l\'entrée requis' },
+        { status: 400 }
+      )
+    }
+
+    // Lire toutes les inscriptions
+    const entries = readEntries()
+
+    // Filtrer pour supprimer l'entrée avec l'ID spécifié
+    const filteredEntries = entries.filter((entry: any) => entry.id !== entryId)
+
+    if (filteredEntries.length === entries.length) {
+      return NextResponse.json(
+        { error: 'Entrée non trouvée' },
+        { status: 404 }
+      )
+    }
+
+    // Écrire les entrées mises à jour
+    writeEntries(filteredEntries)
+
+    return NextResponse.json({
+      success: true,
+      message: 'Participant supprimé avec succès',
+      count: filteredEntries.length
+    })
+
+  } catch (error: any) {
+    console.error('Erreur API admin raffle DELETE:', error)
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
