@@ -514,7 +514,9 @@ export async function GET(request: NextRequest) {
 
     // Calculer la qualité des données géographiques
     const unknownCountryUsers = countryStats.get('Inconnu')?.users || 0
-    const unknownCityCount = Array.from(cityStats.values()).filter(c => c.city === 'Inconnu').reduce((sum, c) => sum + c.users, 0)
+    const unknownCityCount = Array.from(cityStats.entries())
+      .filter(([cityKey]) => cityKey.includes('Inconnu') || cityKey === 'Inconnu')
+      .reduce((sum, [, stats]) => sum + stats.users, 0)
     const totalUsers = allUsersList.length
     
     // Top valeurs non normalisées rencontrées

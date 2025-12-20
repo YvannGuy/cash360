@@ -217,8 +217,7 @@ export async function POST(request: NextRequest) {
             session.id,
             session.amount_total / 100, // Convertir de centimes en euros
             'eur',
-            items,
-            userId
+            items
           )
         } catch (trackingError) {
           console.warn('[WEBHOOK] Erreur tracking purchase_completed:', trackingError)

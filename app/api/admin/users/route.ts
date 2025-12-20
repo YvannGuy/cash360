@@ -324,7 +324,7 @@ export async function GET(request: NextRequest) {
       })
 
     // 6. Filtrer selon les critères
-    let filteredUsers = enrichedUsers.filter(user => {
+    const filteredUsers = enrichedUsers.filter(user => {
       // Recherche (email/nom)
       if (q) {
         const searchLower = q.toLowerCase()

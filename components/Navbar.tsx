@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { createClientBrowser } from '@/lib/supabase'
 import AuthModal from './AuthModal'
 import LanguageSwitch from './LanguageSwitch'
@@ -105,7 +106,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <a href="/" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+            <Link href="/" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/logo/logofinal.png"
@@ -114,7 +115,7 @@ export default function Navbar() {
                 loading="eager"
                 fetchPriority="high"
               />
-            </a>
+            </Link>
           </div>
 
           {/* Navigation Desktop */}
@@ -334,6 +335,43 @@ export default function Navbar() {
         onClose={() => setAuthModalOpen(false)} 
       />
     </nav>
+
+    {/* Bandeau moyens de paiement */}
+    <div className={`fixed top-16 lg:top-20 left-0 right-0 z-[9997] bg-gradient-to-r from-blue-50 to-yellow-50 border-b border-gray-200 transition-all duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-[10px] sm:text-xs lg:text-sm">
+          {/* Logos moyens de paiement internationaux */}
+          <div className="flex items-center">
+            <img 
+              src="/images/paypay.png" 
+              alt="Moyens de paiement internationaux" 
+              className="h-5 sm:h-6 lg:h-7 w-auto object-contain"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="font-semibold text-gray-800 whitespace-nowrap">Moyens de paiement international</span>
+            <span className="hidden sm:inline text-gray-500">•</span>
+          </div>
+          <div className="flex items-center gap-1 sm:gap-2 text-gray-700 flex-wrap justify-center">
+            <span className="whitespace-nowrap">Afrique de l'ouest et centrale</span>
+            <span className="text-gray-500 hidden sm:inline">(République Démocratique du Congo et Brazzaville)</span>
+            <span className="text-gray-500 sm:hidden">(RDC & Brazzaville)</span>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img 
+              src="/images/orange1.png" 
+              alt="Orange Money" 
+              className="h-4 sm:h-5 w-auto object-contain"
+            />
+            <img 
+              src="/images/wave1.png" 
+              alt="Wave" 
+              className="h-4 sm:h-5 w-auto object-contain"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
     </>
   )
 }
