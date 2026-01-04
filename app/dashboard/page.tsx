@@ -56,6 +56,7 @@ function DashboardPageContent() {
   const [subscriptionMobileCartItems, setSubscriptionMobileCartItems] = useState<CartItem[]>([])
   const [subscriptionMobileProductName, setSubscriptionMobileProductName] = useState('')
   const [subscriptionMobileAmountEUR, setSubscriptionMobileAmountEUR] = useState(0)
+  const [showPaymentInfoModal, setShowPaymentInfoModal] = useState(false)
   const generateSubscriptionOrderId = useCallback(
     () => `SUB${Date.now()}${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
     []
@@ -2519,59 +2520,67 @@ const refreshFastSummary = useCallback(async () => {
 
           {!subscriptionLoading && !hasPremiumAccess && (
             <div className="mb-6 rounded-3xl border-2 border-[#FEBE02] bg-gradient-to-br from-[#FFF9EC] via-[#FFF3C4] to-[#FFE8A1] p-8 shadow-[0_20px_60px_rgba(254,190,2,0.25)]">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex-1 space-y-4">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex-1 space-y-4 max-w-full">
                   <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#012F4E] text-[#FEBE02] text-xs font-bold uppercase tracking-wider">
                     <span className="block w-2 h-2 rounded-full bg-[#FEBE02] animate-pulse" />
                     {t.dashboard.subscription?.badge || 'EXCLUSIF'}
                   </span>
                   <div className="space-y-3">
-                    <h2 className="text-3xl font-extrabold text-[#012F4E] leading-tight">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-[#012F4E] leading-tight break-words">
                       {t.dashboard.subscription?.lockedTitle || 'Débloquez votre transformation financière'}
                     </h2>
-                    <div className="space-y-2 text-[#4E3B1A]">
-                      {t.dashboard.subscription?.lockedDescription ? (
-                        <p className="text-base leading-relaxed font-medium">
-                          {t.dashboard.subscription.lockedDescription}
-                        </p>
-                      ) : (
-                        <>
-                          <p className="text-base leading-relaxed font-medium">
-                            Accédez à votre <strong>Tableau de bord</strong> pour suivre vos revenus, dépenses et épargne en temps réel.
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-3">
+                      <div className="flex-1 space-y-2 text-[#4E3B1A] max-w-full">
+                        {t.dashboard.subscription?.lockedDescription ? (
+                          <p className="text-sm sm:text-base leading-relaxed font-medium break-words whitespace-pre-line">
+                            {t.dashboard.subscription.lockedDescription}
                           </p>
-                          <p className="text-base leading-relaxed font-medium">
-                            Utilisez <strong>Budget & suivi</strong> pour gérer vos finances mensuelles et identifier vos principales catégories de dépenses.
-                          </p>
-                          <p className="text-base leading-relaxed font-medium">
-                            Lancez un <strong>Jeûne financier de 30 jours</strong> pour reprendre le contrôle de vos habitudes de dépenses.
-                          </p>
-                        </>
-                      )}
+                        ) : (
+                          <>
+                            <p className="text-sm sm:text-base leading-relaxed font-medium break-words">
+                              Accédez à votre <strong>Tableau de bord</strong> pour suivre vos revenus, dépenses et épargne en temps réel.
+                            </p>
+                            <p className="text-sm sm:text-base leading-relaxed font-medium break-words">
+                              Utilisez <strong>Budget & suivi</strong> pour gérer vos finances mensuelles et identifier vos principales catégories de dépenses.
+                            </p>
+                            <p className="text-sm sm:text-base leading-relaxed font-medium break-words">
+                              Lancez un <strong>Jeûne financier de 30 jours</strong> pour reprendre le contrôle de vos habitudes de dépenses.
+                            </p>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('boutique')
+                            setSelectedCategory('abonnement')
+                            if (typeof window !== 'undefined') {
+                              requestAnimationFrame(() => {
+                                document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                              })
+                            }
+                          }}
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#FEBE02] via-[#F99500] to-[#F6AE2D] px-4 py-3 sm:px-6 sm:py-3 text-[#012F4E] font-bold text-sm sm:text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+                        >
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          {t.dashboard.subscription?.cta || 'Souscrire à l\'abonnement'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowPaymentInfoModal(true)}
+                          className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-800 flex items-center justify-center transition-colors duration-200 text-xs sm:text-sm font-bold border-2 border-blue-300"
+                          aria-label="Informations sur les moyens de paiement"
+                          title="Informations sur les moyens de paiement"
+                        >
+                          i
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col gap-4 lg:items-end lg:min-w-[280px]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('boutique')
-                      setSelectedCategory('abonnement')
-                      if (typeof window !== 'undefined') {
-                        requestAnimationFrame(() => {
-                          document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        })
-                      }
-                    }}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#FEBE02] via-[#F99500] to-[#F6AE2D] px-8 py-4 text-[#012F4E] font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    {t.dashboard.subscription?.cta || 'Découvrir l’abonnement'}
-                  </button>
-                  <p className="text-xs text-[#7A4F00] text-center lg:text-right font-medium">
-                    {t.dashboard.subscription?.mobileInfo || 'Paiement sécurisé • Stripe & Mobile Money'}
-                  </p>
                 </div>
               </div>
             </div>
@@ -3133,7 +3142,7 @@ const refreshFastSummary = useCallback(async () => {
                                 >
                                   {isProcessing
                                     ? t.dashboard.subscription?.checkoutLoading || 'Redirection...'
-                                    : t.dashboard.subscription?.cta || 'Paiement carte bancaire'}
+                                    : 'Paiement international'}
                                 </button>
                                 {t.dashboard.subscription?.ctaSubtext && (
                                   <p className="text-xs text-gray-600 mt-1 text-center">
@@ -3155,14 +3164,10 @@ const refreshFastSummary = useCallback(async () => {
                                   </p>
                                 )}
                               </div>
-                              <div className="text-xs text-gray-500 text-center space-y-1">
+                              <div className="text-xs text-gray-500 text-center">
                                 <p>
                                   {t.dashboard.subscription?.accessSummary ||
                                     'Accédez au tableau de bord complet, Budget & suivi et Jeûne financier.'}
-                                </p>
-                                <p className="text-[11px] text-gray-600">
-                                  {t.dashboard.subscription?.mobileInfo ||
-                                    'Orange Money & Wave – Afrique de l’Ouest/Centrale. Activation manuelle sous 24h.'}
                                 </p>
                               </div>
                             </div>
@@ -4137,6 +4142,40 @@ const refreshFastSummary = useCallback(async () => {
           onClose={handleCarouselClose}
           title="Nouveautés dans votre boutique"
         />
+      )}
+
+      {/* Modal d'information sur les moyens de paiement */}
+      {showPaymentInfoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-3 sm:p-4" onClick={() => setShowPaymentInfoModal(false)}>
+          <div className="bg-white rounded-xl sm:rounded-2xl max-w-md w-full shadow-2xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-lg sm:text-xl font-bold text-[#012F4E]">Moyens de paiement</h3>
+              <button
+                onClick={() => setShowPaymentInfoModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                aria-label="Fermer"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="text-xs sm:text-sm text-gray-700 leading-relaxed space-y-3">
+              <p>
+                {t.dashboard.subscription?.mobileInfo ||
+                  'Souscrivez depuis n\'importe où dans le monde : par carte bancaire (CB, Visa, Mastercard et tous les moyens de paiement internationaux) ou depuis l\'Afrique (RDC et Côte d\'Ivoire) avec Mobile Money Wave. Activation manuelle sous 24h après validation pour les paiements Mobile Money.'}
+              </p>
+            </div>
+            <div className="mt-4 sm:mt-6 flex justify-end">
+              <button
+                onClick={() => setShowPaymentInfoModal(false)}
+                className="px-4 py-2 sm:px-6 sm:py-2 bg-gradient-to-r from-[#FEBE02] to-[#F99500] text-[#012F4E] font-semibold text-sm sm:text-base rounded-lg hover:from-[#ffd24f] hover:to-[#ffae33] transition-all duration-300"
+              >
+                Compris
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

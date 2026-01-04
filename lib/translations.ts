@@ -817,8 +817,8 @@ export const translations = {
       subscription: {
         badge: "Exclusif",
         lockedTitle: "Débloquez votre tableau de bord",
-        lockedDescription: "Accédez au tableau de bord complet, Budget & suivi et Jeûne financier grâce à l'abonnement Sagesse de Salomon.",
-        cta: "Paiement carte bancaire",
+        lockedDescription: "Accédez au tableau de bord complet, Budget & suivi\net Jeûne financier grâce à l'abonnement Sagesse de Salomon.",
+        cta: "Souscrire à l'abonnement",
         ctaSubtext: "International · Visa, Mastercard",
         activeLabel: "Abonnement actif",
         accessSummary: "Accédez au tableau de bord, Budget & suivi et Jeûne financier.",
@@ -845,7 +845,7 @@ export const translations = {
         confirmFallback: "la fin de cette période",
         mobileButton: "Paiement Mobile Money",
         mobileButtonSubtext: "Afrique · Orange Money, Wave",
-        mobileInfo: "Orange Money & Wave · Afrique de l’Ouest et Centrale. Activation manuelle sous 24h après validation."
+        mobileInfo: "Souscrivez depuis n'importe où dans le monde : par carte bancaire (CB, Visa, Mastercard et tous les moyens de paiement internationaux) ou depuis l'Afrique (RDC et Côte d'Ivoire) avec Mobile Money Wave. Activation manuelle sous 24h après validation pour les paiements Mobile Money."
       },
       // Settings
       settings: "Paramètres",

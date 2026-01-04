@@ -218,9 +218,17 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button & Language Switch */}
-          <div className="md:hidden flex items-center gap-3">
+          <div className="md:hidden flex items-center gap-2">
             {/* Language Selector */}
             <LanguageSwitch />
+            
+            {/* CTA Button - Mobile */}
+            <a
+              href="/login?signup=1"
+              className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold text-xs rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 shadow-md"
+            >
+              {t.nav.bookCall || 'Inscription'}
+            </a>
             
             {/* Hamburger Menu Button */}
             <button
@@ -316,14 +324,6 @@ export default function Navbar() {
                   {t.nav.login}
                 </button>
               )}
-
-              <a
-                href="/login?signup=1"
-                onClick={() => setIsMenuOpen(false)}
-                className="block w-full mt-4 px-3 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 font-semibold rounded-xl text-center hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300"
-              >
-                {t.nav.bookCall || 'Inscription'}
-              </a>
             </div>
           </div>
         )}
