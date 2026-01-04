@@ -138,9 +138,8 @@ export default function AdminDashboardPage() {
   const loadMetrics = async () => {
     setLoadingMetrics(true)
     try {
-      const [overviewRes, simpleRes, paidUsageRes] = await Promise.all([
+      const [overviewRes, paidUsageRes] = await Promise.all([
         fetch(`/api/admin/metrics/overview?range=${range}`),
-        fetch(`/api/admin/metrics/simple?range=${range}`),
         fetch(`/api/admin/metrics/paid-usage?range=${range}`)
       ])
 
@@ -151,12 +150,13 @@ export default function AdminDashboardPage() {
         }
       }
 
-      if (simpleRes.ok) {
-        const simpleData = await simpleRes.json()
-        if (simpleData.success) {
-          setSimpleMetrics(simpleData)
-        }
-      }
+      // Note: simpleMetrics API call kept for future use
+      // if (simpleRes.ok) {
+      //   const simpleData = await simpleRes.json()
+      //   if (simpleData.success) {
+      //     setSimpleMetrics(simpleData)
+      //   }
+      // }
 
       if (paidUsageRes.ok) {
         const paidUsageData = await paidUsageRes.json()

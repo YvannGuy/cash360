@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "refresh-cache": "node scripts/refresh-postgrest-cache.js"
+    "refresh-cache": "node scripts/refresh-postgrest-cache.js",
+    "clean-proofs": "node scripts/clean-proofs-storage.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

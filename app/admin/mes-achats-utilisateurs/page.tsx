@@ -54,59 +54,6 @@ export default function AdminMesAchatsPage() {
     txRef: ''
   })
 
-  useEffect(() => {
-    const checkAdminSession = () => {
-      const adminSessionData = localStorage.getItem('admin_session')
-      const adminEmail = localStorage.getItem('admin_email')
-      
-      if (adminSessionData === 'true' && adminEmail) {
-        setAdminSession({ isAdmin: true, email: adminEmail })
-      } else {
-        router.push('/admin/login')
-        return
-      }
-      setLoading(false)
-    }
-    
-    checkAdminSession()
-  }, [router])
-
-  useEffect(() => {
-    if (adminSession?.isAdmin) {
-      loadOrders()
-      loadUsers()
-      loadProducts()
-    }
-  }, [adminSession, filters, loadOrders, loadUsers, loadProducts])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showAdminMenu) {
-        const target = event.target as Element
-        if (!target.closest('.admin-menu-container')) {
-          setShowAdminMenu(false)
-        }
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showAdminMenu])
-
-  const handleSignOut = () => {
-    localStorage.removeItem('admin_session')
-    localStorage.removeItem('admin_email')
-    router.push('/admin/login')
-  }
-
-  const getInitials = (email: string) => {
-    const parts = email.split('@')[0].split('.')
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase()
-    }
-    return email.substring(0, 2).toUpperCase()
-  }
-
   const loadOrders = useCallback(async () => {
     try {
       setRefreshing(true)
@@ -178,6 +125,59 @@ export default function AdminMesAchatsPage() {
       console.error('Erreur chargement produits:', error)
     }
   }, [])
+
+  useEffect(() => {
+    const checkAdminSession = () => {
+      const adminSessionData = localStorage.getItem('admin_session')
+      const adminEmail = localStorage.getItem('admin_email')
+      
+      if (adminSessionData === 'true' && adminEmail) {
+        setAdminSession({ isAdmin: true, email: adminEmail })
+      } else {
+        router.push('/admin/login')
+        return
+      }
+      setLoading(false)
+    }
+    
+    checkAdminSession()
+  }, [router])
+
+  useEffect(() => {
+    if (adminSession?.isAdmin) {
+      loadOrders()
+      loadUsers()
+      loadProducts()
+    }
+  }, [adminSession, filters, loadOrders, loadUsers, loadProducts])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showAdminMenu) {
+        const target = event.target as Element
+        if (!target.closest('.admin-menu-container')) {
+          setShowAdminMenu(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showAdminMenu])
+
+  const handleSignOut = () => {
+    localStorage.removeItem('admin_session')
+    localStorage.removeItem('admin_email')
+    router.push('/admin/login')
+  }
+
+  const getInitials = (email: string) => {
+    const parts = email.split('@')[0].split('.')
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+    return email.substring(0, 2).toUpperCase()
+  }
 
   const handleValidateOrder = async (orderId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir valider cette commande ?')) return
