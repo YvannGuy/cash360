@@ -354,8 +354,6 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-1 sm:gap-2 text-gray-700 flex-wrap justify-center">
             <span className="whitespace-nowrap">Afrique de l'ouest et centrale</span>
-            <span className="text-gray-500 hidden sm:inline">(République Démocratique du Congo et Brazzaville)</span>
-            <span className="text-gray-500 sm:hidden">(RDC & Brazzaville)</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <img 
