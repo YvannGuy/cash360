@@ -4,6 +4,7 @@ import { useEffect, useState, lazy, Suspense } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
+import PaymentMethods from '@/components/PaymentMethods'
 import Features from '@/components/Features'
 import About from '@/components/About'
 import Steps from '@/components/Steps'
@@ -178,6 +179,9 @@ export default function Home() {
       <main>
         {/* Hero Section */}
         <Hero />
+        
+        {/* Payment Methods Section */}
+        <PaymentMethods />
         
         {/* About Section */}
         <About />
