@@ -51,3 +51,9 @@ COMMENT ON COLUMN public.tracking_events.payload IS 'Données additionnelles de 
 COMMENT ON COLUMN public.tracking_events.session_id IS 'ID de session pour regrouper les événements';
 COMMENT ON COLUMN public.tracking_events.created_at IS 'Date de création de l''événement';
 
+
+
+
+
+
+

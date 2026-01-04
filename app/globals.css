@@ -53,3 +53,27 @@
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
 }
+
+/* Styles pour react-phone-number-input */
+.PhoneInput {
+  display: flex;
+  align-items: stretch;
+}
+
+.PhoneInputInput {
+  flex: 1;
+}
+
+.PhoneInputCountryIcon {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.PhoneInputCountrySelect {
+  margin-right: 0.35em;
+}
+
+.PhoneInputCountrySelectArrow {
+  opacity: 0.5;
+  margin-left: 0.35em;
+}

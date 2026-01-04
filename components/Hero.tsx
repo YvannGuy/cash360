@@ -49,7 +49,7 @@ export default function Hero() {
               <div className="relative w-full max-w-4xl mx-auto">
                 <div className="aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
                   <iframe
-                    src="https://player.vimeo.com/video/1142374086?autoplay=0&loop=1&muted=1&title=0&byline=0&portrait=0&controls=1&preload=metadata"
+                    src="https://player.vimeo.com/video/1117619242?autoplay=0&loop=1&muted=1&title=0&byline=0&portrait=0&controls=1&preload=metadata&fl=ip&fe=ec"
                     title="Cash360 - Présentation"
                     className="w-full h-full"
                     frameBorder="0"

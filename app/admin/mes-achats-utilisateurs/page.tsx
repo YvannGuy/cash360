@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import AdminSidebar from '@/components/AdminSidebar'
@@ -77,7 +77,7 @@ export default function AdminMesAchatsPage() {
       loadUsers()
       loadProducts()
     }
-  }, [adminSession, filters])
+  }, [adminSession, filters, loadOrders, loadUsers, loadProducts])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -107,7 +107,7 @@ export default function AdminMesAchatsPage() {
     return email.substring(0, 2).toUpperCase()
   }
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       setRefreshing(true)
       const params = new URLSearchParams()
@@ -153,9 +153,9 @@ export default function AdminMesAchatsPage() {
     } finally {
       setRefreshing(false)
     }
-  }
+  }, [filters])
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/users')
       const data = await response.json()
@@ -165,9 +165,9 @@ export default function AdminMesAchatsPage() {
     } catch (error) {
       console.error('Erreur chargement utilisateurs:', error)
     }
-  }
+  }, [])
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/products')
       const data = await response.json()
@@ -177,7 +177,7 @@ export default function AdminMesAchatsPage() {
     } catch (error) {
       console.error('Erreur chargement produits:', error)
     }
-  }
+  }, [])
 
   const handleValidateOrder = async (orderId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir valider cette commande ?')) return

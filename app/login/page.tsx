@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/LanguageContext'
 import LanguageSwitch from '@/components/LanguageSwitch'
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 export default function LoginPage() {
   const { t } = useLanguage()
@@ -32,11 +34,13 @@ export default function LoginPage() {
   const [cityLoading, setCityLoading] = useState(false)
   const [profession, setProfession] = useState('')
   const [signUpStep, setSignUpStep] = useState(1)
+  const [detectedCountry, setDetectedCountry] = useState<string>('FR') // Pays détecté pour l'indicatif téléphonique
   
   // États pour les erreurs de validation
   const [firstNameError, setFirstNameError] = useState('')
   const [lastNameError, setLastNameError] = useState('')
   const [emailError, setEmailError] = useState('')
+  const [phoneError, setPhoneError] = useState('')
 
   const router = useRouter()
 
@@ -114,6 +118,15 @@ export default function LoginPage() {
     }
   }
 
+  const validatePhone = (phoneNumber: string): boolean => {
+    // Vérifier que le numéro de téléphone est valide (au moins 8 caractères avec l'indicatif)
+    if (!phoneNumber || !phoneNumber.trim()) {
+      return false
+    }
+    // Un numéro de téléphone valide doit avoir au moins 8 caractères (incluant l'indicatif)
+    return phoneNumber.trim().length >= 8
+  }
+
   const isStepValid = (step: number) => {
     switch (step) {
       case 1:
@@ -121,9 +134,11 @@ export default function LoginPage() {
           validateName(firstName) &&
           validateName(lastName) &&
           validateEmail(email) &&
+          validatePhone(phone) &&
           !firstNameError &&
           !lastNameError &&
-          !emailError
+          !emailError &&
+          !phoneError
         )
       case 2:
         return city.trim().length > 1 && profession.trim().length > 0
@@ -221,16 +236,42 @@ export default function LoginPage() {
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-900 mb-2">
-                Téléphone
+                Téléphone *
               </label>
-              <input
-                id="phone"
-                type="tel"
+              <PhoneInput
+                international
+                defaultCountry={detectedCountry as any}
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="+33 X XX XX XX XX"
+                onChange={(value) => {
+                  const phoneValue = value || ''
+                  setPhone(phoneValue)
+                  if (!phoneValue || phoneValue.trim().length === 0) {
+                    setPhoneError('Le numéro de téléphone est obligatoire')
+                  } else if (phoneValue.length < 8) {
+                    setPhoneError('Numéro de téléphone invalide (minimum 8 caractères)')
+                  } else {
+                    setPhoneError('')
+                  }
+                }}
+                className={`w-full ${phoneError ? 'phone-input-error' : ''}`}
+                numberInputProps={{
+                  id: 'phone',
+                  className: `w-full px-3 py-2 text-sm bg-white border rounded-md shadow-sm transition-colors ${
+                    phoneError
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  } focus:outline-none focus:ring-2 focus:ring-offset-0`
+                }}
+                countrySelectProps={{
+                  className: 'px-3 py-2 text-sm bg-white border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                }}
               />
+              {phoneError && (
+                <p className="mt-1 text-xs text-red-600">{phoneError}</p>
+              )}
+              {!phoneError && phone && phone.length >= 8 && (
+                <p className="mt-1 text-xs text-gray-500">Numéro de téléphone valide</p>
+              )}
             </div>
           </>
         )
@@ -352,6 +393,46 @@ export default function LoginPage() {
     }
   }
 
+  // Fonction pour détecter le pays de l'utilisateur
+  const detectUserCountry = async () => {
+    try {
+      // Essayer d'abord avec l'API ipapi.co
+      const response = await fetch('https://ipapi.co/json/')
+      const data = await response.json()
+      
+      if (data.country_code) {
+        // Convertir le code pays en format ISO 3166-1 alpha-2 (ex: FR, US, etc.)
+        const countryCode = data.country_code.toUpperCase()
+        setDetectedCountry(countryCode)
+        return
+      }
+    } catch (error) {
+      console.log('Erreur détection pays via IP:', error)
+    }
+    
+    // Fallback : utiliser la langue du navigateur pour deviner le pays
+    try {
+      const browserLang = navigator.language.toLowerCase()
+      // Mapping langue -> pays pour les pays francophones principaux
+      if (browserLang.startsWith('fr')) {
+        setDetectedCountry('FR')
+      } else if (browserLang.startsWith('en')) {
+        // Par défaut US pour anglais, mais pourrait être GB, CA, etc.
+        setDetectedCountry('US')
+      } else if (browserLang.startsWith('es')) {
+        setDetectedCountry('ES')
+      } else if (browserLang.startsWith('pt')) {
+        setDetectedCountry('PT')
+      } else {
+        // Défaut : France
+        setDetectedCountry('FR')
+      }
+    } catch (error) {
+      console.log('Erreur détection langue navigateur:', error)
+      setDetectedCountry('FR') // Défaut final
+    }
+  }
+
   useEffect(() => {
     setMounted(true)
     const params = new URLSearchParams(window.location.search)
@@ -360,6 +441,8 @@ export default function LoginPage() {
     }
     // Initialiser Supabase côté client uniquement
     setSupabase(createClientBrowser())
+    // Détecter le pays de l'utilisateur
+    detectUserCountry()
   }, [])
 
   useEffect(() => {
@@ -469,6 +552,19 @@ export default function LoginPage() {
       if (!validateEmail(email)) {
         setEmailError('Veuillez entrer une adresse email valide (ex: nom@exemple.com)')
         setError('Veuillez entrer une adresse email valide')
+        setLoading(false)
+        return
+      }
+      // Valider le téléphone
+      if (!phone || !phone.trim()) {
+        setPhoneError('Le numéro de téléphone est obligatoire')
+        setError('Veuillez entrer un numéro de téléphone')
+        setLoading(false)
+        return
+      }
+      if (!validatePhone(phone)) {
+        setPhoneError('Veuillez entrer un numéro de téléphone valide (minimum 8 caractères)')
+        setError('Veuillez entrer un numéro de téléphone valide')
         setLoading(false)
         return
       }
@@ -779,9 +875,11 @@ export default function LoginPage() {
                   setCountry('')
                   setPassword('')
                   setConfirmPassword('')
+                  setPhone('')
                   setFirstNameError('')
                   setLastNameError('')
                   setEmailError('')
+                  setPhoneError('')
                 }}
                 className="ml-2 text-[#012F4E] hover:text-[#023d68] font-semibold transition-colors"
               >

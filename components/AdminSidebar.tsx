@@ -132,7 +132,6 @@ export default function AdminSidebar({ activeTab = 'overview', isOpen: controlle
     { id: 'carousel', label: 'Carrousel', icon: 'store', route: '/admin/carousel', adminOnly: true },
     { id: 'email', label: 'Email', icon: 'mail', route: '/admin/email', adminOnly: true },
     { id: 'testimonials', label: 'Témoignages', icon: 'testimonials', route: '/admin/testimonials', adminOnly: true },
-    { id: 'tirage-au-sort', label: 'Tirage au sort', icon: 'gift', route: '/admin/tirage-au-sort', adminOnly: true },
     { id: 'settings', label: 'Paramètres', icon: 'cog', route: '/admin/settings', adminOnly: false },
   ]
 

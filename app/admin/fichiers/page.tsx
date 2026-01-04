@@ -219,7 +219,7 @@ export default function AdminFichiersPage() {
     }
   }
 
-  const handleDownloadFile = async (fileUrl: string, fileName: string) => {
+  const handleDownloadFile = async (fileUrl: string, _fileName: string) => {
     try {
       const response = await fetch('/api/files/download', {
         method: 'POST',

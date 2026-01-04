@@ -92,7 +92,6 @@ export default function AdminDashboardPage() {
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null)
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [geoMetrics, setGeoMetrics] = useState<GeoMetrics | null>(null)
-  const [simpleMetrics, setSimpleMetrics] = useState<any>(null)
   const [paidUsageMetrics, setPaidUsageMetrics] = useState<any>(null)
   const [loadingGeo, setLoadingGeo] = useState(false)
   const [range, setRange] = useState<'7d' | '30d'>('30d')

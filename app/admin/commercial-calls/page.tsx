@@ -287,7 +287,7 @@ export default function CommercialCallsPage() {
             if (isNaN(appointmentDate.getTime())) {
               throw new Error('Date invalide')
             }
-          } catch (dateError) {
+          } catch {
             errors.push(`Ligne ${i + 1}: Format de date/heure invalide (${dateStr} ${timeStr})`)
             continue
           }
