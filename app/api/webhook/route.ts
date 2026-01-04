@@ -1187,6 +1187,23 @@ function generateSubscriptionWelcomeEmailHtml(
           </p>
         </div>
 
+        <!-- Accompagnement personnalisé -->
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 25px; border-radius: 10px; border: 2px solid #FEBE02; margin-bottom: 30px; text-align: center;">
+          <div style="margin-bottom: 15px;">
+            <span style="font-size: 40px;">🤝</span>
+          </div>
+          <h3 style="margin: 0 0 12px 0; color: #92400e; font-size: 20px; font-weight: 700;">Besoin d'un accompagnement personnalisé ?</h3>
+          <p style="margin: 0 0 20px 0; color: #92400e; font-size: 15px; line-height: 1.6;">
+            Réserve un rendez-vous gratuit avec notre équipe pour découvrir toutes les fonctionnalités de ton abonnement et créer un plan d'action adapté à ta situation financière.
+          </p>
+          <a href="https://calendly.com/cash360/accompagnement-abonnement" style="display: inline-block; background: #012F4E; color: #FEBE02; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(1, 47, 78, 0.3);">
+            📅 Réserver mon accompagnement gratuit
+          </a>
+          <p style="margin: 15px 0 0 0; color: #92400e; font-size: 13px; font-style: italic;">
+            Durée : 30 minutes • Gratuit • En ligne ou par téléphone
+          </p>
+        </div>
+
         <!-- Contact -->
         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
           <h3 style="margin: 0 0 12px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Besoin d'aide ?</h3>
