@@ -620,7 +620,7 @@ export async function GET(request: NextRequest) {
 
     // Enrichir les commandes avec les informations utilisateur
     const enrichedOrders = allOrders.map((order: any) => {
-      let userInfo = order.user_id ? userMap.get(order.user_id) : null
+      const userInfo = order.user_id ? userMap.get(order.user_id) : null
       let userEmail = userInfo?.email || null
       let userName = userInfo?.name || null
       
@@ -629,7 +629,7 @@ export async function GET(request: NextRequest) {
         // 1. Essayer avec customer_email de la commande
         if (order.customer_email) {
           userEmail = order.customer_email
-          userName = userEmail.split('@')[0]
+          userName = userEmail?.split('@')[0] || null
         }
         
         // 2. Si c'est une masterclass, essayer de trouver depuis masterclass_registrations
@@ -673,7 +673,7 @@ export async function GET(request: NextRequest) {
         user_email: userEmail,
         user_name: userName
       }
-    }))
+    });
 
     // Calculer les statistiques
     // Inclure tous les statuts valides (paid, completed, succeeded, success, pending_review) dans les revenus

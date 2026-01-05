@@ -3,11 +3,20 @@ import { supabaseAdmin } from '@/lib/supabase'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-10-29.clover',
 })
 
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier que supabaseAdmin est disponible
+    if (!supabaseAdmin) {
+      console.error('[MASTERCLASS-PAYMENT-VERIFY] Supabase Admin non configuré')
+      return NextResponse.json(
+        { error: 'Erreur de configuration serveur. Veuillez contacter le support.' },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
     const { registrationId, sessionId } = body
 

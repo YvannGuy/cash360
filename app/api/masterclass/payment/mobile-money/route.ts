@@ -3,6 +3,15 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier que supabaseAdmin est disponible
+    if (!supabaseAdmin) {
+      console.error('[MASTERCLASS-PAYMENT-MOBILE] Supabase Admin non configuré')
+      return NextResponse.json(
+        { error: 'Erreur de configuration serveur. Veuillez contacter le support.' },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
     const { registrationId, orderId } = body
 

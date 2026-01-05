@@ -6,6 +6,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Vérifier que supabaseAdmin est disponible
+    if (!supabaseAdmin) {
+      console.error('[MASTERCLASS-REGISTRATION] Supabase Admin non configuré')
+      return NextResponse.json(
+        { error: 'Erreur de configuration serveur. Veuillez contacter le support.' },
+        { status: 500 }
+      )
+    }
+
     const { id } = await params
 
     const { data: registration, error } = await supabaseAdmin
