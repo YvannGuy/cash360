@@ -535,22 +535,15 @@ export default function MasterclassPage() {
       
       <main>
         {/* Hero Section - Design moderne */}
-        <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
-          {/* Image de fond */}
+        <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 pt-16 lg:pt-20">
+          {/* Background Elements */}
           <div className="absolute inset-0 z-0">
-            <Image
-              src="/images/masterclass.jpg"
-              alt="Masterclass CASH360 Edition 2026"
-              fill
-              className="object-cover"
-              priority
-              quality={90}
-            />
-            {/* Overlay sombre pour améliorer la lisibilité */}
-            <div className="absolute inset-0 bg-black/40"></div>
+            <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-yellow-500/5 rounded-full blur-2xl"></div>
           </div>
           
-          <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-12">
             <div className="max-w-5xl mx-auto">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
                 {t.masterclass.hero.title}{' '}
