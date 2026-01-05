@@ -20,12 +20,19 @@ export async function POST(request: NextRequest) {
     const email = formData.get('email') as string
     const msisdn = formData.get('msisdn') as string
     const operator = formData.get('operator') as string
-    const amountFcfa = parseFloat(formData.get('amountFcfa') as string)
+    const amountFcfaStr = formData.get('amountFcfa') as string
+    const amountCdfStr = formData.get('amountCdf') as string
     const txRef = formData.get('txRef') as string | null
     const file = formData.get('file') as File
 
+    // Pour le Congo, utiliser amountCdf, sinon amountFcfa
+    const isCongo = operator === 'congo_mobile_money'
+    const amountFcfa = isCongo 
+      ? (amountCdfStr ? parseFloat(amountCdfStr) : NaN)
+      : (amountFcfaStr ? parseFloat(amountFcfaStr) : NaN)
+
     // Validations
-    if (!orderId || !productName || !name || !email || !msisdn || !operator || !amountFcfa || !file) {
+    if (!orderId || !productName || !name || !email || !msisdn || !operator || (!amountFcfa || isNaN(amountFcfa)) || !file) {
       return NextResponse.json(
         { error: 'Données manquantes' },
         { status: 400 }
@@ -129,7 +136,11 @@ export async function POST(request: NextRequest) {
     console.log('Preuve uploadée avec succès:', filePath)
 
     // Calculer le montant en EUR
-    const amountEUR = amountFcfa / 655.96 // Taux fixe de conversion
+    // Pour le Congo, convertir CDF vers USD puis USD vers EUR
+    // Pour les autres, convertir FCFA vers EUR
+    const amountEUR = isCongo 
+      ? (amountFcfa / 2273.31) * (1 / 1.08) // CDF -> USD -> EUR (approximatif)
+      : amountFcfa / 655.96 // FCFA -> EUR
 
     // Récupérer le user_id depuis la session ou l'email
     let userId: string | null = null
@@ -219,7 +230,9 @@ export async function POST(request: NextRequest) {
       // Créer une commande pour chaque produit
       for (const item of cartItems) {
         const itemAmount = (item.price * item.quantity) * amountPerProduct
-        const itemAmountFcfa = Math.round(itemAmount * 655.96)
+        const itemAmountFcfa = isCongo 
+          ? Math.round(itemAmount * 2273.31) // CDF pour le Congo
+          : Math.round(itemAmount * 655.96) // FCFA pour les autres
         
         // Récupérer le nom du produit depuis la DB si possible
         let productNameFinal = item.title
@@ -414,7 +427,7 @@ export async function POST(request: NextRequest) {
             <h3 style="margin-top: 0; color: #0B1B2B;">Détails du paiement</h3>
             <p><strong>Référence commande :</strong> C360-AFRIQUE</p>
             <p><strong>Produit :</strong> ${productName}</p>
-            <p><strong>Montant :</strong> € ${amountEUR.toFixed(2)} (${amountFcfa.toLocaleString('fr-FR')} FCFA)</p>
+            <p><strong>Montant :</strong> $ ${(amountEUR * 1.08).toFixed(2)} (${amountFcfa.toLocaleString('fr-FR')} ${isCongo ? 'CDF' : 'FCFA'})</p>
             <p><strong>Opérateur :</strong> ${operator === 'orange_money' ? 'Orange Money' : operator === 'wave' ? 'Wave' : 'Mobile Money RDC'}</p>
             ${txRef ? `<p><strong>Référence transaction :</strong> ${txRef}</p>` : ''}
           </div>
@@ -476,7 +489,7 @@ export async function POST(request: NextRequest) {
           <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #0B1B2B;">Détails de votre commande</h3>
             <p><strong>Produit :</strong> ${productName}</p>
-            <p><strong>Montant :</strong> € ${amountEUR.toFixed(2)} (${amountFcfa.toLocaleString('fr-FR')} FCFA)</p>
+            <p><strong>Montant :</strong> $ ${(amountEUR * 1.08).toFixed(2)} (${amountFcfa.toLocaleString('fr-FR')} ${isCongo ? 'CDF' : 'FCFA'})</p>
             <p><strong>Opérateur :</strong> ${operator === 'orange_money' ? 'Orange Money' : operator === 'wave' ? 'Wave' : 'Mobile Money RDC'}</p>
             <p><strong>Référence :</strong> C360-AFRIQUE</p>
           </div>

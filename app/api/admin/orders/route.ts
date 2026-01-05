@@ -591,11 +591,67 @@ export async function GET(request: NextRequest) {
       })
     })
 
+    // Récupérer les inscriptions masterclass pour enrichir les commandes sans user_id
+    const { data: masterclassRegistrations } = await supabaseAdmin!
+      .from('masterclass_registrations')
+      .select('id, email, first_name, last_name, order_id, payment_reference')
+    
+    const masterclassMap = new Map<string, { email: string, name: string }>()
+    if (masterclassRegistrations) {
+      masterclassRegistrations.forEach((reg: any) => {
+        const fullName = `${reg.first_name || ''} ${reg.last_name || ''}`.trim()
+        const userInfo = {
+          email: reg.email || '',
+          name: fullName || reg.email?.split('@')[0] || 'Utilisateur'
+        }
+        
+        // Ajouter plusieurs clés possibles pour faciliter la recherche
+        if (reg.order_id) {
+          masterclassMap.set(reg.order_id, userInfo)
+        }
+        if (reg.payment_reference) {
+          masterclassMap.set(reg.payment_reference, userInfo)
+        }
+        if (reg.id) {
+          masterclassMap.set(reg.id, userInfo)
+        }
+      })
+    }
+
     // Enrichir les commandes avec les informations utilisateur
     const enrichedOrders = allOrders.map((order: any) => {
-      const userInfo = userMap.get(order.user_id)
-      const userEmail = userInfo?.email || null
+      let userInfo = order.user_id ? userMap.get(order.user_id) : null
+      let userEmail = userInfo?.email || null
       let userName = userInfo?.name || null
+      
+      // Si pas d'info utilisateur trouvée par user_id, essayer d'autres méthodes
+      if (!userInfo) {
+        // 1. Essayer avec customer_email de la commande
+        if (order.customer_email) {
+          userEmail = order.customer_email
+          userName = userEmail.split('@')[0]
+        }
+        
+        // 2. Si c'est une masterclass, essayer de trouver depuis masterclass_registrations
+        if (!userEmail && (order.product_id === 'masterclass-2026' || order.product_name?.toLowerCase().includes('masterclass'))) {
+          // Essayer avec différents identifiants possibles
+          let masterclassInfo = masterclassMap.get(order.id) || 
+                               masterclassMap.get(order.transaction_id) ||
+                               masterclassMap.get(order.order_id) ||
+                               masterclassMap.get(order.payment_reference)
+          
+          // Si transaction_id est au format "orderId-productId", extraire la partie orderId
+          if (!masterclassInfo && order.transaction_id && order.transaction_id.includes('-')) {
+            const orderIdPart = order.transaction_id.split('-')[0]
+            masterclassInfo = masterclassMap.get(orderIdPart)
+          }
+          
+          if (masterclassInfo) {
+            userEmail = masterclassInfo.email
+            userName = masterclassInfo.name
+          }
+        }
+      }
       
       // Si pas de nom mais qu'on a l'email, utiliser la partie avant @
       if (!userName && userEmail) {
@@ -617,7 +673,7 @@ export async function GET(request: NextRequest) {
         user_email: userEmail,
         user_name: userName
       }
-    })
+    }))
 
     // Calculer les statistiques
     // Inclure tous les statuts valides (paid, completed, succeeded, success, pending_review) dans les revenus

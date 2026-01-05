@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { createClientBrowser } from '@/lib/supabase'
 import AuthModal from './AuthModal'
 import LanguageSwitch from './LanguageSwitch'
@@ -9,6 +10,7 @@ import { useLanguage } from '@/lib/LanguageContext'
 
 export default function Navbar() {
   const { t } = useLanguage()
+  const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -16,6 +18,9 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [supabase, setSupabase] = useState<any>(null)
+  
+  // Masquer le bandeau sur la page d'inscription masterclass en mobile
+  const hidePaymentBanner = pathname === '/masterclass/inscription'
 
   // Fonction pour extraire les initiales de l'email
   const getInitials = (email: string | undefined): string => {
@@ -133,19 +138,16 @@ export default function Navbar() {
               >
                 {t.nav.analysis}
               </button>
-              <button
-                onClick={() => scrollToSection('testimonials')}
+              <a
+                href="/masterclass/inscription"
                 className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
-                {t.nav.testimonials || 'Témoignages'}
-              </button>
+                Masterclass
+              </a>
               <button
                 onClick={() => scrollToSection('payment-methods')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200 flex items-center gap-1"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-yellow-600 transition-colors duration-200"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
                 Paiements
               </button>
               <a
@@ -272,25 +274,20 @@ export default function Navbar() {
               >
                 {t.nav.analysis}
               </button>
-              <button
-                onClick={() => {
-                  scrollToSection('testimonials')
-                  setIsMenuOpen(false)
-                }}
+              <a
+                href="/masterclass/inscription"
+                onClick={() => setIsMenuOpen(false)}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
               >
-                {t.nav.testimonials || 'Témoignages'}
-              </button>
+                Masterclass
+              </a>
               <button
                 onClick={() => {
                   scrollToSection('payment-methods')
                   setIsMenuOpen(false)
                 }}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200 flex items-center gap-2"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 transition-colors duration-200"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
                 Paiements
               </button>
               <a
@@ -358,7 +355,7 @@ export default function Navbar() {
     </nav>
 
     {/* Bandeau moyens de paiement */}
-    <div className={`fixed top-16 lg:top-20 left-0 right-0 z-[9997] bg-gradient-to-r from-blue-50 to-yellow-50 border-b border-gray-200 transition-all duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
+    <div className={`fixed top-16 lg:top-20 left-0 right-0 z-[9997] bg-gradient-to-r from-blue-50 to-yellow-50 border-b border-gray-200 transition-all duration-300 ${isScrolled ? 'shadow-md' : ''} ${hidePaymentBanner ? 'hidden md:block' : ''}`}>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-[10px] sm:text-xs lg:text-sm">
           {/* Logos moyens de paiement internationaux */}

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { OM_WAVE_CONFIG, EUR_TO_FCFA_RATE } from '@/config/omWave'
+import { OM_WAVE_CONFIG, EUR_TO_FCFA_RATE, USD_TO_CDF_RATE } from '@/config/omWave'
 import { createClientBrowser } from '@/lib/supabase'
 import type { CartItem } from '@/lib/CartContext'
 
@@ -14,8 +14,16 @@ interface ModalOMWaveProps {
   orderId: string
   cartItems: CartItem[]
   productName: string
-  amountEUR: number
-  amountFCFA: number
+  amountEUR?: number // Pour compatibilité avec l'ancien code
+  amountFCFA?: number // Pour compatibilité avec l'ancien code
+  amountUSD?: number // Nouveau pour masterclass
+  amountCDF?: number // Nouveau pour masterclass (franc congolais)
+  allowedOperators?: ('orange_money' | 'wave' | 'congo_mobile_money')[]
+  onSuccess?: () => void
+  // Props pour préremplir le formulaire
+  prefillName?: string
+  prefillEmail?: string
+  prefillPhone?: string
 }
 
 const operatorSchema = z.enum(['orange_money', 'wave', 'congo_mobile_money'])
@@ -25,7 +33,8 @@ const proofSchema = z.object({
   email: z.string().email('Email invalide'),
   msisdn: z.string().min(10, 'Numéro invalide (min 10 chiffres)'),
   operator: operatorSchema,
-  amountFcfa: z.number().positive('Montant invalide'),
+  amountFcfa: z.number().positive('Montant invalide').optional(), // Pour compatibilité
+  amountCdf: z.number().positive('Montant invalide').optional(), // Nouveau pour CDF
   txRef: z.string().optional(),
   file: z
     .instanceof(File, { message: 'Fichier requis' })
@@ -37,9 +46,28 @@ const proofSchema = z.object({
 
 type ProofFormData = z.infer<typeof proofSchema>
 
-export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, productName, amountEUR, amountFCFA }: ModalOMWaveProps) {
-  const [step, setStep] = useState<'operator' | 'details' | 'proof'>('operator')
-  const [selectedOperator, setSelectedOperator] = useState<'orange_money' | 'wave' | 'congo_mobile_money' | null>(null)
+export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, productName, amountEUR, amountFCFA, amountUSD, amountCDF, allowedOperators, onSuccess, prefillName, prefillEmail, prefillPhone }: ModalOMWaveProps) {
+  // Déterminer les montants à utiliser (priorité aux nouveaux USD/CDF)
+  const displayAmountUSD = amountUSD ?? amountEUR
+  const displayAmountCDF = amountCDF ?? amountFCFA
+  
+  // Déterminer si on utilise CDF (Congo) ou FCFA (autres pays)
+  const isCongo = allowedOperators?.includes('congo_mobile_money') && allowedOperators.length === 1
+  const currencyLabel = isCongo ? 'CDF' : 'FCFA'
+  const amountField = isCongo ? 'amountCdf' : 'amountFcfa'
+  const displayAmount = isCongo ? displayAmountCDF : amountFCFA
+  // Déterminer l'opérateur par défaut
+  const defaultOperator = allowedOperators && allowedOperators.length > 0 
+    ? allowedOperators[0] 
+    : 'orange_money'
+  
+  // Si un seul opérateur est autorisé, passer directement à l'étape details
+  const initialStep = allowedOperators && allowedOperators.length === 1 ? 'details' : 'operator'
+  
+  const [step, setStep] = useState<'operator' | 'details' | 'proof'>(initialStep)
+  const [selectedOperator, setSelectedOperator] = useState<'orange_money' | 'wave' | 'congo_mobile_money' | null>(
+    allowedOperators && allowedOperators.length === 1 ? allowedOperators[0] : null
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState('')
@@ -48,11 +76,12 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset, control } = useForm<ProofFormData>({
     resolver: zodResolver(proofSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      msisdn: '',
-      operator: 'orange_money' as const,
-      amountFcfa: amountFCFA,
+      name: prefillName || '',
+      email: prefillEmail || '',
+      msisdn: prefillPhone || '',
+      operator: defaultOperator as 'orange_money' | 'wave' | 'congo_mobile_money',
+      amountFcfa: !isCongo ? (amountFCFA || 0) : undefined,
+      amountCdf: isCongo ? (displayAmountCDF || 0) : undefined,
       txRef: '',
       file: undefined as any,
       confirmed: false
@@ -72,32 +101,64 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
   // Charger les infos utilisateur au montage
   useEffect(() => {
     if (isOpen) {
-      const loadUserInfo = async () => {
-        try {
-          const supabase = createClientBrowser()
-          const { data: { user } } = await supabase.auth.getUser()
-          
-          if (user) {
-            setUserEmail(user.email || '')
-            // Extraire le nom depuis l'email
-            const nameFromEmail = user.email?.split('@')[0] || ''
-            setUserName(nameFromEmail)
-            setValue('name', nameFromEmail)
-            setValue('email', user.email || '')
-          }
-        } catch (err) {
-          console.error('Erreur chargement user:', err)
+      // Si un seul opérateur est autorisé, le sélectionner automatiquement
+      if (allowedOperators && allowedOperators.length === 1) {
+        const operator = allowedOperators[0]
+        setSelectedOperator(operator)
+        setValue('operator', operator)
+        if (isCongo) {
+          setValue('amountCdf', displayAmountCDF || 0)
+        } else {
+          setValue('amountFcfa', amountFCFA || 0)
         }
       }
-      loadUserInfo()
+      
+      // Préremplir avec les valeurs fournies ou charger depuis Supabase
+      if (prefillName) {
+        setValue('name', prefillName)
+        setUserName(prefillName)
+      }
+      if (prefillEmail) {
+        setValue('email', prefillEmail)
+        setUserEmail(prefillEmail)
+      }
+      if (prefillPhone) {
+        setValue('msisdn', prefillPhone)
+      }
+      
+      // Si pas de préremplissage, charger depuis Supabase
+      if (!prefillName || !prefillEmail) {
+        const loadUserInfo = async () => {
+          try {
+            const supabase = createClientBrowser()
+            const { data: { user } } = await supabase.auth.getUser()
+            
+            if (user) {
+              if (!prefillEmail) {
+                setUserEmail(user.email || '')
+                setValue('email', user.email || '')
+              }
+              if (!prefillName) {
+                // Extraire le nom depuis l'email
+                const nameFromEmail = user.email?.split('@')[0] || ''
+                setUserName(nameFromEmail)
+                setValue('name', nameFromEmail)
+              }
+            }
+          } catch (err) {
+            console.error('Erreur chargement user:', err)
+          }
+        }
+        loadUserInfo()
+      }
     } else {
       // Reset form quand modale fermée
       reset()
-      setStep('operator')
-      setSelectedOperator(null)
+      setStep(initialStep)
+      setSelectedOperator(allowedOperators && allowedOperators.length === 1 ? allowedOperators[0] : null)
       setError(null)
     }
-  }, [isOpen, setValue, reset])
+  }, [isOpen, setValue, reset, allowedOperators, amountFCFA, displayAmountCDF, isCongo, initialStep, prefillName, prefillEmail, prefillPhone])
 
   // Gérer ESC et focus trap
   useEffect(() => {
@@ -129,7 +190,11 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
   const handleOperatorSelect = (operator: 'orange_money' | 'wave' | 'congo_mobile_money') => {
     setSelectedOperator(operator)
     setValue('operator', operator)
-    setValue('amountFcfa', amountFCFA)
+    if (operator === 'congo_mobile_money') {
+      setValue('amountCdf', displayAmountCDF || 0)
+    } else {
+      setValue('amountFcfa', amountFCFA || 0)
+    }
     setStep('details')
   }
 
@@ -147,7 +212,11 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
       formData.append('email', data.email)
       formData.append('msisdn', data.msisdn)
       formData.append('operator', data.operator)
-      formData.append('amountFcfa', data.amountFcfa.toString())
+      if (isCongo && data.amountCdf) {
+        formData.append('amountCdf', data.amountCdf.toString())
+      } else if (data.amountFcfa) {
+        formData.append('amountFcfa', data.amountFcfa.toString())
+      }
       if (data.txRef) {
         formData.append('txRef', data.txRef)
       }
@@ -164,8 +233,12 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
         throw new Error(result.error || 'Erreur lors de l\'envoi de la preuve')
       }
 
-      // Succès → rediriger
-      window.location.href = `/commande/soumise?order=${orderId}`
+      // Succès → rediriger ou appeler callback
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        window.location.href = `/commande/soumise?order=${orderId}`
+      }
     } catch (err: any) {
       console.error('Erreur envoi preuve:', err)
       setError(err.message || 'Erreur lors de l\'envoi. Veuillez réessayer.')
@@ -225,48 +298,54 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
                 </ol>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Orange Money */}
-                <button
-                  onClick={() => handleOperatorSelect('orange_money')}
-                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center"
-                >
-                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <img src="/images/orange1.png" alt="Orange Money" className="w-full h-full object-contain" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Orange Money</h3>
-                  <p className="text-sm text-gray-600">Afrique de l'ouest</p>
-                </button>
+              <div className={`grid grid-cols-1 ${(!allowedOperators || allowedOperators.length === 3) ? 'md:grid-cols-3' : allowedOperators.length === 2 ? 'md:grid-cols-2' : ''} gap-4`}>
+                {(!allowedOperators || allowedOperators.includes('orange_money')) && (
+                  /* Orange Money */
+                  <button
+                    onClick={() => handleOperatorSelect('orange_money')}
+                    className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center"
+                  >
+                    <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <img src="/images/orange1.png" alt="Orange Money" className="w-full h-full object-contain" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Orange Money</h3>
+                    <p className="text-sm text-gray-600">Afrique de l'ouest</p>
+                  </button>
+                )}
 
-                {/* Wave */}
-                <button
-                  onClick={() => handleOperatorSelect('wave')}
-                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center relative"
-                >
-                  <div className="absolute top-2 right-2">
-                    <span className="text-2xl">🇨🇮</span>
-                  </div>
-                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <img src="/images/wave1.png" alt="Wave" className="w-full h-full object-contain" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Wave</h3>
-                  <p className="text-sm text-gray-600">Côte d'Ivoire</p>
-                </button>
+                {(!allowedOperators || allowedOperators.includes('wave')) && (
+                  /* Wave */
+                  <button
+                    onClick={() => handleOperatorSelect('wave')}
+                    className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center relative"
+                  >
+                    <div className="absolute top-2 right-2">
+                      <span className="text-2xl">🇨🇮</span>
+                    </div>
+                    <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <img src="/images/wave1.png" alt="Wave" className="w-full h-full object-contain" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Wave</h3>
+                    <p className="text-sm text-gray-600">Côte d'Ivoire</p>
+                  </button>
+                )}
 
-                {/* Mobile Money RDC */}
-                <button
-                  onClick={() => handleOperatorSelect('congo_mobile_money')}
-                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center relative"
-                >
-                  <div className="absolute top-2 right-2">
-                    <span className="text-2xl">🇨🇩</span>
-                  </div>
-                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-blue-500 to-yellow-500 rounded-lg">
-                    <span className="text-white text-2xl font-bold">MM</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Mobile Money</h3>
-                  <p className="text-sm text-gray-600">République Démocratique du Congo</p>
-                </button>
+                {(!allowedOperators || allowedOperators.includes('congo_mobile_money')) && (
+                  /* Mobile Money RDC */
+                  <button
+                    onClick={() => handleOperatorSelect('congo_mobile_money')}
+                    className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#FEBE02] hover:bg-yellow-50 transition-all text-center relative"
+                  >
+                    <div className="absolute top-2 right-2">
+                      <span className="text-2xl">🇨🇩</span>
+                    </div>
+                    <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-blue-500 to-yellow-500 rounded-lg">
+                      <span className="text-white text-2xl font-bold">MM</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Mobile Money</h3>
+                    <p className="text-sm text-gray-600">République Démocratique du Congo</p>
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -297,12 +376,14 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
                   <div className="flex justify-between items-center bg-white rounded-lg px-4 py-3 border border-gray-200">
                     <span className="font-semibold text-gray-700">Montant :</span>
                     <span className="text-2xl font-bold text-blue-600">
-                      € {amountEUR.toFixed(2)}
+                      {isCongo ? '$' : '€'} {displayAmountUSD?.toFixed(2) || amountEUR?.toFixed(2) || '0.00'}
                     </span>
                   </div>
-                  <div className="text-center text-sm text-gray-600">
-                    ≈ {amountFCFA.toLocaleString('fr-FR')} FCFA
-                  </div>
+                  {displayAmount && (
+                    <div className="text-center text-sm text-gray-600">
+                      ≈ {displayAmount.toLocaleString('fr-FR')} {currencyLabel}
+                    </div>
+                  )}
 
                   {/* Numéro */}
                   <div className="bg-white rounded-lg p-4 border border-gray-200">
@@ -464,7 +545,11 @@ export default function ModalOMWave({ isOpen, onClose, orderId, cartItems, produ
 
                 {/* Opérateur (hidden, déjà défini) */}
                 <input {...register('operator')} type="hidden" />
-                <input {...register('amountFcfa')} type="hidden" />
+                {isCongo ? (
+                  <input {...register('amountCdf')} type="hidden" />
+                ) : (
+                  <input {...register('amountFcfa')} type="hidden" />
+                )}
 
                 {/* Référence transaction (optionnel) */}
                 <div>

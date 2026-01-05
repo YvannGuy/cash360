@@ -19,3 +19,6 @@ export const OM_WAVE_CONFIG = {
 // Taux de change EUR vers FCFA (à ajuster selon le taux actuel)
 export const EUR_TO_FCFA_RATE = 655.96; // 1 EUR = ~656 FCFA
 
+// Taux de change USD vers CDF (franc congolais) - à ajuster selon le taux actuel
+export const USD_TO_CDF_RATE = 2273.31; // 1 USD = ~2273 CDF
+
