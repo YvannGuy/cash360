@@ -29,13 +29,6 @@ const LoadingPlaceholder = ({ height = 'h-64' }: { height?: string }) => (
 function NosEvenements() {
   const events = [
     {
-      city: 'Paris',
-      country: 'France',
-      month: 'Octobre',
-      year: '2026',
-      image: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=1200&h=800&fit=crop&q=90&auto=format'
-    },
-    {
       city: 'Kinshasa',
       country: 'Congo',
       month: 'Février',
@@ -43,18 +36,18 @@ function NosEvenements() {
       image: '/images/kinshasa.jpeg'
     },
     {
-      city: 'Abidjan',
-      country: 'Côte d\'Ivoire',
+      city: '?',
+      country: '?',
       month: 'Mai',
       year: '2026',
       image: '/images/abidjan.jpg'
     },
     {
-      city: 'Casablanca',
-      country: 'Maroc',
-      month: 'Avril',
+      city: '?',
+      country: '?',
+      month: 'Octobre',
       year: '2026',
-      image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=1200&h=800&fit=crop&q=90&auto=format'
+      image: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=1200&h=800&fit=crop&q=90&auto=format'
     }
   ]
 
@@ -72,7 +65,7 @@ function NosEvenements() {
         </div>
 
         {/* Event Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {events.map((event, index) => (
             <div
               key={index}
@@ -96,8 +89,8 @@ function NosEvenements() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
                   {/* Contenu texte en bas */}
                   <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1">{event.city}</h3>
-                    <p className="text-white/90 text-sm mb-4">{event.country}</p>
+                    <h3 className={`${event.city === '?' ? 'text-5xl sm:text-6xl' : 'text-2xl sm:text-3xl'} font-bold text-white mb-1`}>{event.city}</h3>
+                    {event.country !== '?' && <p className="text-white/90 text-sm mb-4">{event.country}</p>}
                     
                     {/* Date avec icône calendrier */}
                     <div className="flex items-center gap-2">

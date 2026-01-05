@@ -161,30 +161,6 @@ export default function MasterclassPage() {
       fallback: '🇨🇮',
       description: 'Ville d\'Abidjan',
       date: 'Mai 2026'
-    },
-    { 
-      src: '/images/bordeaux.jpg', 
-      country: 'France', 
-      city: 'Bordeaux',
-      fallback: '🇫🇷',
-      description: 'Place de la Bourse',
-      date: 'Mars 2026'
-    },
-    { 
-      src: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=1200&h=800&fit=crop&q=90&auto=format', 
-      country: 'Maroc', 
-      city: 'Casablanca',
-      fallback: '🇲🇦',
-      description: 'Mosquée Hassan II',
-      date: 'Avril 2026'
-    },
-    { 
-      src: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1200&h=800&fit=crop&q=90&auto=format', 
-      country: 'États-Unis', 
-      city: 'New York',
-      fallback: '🇺🇸',
-      description: 'Skyline de New York',
-      date: null
     }
   ]
 
