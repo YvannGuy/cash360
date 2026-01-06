@@ -300,6 +300,7 @@ export async function GET(request: NextRequest) {
         const rawCountry = authUser.user_metadata?.country || ''
         const userCountry = normalizeCountry(rawCountry) || rawCountry
         const userCity = authUser.user_metadata?.city || ''
+        const userPhone = authUser.user_metadata?.phone || ''
 
         return {
           id: userId,
@@ -319,7 +320,8 @@ export async function GET(request: NextRequest) {
             (authUser.email_confirmed_at ? 0 : 1),
           user_metadata: authUser.user_metadata || {},
           country: userCountry,
-          city: userCity
+          city: userCity,
+          phone: userPhone
         }
       })
 

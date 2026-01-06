@@ -38,6 +38,7 @@ interface User {
   verification_emails_sent?: number
   country?: string
   city?: string
+  phone?: string
 }
 
 type UserSegment = 'active_30d' | 'paid_active' | 'new_7d' | 'inactive_30d' | 'all'
@@ -606,6 +607,7 @@ export default function AdminUsersPage() {
                   <tr>
                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Utilisateur</th>
                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                    <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Téléphone</th>
                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Statut</th>
                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Plan</th>
                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Usage (30j)</th>
@@ -618,7 +620,7 @@ export default function AdminUsersPage() {
                 <tbody className="divide-y divide-gray-200">
                   {users.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="text-center py-12 text-gray-500">
+                      <td colSpan={10} className="text-center py-12 text-gray-500">
                         {loading ? 'Chargement...' : 'Aucun utilisateur trouvé'}
                       </td>
                     </tr>
@@ -641,6 +643,9 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-600 truncate max-w-xs">{user.email}</td>
+                        <td className="py-4 px-6 text-sm text-gray-600">
+                          {user.phone || <span className="text-gray-400">-</span>}
+                        </td>
                         <td className="py-4 px-6">
                           <span className={`inline-block px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(user.active_bucket)}`}>
                             {getStatusLabel(user.active_bucket)}
@@ -792,6 +797,10 @@ export default function AdminUsersPage() {
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">Téléphone</div>
+                        <div className="text-sm text-gray-900">{user.phone || <span className="text-gray-400">-</span>}</div>
+                      </div>
                       <div>
                         <div className="text-xs text-gray-500 mb-1">Statut</div>
                         <span className={`inline-block px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(user.active_bucket)}`}>
