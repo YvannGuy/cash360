@@ -2637,6 +2637,51 @@ const refreshFastSummary = useCallback(async () => {
           {/* Contenu de l'onglet "Tableau de bord" */}
           {hasPremiumAccess && activeTab === 'overview' && (
             <div className="space-y-8">
+              {/* Notification pour abonnement past_due */}
+              {subscription && subscription.status === 'past_due' && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg shadow-sm">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <h3 className="text-sm font-medium text-yellow-800">
+                        Votre abonnement a été refusé
+                      </h3>
+                      <div className="mt-2 text-sm text-yellow-700">
+                        <p>
+                          Le paiement de votre abonnement a échoué. Veuillez mettre à jour votre méthode de paiement pour continuer à bénéficier de nos services.
+                        </p>
+                      </div>
+                      <div className="mt-4">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const response = await fetch('/api/subscription/customer-portal', {
+                                method: 'POST'
+                              })
+                              const data = await response.json()
+                              if (data.url) {
+                                window.location.href = data.url
+                              } else {
+                                alert('Erreur lors de l\'accès au portail de paiement')
+                              }
+                            } catch (error) {
+                              console.error('Erreur:', error)
+                              alert('Erreur lors de l\'accès au portail de paiement')
+                            }
+                          }}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                        >
+                          Mettre à jour ma carte
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <HelpBanner
                 tabId="overview"
                 title={t.dashboard.helpBanner?.overviewTitle || 'Comment utiliser votre tableau de bord'}
@@ -3970,6 +4015,37 @@ const refreshFastSummary = useCallback(async () => {
                   }`}
                 >
                   {subscriptionActionMessage.text}
+                </div>
+              )}
+
+              {/* Bouton pour mettre à jour la carte (si abonnement Stripe) */}
+              {subscription.stripe_customer_id && (
+                <div className="pt-2 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/api/subscription/customer-portal', {
+                          method: 'POST'
+                        })
+                        const data = await response.json()
+                        if (data.url) {
+                          window.location.href = data.url
+                        } else {
+                          alert('Erreur lors de l\'accès au portail de paiement')
+                        }
+                      } catch (error) {
+                        console.error('Erreur:', error)
+                        alert('Erreur lors de l\'accès au portail de paiement')
+                      }
+                    }}
+                    className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[#00A1C6] text-white hover:bg-[#0089a3] transition-colors"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Mettre à jour ma carte
+                  </button>
                 </div>
               )}
 
