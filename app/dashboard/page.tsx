@@ -4,6 +4,32 @@
 // NAV NOTE: La navigation principale (onglets Tableau de bord, Boutique, Mes achats, Profil) et les sections associées sont toutes gérées dans ce fichier. Les sous-routes comme /dashboard/settings restent indépendantes.
 
 import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react'
+
+// Helper pour nettoyer les requestAnimationFrame
+const useRAF = () => {
+  const rafIdRef = useRef<number | null>(null)
+  
+  const cancelRAF = useCallback(() => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = null
+    }
+  }, [])
+  
+  const requestRAF = useCallback((callback: () => void) => {
+    cancelRAF()
+    rafIdRef.current = requestAnimationFrame(() => {
+      callback()
+      rafIdRef.current = null
+    })
+  }, [cancelRAF])
+  
+  useEffect(() => {
+    return () => cancelRAF()
+  }, [cancelRAF])
+  
+  return { requestRAF, cancelRAF }
+}
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientBrowser } from '@/lib/supabase'
 import { analysisService, type AnalysisRecord, capsulesService } from '@/lib/database'
@@ -1425,12 +1451,34 @@ const refreshFastSummary = useCallback(async () => {
     setProfileProfession(metadata.profession || '')
   }, [user])
   
+  // Utiliser useRef pour userOrders pour éviter les dépendances instables dans le setInterval
+  const userOrdersRef = useRef(userOrders)
+  userOrdersRef.current = userOrders
+  
   // Recharger périodiquement les analyses et commandes pour détecter les nouveaux achats et validations
   useEffect(() => {
     if (!supabase || !user) return
     
-    // Recharger les analyses et commandes toutes les 10 secondes (plus fréquent pour détecter plus vite)
-    const interval = setInterval(async () => {
+    let interval: NodeJS.Timeout | null = null
+    let isPageVisible = true
+    
+    // Pause le polling quand l'onglet est caché pour économiser les ressources
+    const handleVisibilityChange = () => {
+      isPageVisible = !document.hidden
+      if (!isPageVisible && interval) {
+        clearInterval(interval)
+        interval = null
+        console.log('[DASHBOARD] ⏸️ Polling mis en pause (onglet caché)')
+      } else if (isPageVisible && !interval) {
+        startPolling()
+        console.log('[DASHBOARD] ▶️ Polling repris (onglet visible)')
+      }
+    }
+    
+    const startPolling = () => {
+      // Augmenter l'intervalle à 30 secondes pour réduire la charge CPU
+      interval = setInterval(async () => {
+        if (!isPageVisible) return
       try {
         // Recharger les analyses
         const analyses = await analysisService.getAnalysesByUser()
@@ -1495,7 +1543,8 @@ const refreshFastSummary = useCallback(async () => {
           })
           
           // Vérifier si le nombre de commandes d'abonnement payées a changé (détection suppression)
-          const prevPaidSubscriptionCount = userOrders.filter((o: any) => {
+          // Utiliser userOrdersRef pour éviter les dépendances instables
+          const prevPaidSubscriptionCount = userOrdersRef.current.filter((o: any) => {
             const isAbonnement = o.product_id === 'abonnement' || 
                                 o.product_id?.toLowerCase() === 'abonnement' ||
                                 o.product_name?.toLowerCase()?.includes('abonnement') ||
@@ -1524,10 +1573,17 @@ const refreshFastSummary = useCallback(async () => {
       } catch (error) {
         console.error('Erreur rechargement périodique analyses/commandes:', error)
       }
-    }, 10000) // Toutes les 10 secondes (au lieu de 30)
+    }, 30000) // Toutes les 30 secondes (réduit de 10s pour économiser CPU)
+    }
     
-    return () => clearInterval(interval)
-  }, [supabase, user, refreshSubscription, subscription, userOrders])
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    startPolling()
+    
+    return () => {
+      if (interval) clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [supabase, user]) // Retirer refreshSubscription, subscription, userOrders pour éviter les re-créations
 
   // Réinitialiser les pages et la recherche lors du changement d'onglet
   useEffect(() => {

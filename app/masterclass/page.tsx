@@ -301,8 +301,27 @@ export default function MasterclassPage() {
       }
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    let rafId: number | null = null
+    let lastScrollY = window.scrollY
+    
+    const optimizedHandleScroll = () => {
+      if (rafId) return
+      
+      rafId = requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY
+        if (Math.abs(currentScrollY - lastScrollY) > 10) {
+          handleScroll()
+          lastScrollY = currentScrollY
+        }
+        rafId = null
+      })
+    }
+    
+    window.addEventListener('scroll', optimizedHandleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', optimizedHandleScroll)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
   }, [])
 
   // Auto-complétion d'adresse avec Nominatim OpenStreetMap (comme dans le formulaire signup)

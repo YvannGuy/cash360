@@ -23,15 +23,37 @@ export default function CarouselPopup({ items, onClose, title = 'Nouveautés dan
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isClosing, setIsClosing] = useState(false)
 
-  // Défilement automatique toutes les 5 secondes
+  // Défilement automatique toutes les 5 secondes (pause si onglet caché)
   useEffect(() => {
     if (items.length <= 1) return
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length)
-    }, 5000)
+    let interval: NodeJS.Timeout | null = null
+    let isVisible = true
 
-    return () => clearInterval(interval)
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden
+      if (!isVisible && interval) {
+        clearInterval(interval)
+        interval = null
+      } else if (isVisible && !interval) {
+        startInterval()
+      }
+    }
+
+    const startInterval = () => {
+      interval = setInterval(() => {
+        if (!isVisible) return
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length)
+      }, 5000)
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    startInterval()
+
+    return () => {
+      if (interval) clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [items.length])
 
   const handleClose = () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -64,13 +64,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('theme-changed'));
   }, []);
 
+  // Utiliser useRef pour éviter les re-renders en boucle
+  const applyThemeRef = useRef(applyTheme);
+  applyThemeRef.current = applyTheme;
+
   // Charger et détecter le thème au montage (côté client uniquement)
   useEffect(() => {
     setMounted(true);
     const detectedTheme = detectTheme();
     setThemeState(detectedTheme);
-    applyTheme(detectedTheme);
-  }, [applyTheme]);
+    applyThemeRef.current(detectedTheme);
+  }, []); // Dépendances vides pour éviter les re-exécutions
 
   // Sauvegarder le thème dans localStorage quand il change
   const setTheme = useCallback((newTheme: Theme) => {

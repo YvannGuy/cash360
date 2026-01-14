@@ -137,8 +137,21 @@ export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false)
 
   useEffect(() => {
+    let rafId: number | null = null
+    let lastScrollY = window.scrollY
+    
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300)
+      if (rafId) return // Déjà une frame en attente
+      
+      rafId = requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY
+        // Ne mettre à jour que si changement significatif (> 50px) pour réduire les re-renders
+        if (Math.abs(currentScrollY - lastScrollY) > 50) {
+          setShowScrollTop(currentScrollY > 300)
+          lastScrollY = currentScrollY
+        }
+        rafId = null
+      })
     }
 
     // Désactiver la redirection automatique vers le dashboard
@@ -148,11 +161,12 @@ export default function Home() {
       // L'utilisateur peut choisir de rester sur la homepage même s'il est connecté
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     checkAuthAndRedirect()
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      if (rafId) cancelAnimationFrame(rafId)
     }
   }, [])
 

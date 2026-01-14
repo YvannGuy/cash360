@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
 import { useCurrency } from '@/lib/CurrencyContext'
 import { tracking } from '@/lib/tracking'
@@ -366,9 +366,13 @@ export default function BudgetTracker({ variant = 'page', onBudgetChange }: Budg
     [copy.fetchError, copy.subscriptionRequired, currentMonth, notifySnapshotChange]
   )
 
+  // Utiliser useRef pour éviter les re-exécutions en boucle
+  const fetchBudgetRef = useRef(fetchBudget)
+  fetchBudgetRef.current = fetchBudget
+
   useEffect(() => {
-    fetchBudget()
-  }, [fetchBudget])
+    fetchBudgetRef.current()
+  }, [currentMonth]) // Seulement currentMonth pour éviter les boucles
 
   // Tracking: outil ouvert
   useEffect(() => {

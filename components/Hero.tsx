@@ -1,15 +1,37 @@
 'use client'
 
+import { useState, useEffect, useRef } from 'react'
 import { useLanguage } from '@/lib/LanguageContext'
 
 export default function Hero() {
   const { t } = useLanguage()
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
+  const videoRef = useRef<HTMLDivElement>(null)
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
   }
+
+  // Charger la vidéo seulement quand elle est visible (IntersectionObserver)
+  useEffect(() => {
+    if (!videoRef.current) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadVideo(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '100px' } // Charger 100px avant d'être visible
+    )
+
+    observer.observe(videoRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <section 
@@ -44,19 +66,31 @@ export default function Hero() {
               <span className="text-yellow-400 font-semibold">{t.hero.subtitleHighlight}</span>
             </p>
 
-            {/* Video - Lazy loaded */}
+            {/* Video - Lazy loaded avec IntersectionObserver */}
             <div className="mb-8">
               <div className="relative w-full max-w-4xl mx-auto">
-                <div className="aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
-                  <iframe
-                    src="https://player.vimeo.com/video/1117619242?autoplay=0&loop=1&muted=1&title=0&byline=0&portrait=0&controls=1&preload=metadata&fl=ip&fe=ec"
-                    title="Cash360 - Présentation"
-                    className="w-full h-full"
-                    frameBorder="0"
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowFullScreen
-                    loading="lazy"
-                  ></iframe>
+                <div ref={videoRef} className="aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
+                  {shouldLoadVideo ? (
+                    <iframe
+                      src="https://player.vimeo.com/video/1117619242?autoplay=0&loop=0&muted=1&title=0&byline=0&portrait=0&controls=1&preload=metadata&fl=ip&fe=ec"
+                      title="Cash360 - Présentation"
+                      className="w-full h-full"
+                      frameBorder="0"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                      loading="lazy"
+                    ></iframe>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="text-center">
+                        <svg className="w-12 h-12 mx-auto mb-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-sm">Chargement de la vidéo...</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -39,8 +39,19 @@ const detectLanguage = async (): Promise<Language> => {
     console.log('navigator.language non disponible');
   }
 
-  // 3. Détecter via IP géolocalisation (fallback)
+  // 3. Détecter via IP géolocalisation (fallback) - avec cache pour éviter les appels répétés
   try {
+    // Vérifier le cache d'abord (expiration 24h)
+    const cachedLang = sessionStorage.getItem('cash360-detected-lang')
+    const cachedTimestamp = sessionStorage.getItem('cash360-detected-lang-timestamp')
+    if (cachedLang && cachedTimestamp) {
+      const cacheAge = Date.now() - parseInt(cachedTimestamp, 10)
+      const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 heures
+      if (cacheAge < CACHE_DURATION && ['fr', 'en', 'es', 'pt'].includes(cachedLang)) {
+        return cachedLang as Language
+      }
+    }
+
     const response = await fetch('https://ipapi.co/json/');
     const data = await response.json();
     const countryCode = data.country_code?.toLowerCase();
@@ -106,7 +117,15 @@ const detectLanguage = async (): Promise<Language> => {
     };
     
     if (countryCode && countryToLang[countryCode]) {
-      return countryToLang[countryCode];
+      const detectedLang = countryToLang[countryCode]
+      // Mettre en cache le résultat
+      try {
+        sessionStorage.setItem('cash360-detected-lang', detectedLang)
+        sessionStorage.setItem('cash360-detected-lang-timestamp', Date.now().toString())
+      } catch (e) {
+        // Ignore si sessionStorage n'est pas disponible
+      }
+      return detectedLang
     }
   } catch (error) {
     console.log('Géolocalisation IP non disponible, utilisation du français par défaut');

@@ -34,11 +34,28 @@ export default function Navbar() {
   }
 
   useEffect(() => {
+    let rafId: number | null = null
+    let lastScrollY = window.scrollY
+    
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      if (rafId) return // Déjà une frame en attente
+      
+      rafId = requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY
+        // Ne mettre à jour que si changement significatif (> 10px) pour réduire les re-renders
+        if (Math.abs(currentScrollY - lastScrollY) > 10) {
+          setIsScrolled(currentScrollY > 20)
+          lastScrollY = currentScrollY
+        }
+        rafId = null
+      })
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
   }, [])
 
   useEffect(() => {
